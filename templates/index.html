@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARG Desktop</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <style>
+      :root {
+        --xp-blue: #0a5ad3;
+        --xp-blue-dark: #0c3c8d;
+        --xp-teal: #3f7ec2;
+        --xp-surface: #d9d9d9;
+        --xp-panel: #efefef;
+        --xp-menu: #f0f0f0;
+        --xp-text: #0f0f0f;
+        --xp-shadow: rgba(0,0,0,0.28);
+        --xp-taskbar: #e8e8e8;
+        --xp-button-light: #ffffff;
+        --xp-button-dark: #b7b7b7;
+        --xp-button-mid: #d7d7d7;
+        --xp-accent: #e1f0ff;
+        --wp1: linear-gradient(180deg, #5b92d1 0%, #7293c8 25%, #87b3d7 58%, #7ea3d0 100%);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body, button, input, textarea {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+
+      @keyframes windowOpen {
+        0% { opacity: 0; transform: translateY(12px) scale(0.97); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      @keyframes menuOpen {
+        0% { opacity: 0; transform: translateY(16px) scaleY(0.92); }
+        100% { opacity: 1; transform: translateY(0) scaleY(1); }
+      }
+
+      @keyframes iconFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-2px); }
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 0 rgba(84, 155, 255, 0.15); }
+        50% { box-shadow: 0 0 16px rgba(84, 155, 255, 0.2); }
+      }
+
+      @keyframes barLoad {
+        0% { width: 42%; }
+        100% { width: 78%; }
+      }
+
+      html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Tahoma", "Segoe UI", sans-serif;
+        color: var(--xp-text);
+        background: #000;
+      }
+
+      body {
+        background: var(--wp1);
+        position: relative;
+      }
+
+      .desktop {
+        position: relative;
+        width: 100vw;
+        height: calc(100vh - 52px);
+        overflow: hidden;
+      }
+
+      .desktop-icons {
+        position: absolute;
+        left: 12px;
+        top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 3;
+      }
+
+      .desktop-icon {
+        width: 88px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 4px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        color: #fff;
+        cursor: pointer;
+        user-select: none;
+        text-shadow: 1px 1px 1px rgba(0,0,0,0.7);
+        transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, filter 180ms ease;
+        animation: iconFloat 3s ease-in-out infinite;
+      }
+
+      .desktop-icon:hover,
+      .desktop-icon.selected {
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.35);
+        transform: translateY(-2px);
+        filter: brightness(1.08);
+      }
+
+      .icon-graphic {
+        width: 42px;
+        height: 42px;
+        position: relative;
+        border-radius: 8px;
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.35);
+        background: linear-gradient(180deg, #f2f2f2 0%, #d0d0d0 100%);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+
+      .icon-graphic::before,
+      .icon-graphic::after {
+        content: "";
+        position: absolute;
+      }
+
+      .icon-folder::before {
+        width: 28px; height: 15px;
+        background: linear-gradient(180deg, #ffd98e, #f0b930);
+        border-radius: 4px 4px 2px 2px;
+        left: 7px; top: 12px;
+      }
+
+      .icon-folder::after {
+        width: 30px; height: 20px;
+        background: linear-gradient(180deg, #fddf8e, #e9b12b);
+        border-radius: 5px 5px 6px 6px;
+        left: 6px; top: 16px;
+        box-shadow: inset 0 0 0 1px rgba(85,47,0,0.18);
+      }
+
+      .icon-computer::before {
+        width: 24px; height: 18px;
+        background: linear-gradient(180deg, #c4d7ff, #a4bfe8);
+        border: 1px solid rgba(0,0,0,0.4);
+        border-radius: 2px;
+        top: 10px;
+      }
+
+      .icon-computer::after {
+        width: 28px; height: 5px;
+        background: #a9b7cf;
+        border-radius: 2px;
+        bottom: 9px;
+        left: 7px;
+        box-shadow: 0 8px 0 -2px #8998af;
+      }
+
+      .icon-bin::before {
+        width: 18px; height: 20px;
+        background: linear-gradient(180deg, #d4d4d4, #b6b6b6);
+        border-radius: 3px 3px 4px 4px;
+        top: 11px;
+      }
+
+      .icon-bin::after {
+        width: 22px; height: 5px;
+        background: #b5b5b5;
+        border-radius: 3px;
+        top: 8px;
+        left: 10px;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+      }
+
+      .icon-globe::before {
+        width: 22px; height: 22px;
+        border: 2px solid #6397ce;
+        border-radius: 50%;
+      }
+
+      .icon-globe::after {
+        width: 22px; height: 22px;
+        border: 2px solid #6397ce;
+        border-radius: 50%;
+        transform: rotate(90deg);
+        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
+      }
+
+      .desktop-icon span {
+        display: block;
+        font-size: 12px;
+        line-height: 1.2;
+        text-align: center;
+        word-break: break-word;
+      }
+
+      .taskbar {
+        position: relative;
+        width: 100vw;
+        height: 52px;
+        display: flex;
+        align-items: stretch;
+        padding: 0 6px 0 0;
+        background: linear-gradient(180deg, #f0f0f0 0%, #d9d9d9 35%, #c6c6c6 100%);
+        border-top: 1px solid rgba(255,255,255,0.85);
+        box-shadow: inset 0 1px 0 #fff, 0 -1px 0 rgba(0,0,0,0.2);
+        z-index: 50;
+      }
+
+      .start-button {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 118px;
+        height: calc(100% - 4px);
+        margin: 2px 4px 2px 2px;
+        background: linear-gradient(180deg, #45c64c 0%, #2c9a3a 100%);
+        border-top: 1px solid #a4f5a4;
+        border-left: 1px solid #b9f9bb;
+        border-right: 1px solid #195f2d;
+        border-bottom: 1px solid #195f2d;
+        color: #fff;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.42);
+        text-shadow: 1px 1px 0 rgba(0,0,0,0.45);
+        user-select: none;
+      }
+
+      .start-button::before {
+        content: "";
+        width: 18px; height: 18px;
+        margin-right: 8px;
+        background: linear-gradient(180deg, #fff, #d9d9d9);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        border-radius: 2px 2px 0 0;
+        box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4);
+        position: relative;
+      }
+
+      .start-button:hover { filter: brightness(1.05); }
+
+      .taskbar-buttons {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 0;
+      }
+
+      .taskbar-btn {
+        height: 100%;
+        min-width: 148px;
+        max-width: 200px;
+        border: 1px solid #9b9b9b;
+        background: linear-gradient(180deg, #f5f5f5 0%, #d8d8d8 100%);
+        padding: 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        transition: transform 150ms ease, filter 150ms ease;
+      }
+
+      .taskbar-btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.02);
+      }
+
+      .taskbar-btn.active {
+        background: linear-gradient(180deg, #fefefe 0%, #dfe9f7 100%);
+        border-color: #7ea2d7;
+        box-shadow: inset 0 0 0 1px rgba(125,158,219,0.7);
+      }
+
+      .taskbar-btn .tiny-icon {
+        width: 14px; height: 14px;
+        background: linear-gradient(180deg, #6eaefc, #1c63c3);
+        border-radius: 2px;
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+        flex-shrink: 0;
+      }
+
+      .tray {
+        width: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-left: 1px solid rgba(0,0,0,0.3);
+        font-size: 12px;
+        font-weight: 600;
+        color: #2a2a2a;
+        background: linear-gradient(180deg, #e4e4e4 0%, #d5d5d5 100%);
+        box-shadow: inset 1px 0 0 rgba(255,255,255,0.8);
+      }
+
+      .start-menu {
+        position: absolute;
+        left: 0;
+        bottom: 52px;
+        width: 320px;
+        height: 430px;
+        background: linear-gradient(180deg, #f1f1f1 0%, #dfdfdf 100%);
+        border-top: 1px solid #fff;
+        border-left: 1px solid #fff;
+        border-right: 1px solid #6d6d6d;
+        border-bottom: 1px solid #6d6d6d;
+        box-shadow: 3px 3px 8px rgba(0,0,0,0.35);
+        display: none;
+        z-index: 100;
+        overflow: hidden;
+        transform-origin: left bottom;
+      }
+
+      .start-menu.open {
+        display: block;
+        animation: menuOpen 0.22s ease-out forwards;
+      }
+
+      .start-sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 38px;
+        background: linear-gradient(180deg, #2a67bd 0%, #0d539b 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        letter-spacing: 2px;
+        color: #fff;
+        font-weight: 700;
+        font-size: 18px;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      }
+
+      .start-menu-content {
+        margin-left: 38px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 8px 0 0;
+        position: relative;
+      }
+
+      .menu-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 0 6px;
+      }
+
+      .menu-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        height: 34px;
+        padding: 0 8px 0 10px;
+        font-size: 13px;
+        background: transparent;
+        border: 1px solid transparent;
+        cursor: pointer;
+        user-select: none;
+        transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease, padding-left 180ms ease;
+      }
+
+      .menu-item:hover {
+        background: linear-gradient(180deg, #4b90eb 0%, #3f83d0 100%);
+        border: 1px solid #345ba8;
+        color: #fff;
+        transform: translateX(2px);
+        padding-left: 12px;
+      }
+
+      .menu-icon {
+        width: 20px; height: 20px;
+        background: linear-gradient(180deg, #fff, #d4d4d4);
+        border: 1px solid rgba(0,0,0,0.35);
+        border-radius: 3px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .menu-item:hover .menu-icon { background: linear-gradient(180deg, #f3f9ff, #d8e7ff); }
+
+      .window {
+        position: absolute;
+        width: 460px;
+        min-height: 180px;
+        background: linear-gradient(180deg, #f5f5f5 0%, #ececec 100%);
+        border: 2px solid #1d4d93;
+        box-shadow: 3px 3px 12px rgba(0,0,0,0.4);
+        display: none;
+        z-index: 20;
+        overflow: hidden;
+        transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+        transform-origin: center center;
+      }
+
+      .window.visible {
+        display: block;
+        animation: windowOpen 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 5px 8px 18px rgba(0,0,0,0.42);
+      }
+
+      .window.minimized { display: none !important; }
+
+      .titlebar {
+        background: linear-gradient(180deg, #2b6ed5 0%, #0d4ca8 100%);
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-left: 10px;
+        padding-right: 6px;
+        color: white;
+        font-weight: 700;
+        font-size: 12px;
+        cursor: move;
+        user-select: none;
+      }
+
+      .titlebar .left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .titlebar .window-icon {
+        width: 20px; height: 20px;
+        background: linear-gradient(180deg, #dfefff, #a8d0ff);
+        border-radius: 3px;
+        border: 1px solid rgba(255,255,255,0.5);
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+        flex-shrink: 0;
+      }
+
+      .titlebar .title-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .window-controls {
+        display: flex;
+        gap: 2px;
+      }
+
+      .window-control {
+        width: 24px; height: 18px;
+        border: 1px solid rgba(255,255,255,0.75);
+        background: linear-gradient(180deg, #f0f0f0, #d6d6d6);
+        color: #111;
+        font-weight: 700;
+        font-size: 12px;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      }
+
+      .window-control:hover { filter: brightness(1.1); }
+
+      .window-content {
+        padding: 10px;
+        background: linear-gradient(180deg, #f1f1f1 0%, #dfe7ef 100%);
+        min-height: 120px;
+        font-size: 13px;
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .panel {
+        background: rgba(255,255,255,0.4);
+        border: 1px solid #b9c8de;
+        padding: 12px;
+        min-height: 96px;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+      }
+
+      .panel h3 {
+        margin: 0 0 10px;
+        font-size: 15px;
+      }
+
+      .explorer-list {
+        list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
+      }
+
+      .explorer-list li {
+        display: flex; align-items: center; gap: 8px;
+        padding: 4px 6px; background: rgba(255,255,255,0.3);
+        border: 1px solid rgba(88,122,169,0.25);
+      }
+
+      .folder-badge {
+        width: 16px; height: 14px; background: linear-gradient(180deg, #ffd967, #d5a63c);
+        border-radius: 2px; border: 1px solid rgba(0,0,0,0.2);
+      }
+
+      .stats {
+        display: grid; gap: 11px; margin-top: 10px;
+      }
+
+      .stat {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 5px 8px; background: rgba(255,255,255,0.35); border: 1px solid rgba(0,0,0,0.12);
+      }
+
+      .progress {
+        width: 100%; height: 14px; background: #c9ced6; border: 1px solid #9399a7; position: relative; overflow: hidden;
+        margin-top: 8px;
+      }
+
+      .progress > span {
+        position: absolute; left: 0; top: 0; bottom: 0; width: 66%;
+        background: linear-gradient(180deg, #7cc8ff, #2b8ee6);
+        border-right: 1px solid rgba(0,0,0,0.2);
+        animation: barLoad 1.8s ease-in-out infinite alternate;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 8px;
+        padding: 8px 10px;
+        background: linear-gradient(180deg, #eff4fb 0%, #dfe8f3 100%);
+        border-bottom: 1px solid #b8c8dd;
+      }
+
+      .btn {
+        border: 1px solid #7c9dbd;
+        background: linear-gradient(180deg, #ffffff, #dfeaf7);
+        color: #163d7d;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      }
+
+      .btn:hover { filter: brightness(1.04); }
+
+      .btn.primary {
+        background: linear-gradient(180deg, #e4f6ff, #cfe7ff);
+        border-color: #5c7fc2;
+      }
+
+      .status-area {
+        margin-top: 10px;
+        display: flex; gap: 8px; flex-wrap: wrap;
+      }
+
+      .status-tag {
+        padding: 5px 10px; background: #eaf5ff; border: 1px solid #89b4e2; font-size: 12px;
+      }
+
+      .console {
+        width: 100%; height: 200px; background: #0f1b2b; color: #c8f9d1; border: 1px solid #1c2e46; padding: 10px; overflow: auto; font-family: "Consolas", "Courier New", monospace; font-size: 12px; line-height: 1.45;
+      }
+
+      .console-line::before { content: "> "; color: #7ad8ff; }
+
+      .game-layout {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .game-card {
+        background: rgba(255,255,255,0.38);
+        border: 1px solid #b9c8de;
+        padding: 12px;
+        min-height: 140px;
+      }
+
+      .game-card h4 { margin: 0 0 10px; font-size: 14px; }
+
+      .map {
+        width: 100%; height: 160px; background: linear-gradient(180deg, #d8f0d8, #9ecb7b); border: 2px solid #3d7b39; position: relative; overflow: hidden;
+      }
+
+      .map::before {
+        content: "";
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+        background-size: 22px 22px;
+      }
+
+      .terrain {
+        position: absolute; border-radius: 999px; background: rgba(89, 133, 68, 0.7); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+      }
+
+      .terrain.one { width: 120px; height: 90px; left: 28px; top: 26px; }
+      .terrain.two { width: 130px; height: 80px; right: 20px; top: 56px; }
+      .terrain.three { width: 90px; height: 90px; left: 110px; bottom: 12px; }
+
+      .character {
+        position: absolute;
+        width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg, #ffec8e, #f3a735); border: 1px solid rgba(0,0,0,0.15);
+        left: 135px; top: 72px;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+        animation: pulseGlow 1.8s ease-in-out infinite;
+      }
+
+      .quest-list {
+        list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
+      }
+
+      .quest-list li {
+        display: flex; align-items: baseline; gap: 8px; background: rgba(255,255,255,0.35); padding: 6px 8px; border: 1px solid rgba(0,0,0,0.08);
+      }
+
+      .quest-list li::before { content: "▣"; color: #2a6cbf; }
+
+      .textarea {
+        width: 100%; min-height: 110px; resize: vertical; border: 1px solid #9aa6b9; padding: 8px; font-size: 12px; background: rgba(255,255,255,0.7);
+      }
+
+      .login-panel {
+        position: absolute;
+        right: 22px;
+        top: 18px;
+        z-index: 40;
+        width: min(300px, 40vw);
+        background: rgba(255,255,255,0.82);
+        border: 1px solid rgba(18, 77, 150, 0.7);
+        box-shadow: 3px 3px 12px rgba(0,0,0,0.25);
+        padding: 14px;
+        backdrop-filter: blur(2px);
+      }
+
+      .login-panel h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+
+      .login-panel form {
+        display: grid;
+        gap: 10px;
+      }
+
+      .login-panel label {
+        display: grid;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .login-panel input {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #aab7c8;
+        background: rgba(255,255,255,0.9);
+      }
+
+      .login-button {
+        padding: 10px 12px;
+        border: 1px solid #537dbd;
+        background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      .login-button.secondary {
+        background: linear-gradient(180deg, #ffffff, #e6e6e6);
+      }
+
+      .login-success,
+      .login-error {
+        display: inline-block;
+        padding: 8px 10px;
+        background: rgba(224, 247, 227, 0.9);
+        border: 1px solid #7ec97d;
+        color: #1e5d2f;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .login-error {
+        background: rgba(255, 232, 232, 0.9);
+        border-color: #d57d7d;
+        color: #7c1f1f;
+      }
+
+      .save-form {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .save-form input,
+      .save-form textarea,
+      .save-form button {
+        font: inherit;
+      }
+
+      .save-form input,
+      .save-form textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #aab7c8;
+        background: rgba(255,255,255,0.75);
+      }
+
+      .save-form button {
+        padding: 10px 12px;
+        border: 1px solid #537dbd;
+        background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+        cursor: pointer;
+      }
+
+      .orientation-lock {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(7, 18, 34, 0.9);
+        color: #fff;
+        text-align: center;
+        z-index: 2000;
+        padding: 24px;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+
+      .orientation-lock small {
+        display: block;
+        margin-top: 10px;
+        font-size: 12px;
+        opacity: 0.85;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      body.orientation-portrait .orientation-lock {
+        display: flex;
+      }
+
+      body.orientation-portrait .desktop,
+      body.orientation-portrait .taskbar,
+      body.orientation-portrait .login-panel {
+        display: none !important;
+      }
+
+      @media (max-width: 840px) {
+        .window { width: min(82vw, 420px); }
+        .game-layout { grid-template-columns: 1fr; }
+        .content-grid { grid-template-columns: 1fr; }
+        .taskbar-btn { min-width: 110px; }
+      }
+
+      @media (orientation: portrait) {
+        body {
+          background: #0d1d32;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="orientation-lock">
+      Rotate device<br>
+      <small>Landscape mode required</small>
+    </div>
+
+    <div id="auth-panel" class="login-panel">
+      {% if logged_in_user %}
+        <div class="login-success">Logged in as {{ logged_in_user }}</div>
+        <form hx-post="/logout" hx-target="#auth-panel" hx-swap="outerHTML">
+          <button class="login-button secondary" type="submit">Log out</button>
+        </form>
+      {% else %}
+        <h2>Login</h2>
+        <form hx-post="/login" hx-target="#auth-panel" hx-swap="outerHTML">
+          <label>
+            Username
+            <input type="text" name="username" placeholder="Player name" required />
+          </label>
+          <label>
+            Password
+            <input type="password" name="password" placeholder="Enter password" required />
+          </label>
+          <button class="login-button" type="submit">Log in</button>
+        </form>
+      {% endif %}
+    </div>
+
+    <div class="desktop">
+      <div class="desktop-icons">
+        <div class="desktop-icon" data-window="explorer">
+          <div class="icon-graphic icon-computer"></div>
+          <span>My Computer</span>
+        </div>
+        <div class="desktop-icon" data-window="documents">
+          <div class="icon-graphic icon-folder"></div>
+          <span>Documents</span>
+        </div>
+        <div class="desktop-icon" data-window="recycle">
+          <div class="icon-graphic icon-bin"></div>
+          <span>Recycle Bin</span>
+        </div>
+        <div class="desktop-icon" data-window="game">
+          <div class="icon-graphic icon-globe"></div>
+          <span>ARG Game</span>
+        </div>
+      </div>
+
+      <div class="window visible" id="welcome" data-title="Welcome" style="left: 220px; top: 90px; width: 520px;">
+        <div class="titlebar">
+          <div class="left">
+            <div class="window-icon"></div>
+            <div class="title-text">Welcome to ARG</div>
+          </div>
+          <div class="window-controls">
+            <button class="window-control" data-action="minimize">_</button>
+            <button class="window-control" data-action="close">×</button>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn primary">Start</button>
+          <button class="btn">Open Project</button>
+          <button class="btn">Tools</button>
+        </div>
+        <div class="window-content">
+          <div class="content-grid">
+            <div class="panel">
+              <h3>Project Overview</h3>
+              <div class="stats">
+                <div class="stat"><span>World Build</span><strong>74%</strong></div>
+                <div class="stat"><span>UI System</span><strong>88%</strong></div>
+                <div class="stat"><span>Logic Hooks</span><strong>62%</strong></div>
+              </div>
+              <div class="progress"><span></span></div>
+            </div>
+            <div class="panel">
+              <h3>Quick Actions</h3>
+              <div class="status-area">
+                <span class="status-tag">Load Map</span>
+                <span class="status-tag">AI Boot</span>
+                <span class="status-tag">Sync Data</span>
+                <span class="status-tag">Save Build</span>
+              </div>
+              <div id="save-status" class="status-area" hx-get="/api/progress" hx-trigger="load" hx-swap="innerHTML">
+                <span class="status-tag">Stage: {{ progress.stage }}</span>
+                <span class="status-tag">XP: {{ progress.xp }}</span>
+              </div>
+            </div>
+          </div>
+
+          <form class="save-form" hx-post="/api/progress" hx-target="#save-status" hx-swap="innerHTML">
+            <input type="hidden" name="inventory" value='["map","key","logbook"]'>
+            <label>
+              Stage
+              <input type="text" name="stage" value="{{ progress.stage }}" />
+            </label>
+            <label>
+              XP
+              <input type="number" name="xp" value="{{ progress.xp }}" />
+            </label>
+            <label>
+              Coins
+              <input type="number" name="coins" value="{{ progress.coins }}" />
+            </label>
+            <label>
+              Player
+              <input type="text" name="player_name" value="{{ logged_in_user or progress.player_name }}" />
+            </label>
+            <label style="grid-column: 1 / -1;">
+              Notes
+              <textarea name="notes" rows="3">{{ progress.progress_notes }}</textarea>
+            </label>
+            <button type="submit" style="grid-column: 1 / -1;">Save game progress</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="window" id="explorer" data-title="My Computer" style="left: 360px; top: 150px; width: 520px;">
+        <div class="titlebar">
+          <div class="left">
+            <div class="window-icon"></div>
+            <div class="title-text">My Computer</div>
+          </div>
+          <div class="window-controls">
+            <button class="window-control" data-action="minimize">_</button>
+            <button class="window-control" data-action="close">×</button>
+          </div>
+        </div>
+        <div class="window-content">
+          <div class="content-grid">
+            <div class="panel">
+              <h3>Explorer</h3>
+              <ul class="explorer-list">
+                <li><span class="folder-badge"></span> Projects</li>
+                <li><span class="folder-badge"></span> Assets</li>
+                <li><span class="folder-badge"></span> Audio</li>
+                <li><span class="folder-badge"></span> Lore</li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>System Info</h3>
+              <div class="stats">
+                <div class="stat"><span>CPU</span><strong>i7</strong></div>
+                <div class="stat"><span>RAM</span><strong>16 GB</strong></div>
+                <div class="stat"><span>Graphics</span><strong>RTX</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="window" id="documents" data-title="Documents" style="left: 440px; top: 110px; width: 510px;">
+        <div class="titlebar">
+          <div class="left">
+            <div class="window-icon"></div>
+            <div class="title-text">Documents</div>
+          </div>
+          <div class="window-controls">
+            <button class="window-control" data-action="minimize">_</button>
+            <button class="window-control" data-action="close">×</button>
+          </div>
+        </div>
+        <div class="window-content">
+          <div class="game-layout">
+            <div class="game-card">
+              <h4>Mission Notes</h4>
+              <ul class="quest-list">
+                <li>Locate the secret server cluster.</li>
+                <li>Recover the blue archive key.</li>
+                <li>Uncover the missing map fragments.</li>
+              </ul>
+            </div>
+            <div class="game-card">
+              <h4>Briefing</h4>
+              <textarea class="textarea">Project ARG is a browser-ready game prototype. Future expansions include dialogue states, inventory, map traversal, and faction events.</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="window" id="recycle" data-title="Recycle Bin" style="left: 270px; top: 200px; width: 460px;">
+        <div class="titlebar">
+          <div class="left">
+            <div class="window-icon"></div>
+            <div class="title-text">Recycle Bin</div>
+          </div>
+          <div class="window-controls">
+            <button class="window-control" data-action="minimize">_</button>
+            <button class="window-control" data-action="close">×</button>
+          </div>
+        </div>
+        <div class="window-content">
+          <div class="panel">
+            <h3>Deleted Items</h3>
+            <ul class="explorer-list">
+              <li><span class="folder-badge"></span> old_wireframe.map</li>
+              <li><span class="folder-badge"></span> debug_ui_backup</li>
+              <li><span class="folder-badge"></span> idle_quest_notes</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="window" id="game" data-title="ARG Game" style="left: 510px; top: 260px; width: 560px;">
+        <div class="titlebar">
+          <div class="left">
+            <div class="window-icon"></div>
+            <div class="title-text">ARG Game</div>
+          </div>
+          <div class="window-controls">
+            <button class="window-control" data-action="minimize">_</button>
+            <button class="window-control" data-action="close">×</button>
+          </div>
+        </div>
+        <div class="window-content">
+          <div class="game-layout">
+            <div class="game-card">
+              <h4>World Map</h4>
+              <div class="map">
+                <div class="terrain one"></div>
+                <div class="terrain two"></div>
+                <div class="terrain three"></div>
+                <div class="character"></div>
+              </div>
+            </div>
+            <div class="game-card">
+              <h4>Quest Log</h4>
+              <ul class="quest-list">
+                <li>Reach the station.</li>
+                <li>Collect the marker.</li>
+                <li>Open the archive.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="window" id="consoleWin" data-title="Command Console" style="left: 160px; top: 260px; width: 430px;">
+        <div class="titlebar">
+          <div class="left">
+            <div class="window-icon"></div>
+            <div class="title-text">Command Console</div>
+          </div>
+          <div class="window-controls">
+            <button class="window-control" data-action="minimize">_</button>
+            <button class="window-control" data-action="close">×</button>
+          </div>
+        </div>
+        <div class="window-content">
+          <div class="console" id="console">
+            <div class="console-line">system online</div>
+            <div class="console-line">loading interface profile...</div>
+            <div class="console-line">boot sequence complete</div>
+            <div class="console-line">awaiting command...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="start-menu" id="startMenu">
+      <div class="start-sidebar">START</div>
+      <div class="start-menu-content">
+        <div class="menu-group">
+          <div class="menu-item" data-window="welcome"><span class="menu-icon"></span> Welcome</div>
+          <div class="menu-item" data-window="explorer"><span class="menu-icon"></span> My Computer</div>
+          <div class="menu-item" data-window="documents"><span class="menu-icon"></span> Documents</div>
+          <div class="menu-item" data-window="game"><span class="menu-icon"></span> ARG Game</div>
+          <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
+        </div>
+        <div class="menu-group" style="margin-top: 18px;">
+          <div class="menu-item" data-window="recycle"><span class="menu-icon"></span> Recycle Bin</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="taskbar">
+      <button class="start-button" id="startButton">start</button>
+      <div class="taskbar-buttons" id="taskbarButtons"></div>
+      <div class="tray" id="clock">00:00</div>
+    </div>
+
+    <script>
+      const wins = [...document.querySelectorAll('.window')];
+      const taskbarButtons = document.getElementById('taskbarButtons');
+      const startMenu = document.getElementById('startMenu');
+      const startButton = document.getElementById('startButton');
+      const clock = document.getElementById('clock');
+
+      function updateOrientationState() {
+        const portrait = window.matchMedia('(orientation: portrait)').matches;
+        document.body.classList.toggle('orientation-portrait', portrait);
+
+        if (portrait) {
+          startMenu.classList.remove('open');
+        }
+      }
+
+      if (screen.orientation && typeof screen.orientation.lock === 'function') {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+
+      window.addEventListener('orientationchange', updateOrientationState);
+      window.addEventListener('resize', updateOrientationState);
+      updateOrientationState();
+
+      function updateClock() {
+        const now = new Date();
+        clock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      function openWindow(id) {
+        const win = document.getElementById(id);
+        if (!win) return;
+        win.classList.add('visible');
+        win.classList.remove('minimized');
+        win.style.zIndex = String(20 + wins.indexOf(win) + 1);
+        renderTaskbar();
+      }
+
+      function closeWindow(id) {
+        const win = document.getElementById(id);
+        if (!win) return;
+        win.classList.remove('visible');
+        win.classList.add('minimized');
+        renderTaskbar();
+      }
+
+      function minimizeWindow(id) {
+        const win = document.getElementById(id);
+        if (!win) return;
+        win.classList.add('minimized');
+        win.classList.remove('visible');
+        renderTaskbar();
+      }
+
+      function renderTaskbar() {
+        taskbarButtons.innerHTML = '';
+        wins.forEach(win => {
+          const id = win.id;
+          const isVisible = win.classList.contains('visible');
+          if (!isVisible && !win.classList.contains('minimized')) return;
+          if (!win.classList.contains('visible') && win.classList.contains('minimized')) return;
+          const btn = document.createElement('button');
+          btn.className = 'taskbar-btn' + (isVisible ? ' active' : '');
+          btn.innerHTML = '<span class="tiny-icon"></span><span>' + (win.dataset.title || id) + '</span>';
+          btn.addEventListener('click', () => {
+            if (win.classList.contains('visible')) {
+              minimizeWindow(id);
+            } else {
+              openWindow(id);
+            }
+          });
+          taskbarButtons.appendChild(btn);
+        });
+      }
+
+      document.querySelectorAll('.desktop-icon').forEach(icon => {
+        icon.addEventListener('dblclick', () => openWindow(icon.dataset.window));
+        icon.addEventListener('click', () => {
+          document.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
+          icon.classList.add('selected');
+        });
+      });
+
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const target = item.dataset.window;
+          if (target) openWindow(target);
+          startMenu.classList.remove('open');
+        });
+      });
+
+      startButton.addEventListener('click', () => startMenu.classList.toggle('open'));
+      document.addEventListener('click', (e) => {
+        if (!startMenu.contains(e.target) && !startButton.contains(e.target)) {
+          startMenu.classList.remove('open');
+        }
+      });
+
+      document.querySelectorAll('.window-control').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const win = btn.closest('.window');
+          const action = btn.dataset.action;
+          if (!win) return;
+          const id = win.id;
+          if (action === 'close') closeWindow(id);
+          if (action === 'minimize') minimizeWindow(id);
+        });
+      });
+
+      wins.forEach((win, index) => {
+        const titlebar = win.querySelector('.titlebar');
+        let dragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        titlebar.addEventListener('mousedown', e => {
+          dragging = true;
+          const rect = win.getBoundingClientRect();
+          offsetX = e.clientX - rect.left;
+          offsetY = e.clientY - rect.top;
+          win.style.zIndex = String(100 + index + 1);
+        });
+
+        document.addEventListener('mousemove', e => {
+          if (!dragging) return;
+          win.style.left = Math.max(0, Math.min(window.innerWidth - win.offsetWidth, e.clientX - offsetX)) + 'px';
+          win.style.top = Math.max(0, Math.min(window.innerHeight - win.offsetHeight - 52, e.clientY - offsetY)) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => { dragging = false; });
+      });
+
+      const consoleEl = document.getElementById('console');
+      const consoleLines = [
+        'system online',
+        'interface ready',
+        'synced with ARG core',
+        'awaiting user input',
+        'status: project active',
+        'recon package loaded',
+        'sync check passed',
+        'marker pulse stable'
+      ];
+
+      let consoleIndex = 0;
+      setInterval(() => {
+        if (!consoleEl) return;
+        const line = document.createElement('div');
+        line.className = 'console-line';
+        line.textContent = consoleLines[consoleIndex % consoleLines.length];
+        consoleEl.appendChild(line);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+        consoleIndex += 1;
+      }, 3000);
+
+      openWindow('welcome');
+      renderTaskbar();
+    </script>
+  </body>
+</html>
