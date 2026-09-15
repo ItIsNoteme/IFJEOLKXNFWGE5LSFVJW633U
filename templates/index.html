@@ -1628,12 +1628,37 @@
 
     document.getElementById('musicVolume').addEventListener('input', event => {
       backgroundMusic.volume = Number(event.target.value);
+      backgroundMusic.muted = backgroundMusic.volume === 0;
     });
 
-    backgroundMusic.volume = 0.5;
+    backgroundMusic.volume = 0.1;
+    musicVolume.value = '0.1';
+    backgroundMusic.muted = true;
     backgroundMusic.addEventListener('error', () => {
       setMusicStatus('Unable to decode this audio format or load this URL.');
     });
+
+    if (PROJECT_OST.length) {
+      const firstTrack = PROJECT_OST[0];
+      musicTrack.value = '0';
+      loadMusicSource(firstTrack.source, firstTrack.title);
+      backgroundMusic.play()
+        .then(() => setMusicStatus('Background music started. Click or press a key to enable sound.'))
+        .catch(() => setMusicStatus('Click or press a key to start background music.'));
+
+      const enableBackgroundMusic = () => {
+        backgroundMusic.muted = false;
+        backgroundMusic.volume = 0.1;
+        backgroundMusic.play().catch(() => {});
+        setMusicStatus('Playing background music at 10% volume.');
+        document.removeEventListener('pointerdown', enableBackgroundMusic, true);
+        document.removeEventListener('keydown', enableBackgroundMusic, true);
+        document.removeEventListener('touchstart', enableBackgroundMusic, true);
+      };
+      document.addEventListener('pointerdown', enableBackgroundMusic, true);
+      document.addEventListener('keydown', enableBackgroundMusic, true);
+      document.addEventListener('touchstart', enableBackgroundMusic, true);
+    }
 
     try {
       scriptScenes = JSON.parse(localStorage.getItem(scriptStorageKey) || '[]');
