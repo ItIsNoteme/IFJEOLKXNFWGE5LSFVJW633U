@@ -691,6 +691,41 @@
         background: linear-gradient(180deg, #ffffff, #e6e6e6);
       }
 
+      /* This compact status block makes the seeded demo identity visible in the XP login window. */
+      .login-identity {
+        margin: 0 0 10px;
+        padding: 7px 8px;
+        background: #e2f1df;
+        border: 1px solid #83ae7d;
+        color: #214f24;
+        font-size: 12px;
+      }
+
+      /* These fields keep the requested Misha login prewritten while the session is active. */
+      .login-panel input[readonly] {
+        color: #3f4e5e;
+        background: #edf1f5;
+      }
+
+      /* The redaction result is styled like a small utility output pane inside the desktop. */
+      .redaction-result {
+        margin-top: 12px;
+        padding: 9px;
+        background: #f5f8fb;
+        border: 1px solid #9eb4cc;
+        font-size: 12px;
+      }
+
+      .redaction-result pre {
+        margin: 8px 0;
+        padding: 8px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        background: #fff;
+        border: 1px solid #ccd5df;
+        font-family: "Consolas", "Courier New", monospace;
+      }
+
       .login-success,
       .login-error {
         display: inline-block;
@@ -794,20 +829,27 @@
 
     <div id="auth-panel" class="login-panel">
       {% if logged_in_user %}
+        <!-- The server has already verified the seeded wilbur account for this demo session. -->
         <div class="login-success">Logged in as {{ logged_in_user }}</div>
+        <div class="login-identity">Test account: wilbur</div>
+        <label>
+          Login
+          <input type="text" value="{{ login_name }}" readonly />
+        </label>
         <form hx-post="/logout" hx-target="#auth-panel" hx-swap="outerHTML">
           <button class="login-button secondary" type="submit">Log out</button>
         </form>
       {% else %}
         <h2>Login</h2>
+        <!-- The demo form starts with the requested display name and generated database password. -->
         <form hx-post="/login" hx-target="#auth-panel" hx-swap="outerHTML">
           <label>
-            Username
-            <input type="text" name="username" placeholder="Player name" required />
+            Login
+            <input type="text" name="username" value="{{ login_name }}" required />
           </label>
           <label>
             Password
-            <input type="password" name="password" placeholder="Enter password" required />
+            <input type="password" name="password" value="{{ demo_password }}" required />
           </label>
           <button class="login-button" type="submit">Log in</button>
         </form>
@@ -828,78 +870,10 @@
           <div class="icon-graphic icon-bin"></div>
           <span>Recycle Bin</span>
         </div>
-        <div class="desktop-icon" data-window="game">
-          <div class="icon-graphic icon-globe"></div>
-          <span>ARG Game</span>
-        </div>
-      </div>
-
-      <div class="window visible" id="welcome" data-title="Welcome" style="left: 220px; top: 90px; width: 520px;">
-        <div class="titlebar">
-          <div class="left">
-            <div class="window-icon"></div>
-            <div class="title-text">Welcome to ARG</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-control" data-action="minimize">_</button>
-            <button class="window-control" data-action="close">×</button>
-          </div>
-        </div>
-        <div class="toolbar">
-          <button class="btn primary">Start</button>
-          <button class="btn">Open Project</button>
-          <button class="btn">Tools</button>
-        </div>
-        <div class="window-content">
-          <div class="content-grid">
-            <div class="panel">
-              <h3>Project Overview</h3>
-              <div class="stats">
-                <div class="stat"><span>World Build</span><strong>74%</strong></div>
-                <div class="stat"><span>UI System</span><strong>88%</strong></div>
-                <div class="stat"><span>Logic Hooks</span><strong>62%</strong></div>
-              </div>
-              <div class="progress"><span></span></div>
-            </div>
-            <div class="panel">
-              <h3>Quick Actions</h3>
-              <div class="status-area">
-                <span class="status-tag">Load Map</span>
-                <span class="status-tag">AI Boot</span>
-                <span class="status-tag">Sync Data</span>
-                <span class="status-tag">Save Build</span>
-              </div>
-              <div id="save-status" class="status-area" hx-get="/api/progress" hx-trigger="load" hx-swap="innerHTML">
-                <span class="status-tag">Stage: {{ progress.stage }}</span>
-                <span class="status-tag">XP: {{ progress.xp }}</span>
-              </div>
-            </div>
-          </div>
-
-          <form class="save-form" hx-post="/api/progress" hx-target="#save-status" hx-swap="innerHTML">
-            <input type="hidden" name="inventory" value='["map","key","logbook"]'>
-            <label>
-              Stage
-              <input type="text" name="stage" value="{{ progress.stage }}" />
-            </label>
-            <label>
-              XP
-              <input type="number" name="xp" value="{{ progress.xp }}" />
-            </label>
-            <label>
-              Coins
-              <input type="number" name="coins" value="{{ progress.coins }}" />
-            </label>
-            <label>
-              Player
-              <input type="text" name="player_name" value="{{ logged_in_user or progress.player_name }}" />
-            </label>
-            <label style="grid-column: 1 / -1;">
-              Notes
-              <textarea name="notes" rows="3">{{ progress.progress_notes }}</textarea>
-            </label>
-            <button type="submit" style="grid-column: 1 / -1;">Save game progress</button>
-          </form>
+        <!-- This shortcut opens the database-backed text redaction tool. -->
+        <div class="desktop-icon" data-window="redaction">
+          <div class="icon-graphic icon-doc"></div>
+          <span>Redaction Lab</span>
         </div>
       </div>
 
@@ -989,40 +963,6 @@
         </div>
       </div>
 
-      <div class="window" id="game" data-title="ARG Game" style="left: 510px; top: 260px; width: 560px;">
-        <div class="titlebar">
-          <div class="left">
-            <div class="window-icon"></div>
-            <div class="title-text">ARG Game</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-control" data-action="minimize">_</button>
-            <button class="window-control" data-action="close">×</button>
-          </div>
-        </div>
-        <div class="window-content">
-          <div class="game-layout">
-            <div class="game-card">
-              <h4>World Map</h4>
-              <div class="map">
-                <div class="terrain one"></div>
-                <div class="terrain two"></div>
-                <div class="terrain three"></div>
-                <div class="character"></div>
-              </div>
-            </div>
-            <div class="game-card">
-              <h4>Quest Log</h4>
-              <ul class="quest-list">
-                <li>Reach the station.</li>
-                <li>Collect the marker.</li>
-                <li>Open the archive.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="window" id="consoleWin" data-title="Command Console" style="left: 160px; top: 260px; width: 430px;">
         <div class="titlebar">
           <div class="left">
@@ -1043,17 +983,41 @@
           </div>
         </div>
       </div>
+
+      <!-- The redaction window sends text to FastAPI and stores each result in SQLite. -->
+      <div class="window" id="redaction" data-title="Redaction Lab" style="left: 570px; top: 105px; width: 520px;">
+        <div class="titlebar">
+          <div class="left">
+            <div class="window-icon"></div>
+            <div class="title-text">Redaction Lab</div>
+          </div>
+          <div class="window-controls">
+            <button class="window-control" data-action="minimize">_</button>
+            <button class="window-control" data-action="close">×</button>
+          </div>
+        </div>
+        <div class="window-content">
+          <div class="panel">
+            <h3>Text Redaction</h3>
+            <p>Remove common personal and secret values before archiving text.</p>
+            <form hx-post="/api/redact" hx-target="#redaction-result" hx-swap="innerHTML">
+              <textarea class="textarea" name="text" rows="7" placeholder="Paste text containing an email, phone number, SSN, or API key."></textarea>
+              <button class="btn primary" type="submit" style="margin-top: 8px;">Redact and save</button>
+            </form>
+            <div id="redaction-result"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="start-menu" id="startMenu">
       <div class="start-sidebar">START</div>
       <div class="start-menu-content">
         <div class="menu-group">
-          <div class="menu-item" data-window="welcome"><span class="menu-icon"></span> Welcome</div>
           <div class="menu-item" data-window="explorer"><span class="menu-icon"></span> My Computer</div>
           <div class="menu-item" data-window="documents"><span class="menu-icon"></span> Documents</div>
-          <div class="menu-item" data-window="game"><span class="menu-icon"></span> ARG Game</div>
           <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
+          <div class="menu-item" data-window="redaction"><span class="menu-icon"></span> Redaction Lab</div>
         </div>
         <div class="menu-group" style="margin-top: 18px;">
           <div class="menu-item" data-window="recycle"><span class="menu-icon"></span> Recycle Bin</div>

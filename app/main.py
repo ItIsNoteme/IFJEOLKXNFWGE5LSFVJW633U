@@ -1,4 +1,9 @@
 import json
+import hashlib
+import hmac
+import html
+import re
+import secrets
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
@@ -8,7 +13,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.database import Base, SessionLocal, engine
-from app.models import GameProgress
+from app.models import GameProgress, RedactionRecord, User
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -20,6 +25,68 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="ARG Desktop", version="1.0.0")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+
+
+def hash_password(password: str, salt: str | None = None) -> str:
+    """Create a portable PBKDF2 hash with a fresh salt for each password."""
+    password_salt = salt or secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac(
+        "sha256", password.encode("utf-8"), password_salt.encode("ascii"), 120_000
+    )
+    return f"{password_salt}${digest.hex()}"
+
+
+def verify_password(password: str, stored_hash: str) -> bool:
+    """Verify a password without exposing the stored password hash."""
+    try:
+        salt, expected_digest = stored_hash.split("$", 1)
+    except ValueError:
+        return False
+    actual_digest = hash_password(password, salt).split("$", 1)[1]
+    return hmac.compare_digest(actual_digest, expected_digest)
+
+
+def seed_demo_user() -> str:
+    """Create the requested test account and return its generated demo password."""
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.username == "wilbur").first()
+        if user is None:
+            demo_password = secrets.token_urlsafe(12)
+            user = User(
+                username="wilbur",
+                display_name="Misha",
+                password_hash=hash_password(demo_password),
+                demo_password=demo_password,
+            )
+            db.add(user)
+            db.commit()
+            return demo_password
+        return user.demo_password or ""
+    finally:
+        db.close()
+
+
+DEMO_PASSWORD = seed_demo_user()
+
+
+REDACTION_RULES = {
+    "email": re.compile(r"\b[\w.+-]+@[\w-]+(?:\.[\w-]+)+\b"),
+    "ssn": re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),
+    "api_key": re.compile(r"\b(?:sk|pk|api)[_-][A-Za-z0-9_-]{12,}\b", re.IGNORECASE),
+    "phone": re.compile(r"(?<![\w-])(?:\+?\d[\d .()-]{7,}\d)(?![\w-])"),
+}
+
+
+def redact_text(text: str) -> tuple[str, list[str]]:
+    """Replace common sensitive values and report which rules matched."""
+    redacted_text = text
+    applied_rules = []
+    for rule_name, pattern in REDACTION_RULES.items():
+        redacted_text, replacements = pattern.subn(f"[REDACTED:{rule_name.upper()}]", redacted_text)
+        if replacements:
+            applied_rules.append(rule_name)
+    return redacted_text, applied_rules
 
 
 def get_db():
@@ -60,18 +127,27 @@ def serialize_progress(progress: GameProgress | None):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, db: Session = Depends(get_db)):
     logged_in_user = request.cookies.get("arg_user", "")
+    auto_login = False
+    if not logged_in_user and DEMO_PASSWORD:
+        logged_in_user = "Misha"
+        auto_login = True
     progress = db.query(GameProgress).order_by(GameProgress.id.desc()).first()
     payload = serialize_progress(progress)
     if not logged_in_user and payload.get("player_name"):
         logged_in_user = payload["player_name"]
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         "index.html",
         {
             "request": request,
             "progress": payload,
             "logged_in_user": logged_in_user,
+            "login_name": "Misha",
+            "demo_password": DEMO_PASSWORD,
         },
     )
+    if auto_login:
+        response.set_cookie(key="arg_user", value="Misha", httponly=True, samesite="lax")
+    return response
 
 
 @app.post("/login")
@@ -86,20 +162,28 @@ async def login(request: Request, db: Session = Depends(get_db)):
     if not password:
         return HTMLResponse("<div class='login-error'>Enter a password.</div>")
 
+    user = (
+        db.query(User)
+        .filter((User.username == username.lower()) | (User.display_name == username))
+        .first()
+    )
+    if user is None or not verify_password(password, user.password_hash):
+        return HTMLResponse("<div class='login-error'>The username or password is incorrect.</div>")
+
     progress = db.query(GameProgress).order_by(GameProgress.id.desc()).first()
     if progress is None:
-        progress = GameProgress(player_name=username, stage="intro")
+        progress = GameProgress(player_name=user.display_name, stage="intro")
         db.add(progress)
     else:
-        progress.player_name = username
+        progress.player_name = user.display_name
 
     db.commit()
 
     response = HTMLResponse(
-        f"<div class='login-success'>Welcome, {username}.</div>"
+        f"<div class='login-success'>Welcome, {user.display_name}.</div>"
         f"<form hx-post='/logout' hx-target='#auth-panel' hx-swap='outerHTML'><button class='login-button secondary' type='submit'>Log out</button></form>"
     )
-    response.set_cookie(key="arg_user", value=username, httponly=True, samesite="lax")
+    response.set_cookie(key="arg_user", value=user.display_name, httponly=True, samesite="lax")
     return response
 
 
@@ -165,6 +249,33 @@ async def save_progress(request: Request, db: Session = Depends(get_db)):
 
     return HTMLResponse(
         f"<span class='status-tag'>Saved: {progress.stage}</span><span class='status-tag'>XP: {progress.xp}</span><span class='status-tag'>Coins: {progress.coins}</span>"
+    )
+
+
+@app.post("/api/redact")
+async def redact(request: Request, db: Session = Depends(get_db)):
+    """Redact sensitive text, save an audit record, and return an HTMX fragment."""
+    form = await request.form()
+    source_text = str(form.get("text") or "").strip()
+    username = request.cookies.get("arg_user", "Misha")
+    if not source_text:
+        return HTMLResponse("<div class='login-error'>Enter text to redact.</div>")
+
+    redacted_text, applied_rules = redact_text(source_text)
+    record = RedactionRecord(
+        username=username,
+        source_text=source_text,
+        redacted_text=redacted_text,
+        rules_applied=json.dumps(applied_rules),
+    )
+    db.add(record)
+    db.commit()
+    rules = ", ".join(applied_rules) if applied_rules else "none"
+    return HTMLResponse(
+        "<div class='redaction-result'>"
+        f"<strong>Redacted text</strong><pre>{html.escape(redacted_text)}</pre>"
+        f"<small>Rules applied: {html.escape(rules)}. Saved as record #{record.id}.</small>"
+        "</div>"
     )
 
 
