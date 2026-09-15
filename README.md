@@ -19,6 +19,10 @@ cd "C:\Users\poopa\Documents\COde\ARG"
 
 Open http://127.0.0.1:8000
 
+## VS Code debugging
+
+Use the `ARG FastAPI (Debug)` launch profile from Run and Debug, then set breakpoints in `app/main.py`. It enables FastAPI debug mode and reloads after code changes. To enable debug mode in another launch command, set `ARG_DEBUG=true`.
+
 ## Production-style run
 
 ```powershell

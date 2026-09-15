@@ -20,26 +20,18 @@ class GameProgress(Base):
 
 
 class User(Base):
-    """Store login identities and salted password hashes for the desktop app."""
-
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(100), unique=True, index=True, nullable=False)
+    username = Column(String(100), unique=True, nullable=False, index=True)
     display_name = Column(String(100), nullable=False)
-    password_hash = Column(String(256), nullable=False)
-    demo_password = Column(String(100), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    password_hash = Column(String(300), nullable=False)
 
 
 class RedactionRecord(Base):
-    """Store a redaction request and its result for later review."""
-
-    __tablename__ = "redactions"
+    __tablename__ = "redaction_records"
 
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(100), nullable=False)
-    source_text = Column(Text, nullable=False)
+    user_id = Column(Integer, nullable=False, index=True)
     redacted_text = Column(Text, nullable=False)
-    rules_applied = Column(Text, nullable=False, default="[]")
     created_at = Column(DateTime(timezone=True), server_default=func.now())

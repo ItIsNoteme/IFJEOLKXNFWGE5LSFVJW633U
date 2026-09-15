@@ -114,6 +114,82 @@
       overflow: hidden;
     }
 
+    body.locked .desktop,
+    body.locked .start-menu,
+    body.locked .taskbar {
+      display: none;
+    }
+
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      background: var(--wp1);
+    }
+
+    .login-window {
+      width: min(390px, calc(100vw - 36px));
+      padding: 3px 4px 14px;
+      background: var(--xp-panel);
+      border: 2px solid #0b4fae;
+      box-shadow: 4px 5px 0 rgba(0,0,0,0.32);
+    }
+
+    .login-title {
+      margin: 0 -2px 18px;
+      padding: 7px 9px;
+      color: #fff;
+      background: linear-gradient(180deg, #2f8ee8, #0754b8);
+      font-size: 14px;
+      font-weight: 700;
+      text-shadow: 1px 1px #12427c;
+    }
+
+    .login-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .login-form label {
+      display: grid;
+      gap: 6px;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #aab7c8;
+      background: #fff;
+    }
+
+    .login-form button {
+      margin: 4px 10px 0;
+      padding: 10px 12px;
+      border: 1px solid #537dbd;
+      background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .login-error {
+      display: none;
+      margin: 0 10px 12px;
+      padding: 8px 10px;
+      color: #7c1f1f;
+      background: #ffe8e8;
+      border: 1px solid #d57d7d;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .login-error.visible { display: block; }
+
     /*
       Desktop icon stack: these are the shortcut icons placed on the left side of the screen.
       They are arranged vertically and appear like a Windows desktop with clickable app shortcuts.
@@ -658,12 +734,12 @@
     }
 
     .console {
-      width: 100%; height: 200px; background: #0f1b2b; color: #c8f9d1; border: 1px solid #1c2e46; padding: 10px; overflow: auto; font-family: "Consolas", "Courier New", monospace; font-size: 12px; line-height: 1.45;
+      width: 100%; height: 200px; background: #000; color: #d8d8d8; border: 1px solid #777; padding: 10px; overflow: auto; font-family: "Perfect DOS VGA 437", "IBM VGA8", "Courier New", monospace; font-size: 12px; line-height: 1.45; letter-spacing: 0;
     }
 
     .console-line::before {
       content: "> ";
-      color: #7ad8ff;
+      color: #d8d8d8;
     }
 
     /*
@@ -675,6 +751,290 @@
       grid-template-columns: 1.2fr 0.8fr;
       gap: 12px;
       align-items: start;
+    }
+
+    .script-layout {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.4fr);
+      gap: 12px;
+    }
+
+    .script-list {
+      display: grid;
+      align-content: start;
+      gap: 4px;
+      max-height: 290px;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .script-list button {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid #b7c5d7;
+      background: #f7fbff;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .script-list button.active,
+    .script-list button:hover {
+      color: #fff;
+      background: #347dcc;
+      border-color: #1d4d93;
+    }
+
+    .script-editor { display: grid; gap: 8px; }
+
+    .script-editor label {
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .script-editor input,
+    .script-editor textarea {
+      width: 100%;
+      padding: 7px;
+      border: 1px solid #aab7c8;
+      background: #fff;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .script-editor textarea { min-height: 86px; resize: vertical; }
+
+    .script-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .script-actions button {
+      padding: 7px 9px;
+      border: 1px solid #537dbd;
+      background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .script-status { min-height: 16px; color: #1e5d2f; font-size: 11px; }
+
+    .music-player {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      color: #d8d8d8;
+      background: #000;
+      border: 1px solid #777;
+      font-family: "Perfect DOS VGA 437", "IBM VGA8", "Courier New", monospace;
+    }
+
+    .music-player input[type="url"],
+    .music-player input[type="file"] {
+      width: 100%;
+      color: #d8d8d8;
+      background: #101010;
+      border: 1px solid #777;
+      padding: 6px;
+      font: inherit;
+    }
+
+    .music-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+    .music-controls button,
+    .music-controls label {
+      padding: 6px 9px;
+      color: #d8d8d8;
+      background: #111;
+      border: 1px solid #777;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .music-controls input[type="range"] { accent-color: #d8d8d8; }
+
+    .music-status { min-height: 16px; color: #d8d8d8; font-size: 11px; }
+
+    .notebook-layout {
+      display: grid;
+      grid-template-columns: minmax(170px, 0.8fr) minmax(0, 1.4fr);
+      gap: 12px;
+    }
+
+    .notebook-list {
+      display: grid;
+      align-content: start;
+      gap: 4px;
+      max-height: 330px;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .notebook-list button {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid #b7c5d7;
+      background: #f7fbff;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .notebook-list button.active,
+    .notebook-list button:hover {
+      color: #fff;
+      background: #347dcc;
+      border-color: #1d4d93;
+    }
+
+    .notebook-editor { display: grid; gap: 8px; }
+
+    .notebook-editor label {
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .notebook-editor input,
+    .notebook-editor textarea {
+      width: 100%;
+      padding: 7px;
+      border: 1px solid #aab7c8;
+      background: #fff;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .notebook-editor textarea { min-height: 92px; resize: vertical; }
+
+    .notebook-preview {
+      display: none;
+      max-width: 100%;
+      max-height: 170px;
+      object-fit: contain;
+      border: 1px solid #8c9caf;
+      background: #111;
+    }
+
+    .notebook-preview.visible { display: block; }
+
+    .notebook-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .notebook-actions button {
+      padding: 7px 9px;
+      border: 1px solid #537dbd;
+      background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .notebook-status { min-height: 16px; color: #1e5d2f; font-size: 11px; }
+
+    .notebook-player-view { display: block; }
+    .notebook-dev-view { display: none; }
+    body.developer-mode .notebook-player-view { display: none; }
+    body.developer-mode .notebook-dev-view { display: block; }
+
+    .notebook-player-list {
+      display: grid;
+      gap: 8px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .notebook-player-entry {
+      padding: 10px;
+      border: 1px solid #b9c8de;
+      background: rgba(255,255,255,0.42);
+    }
+
+    .notebook-player-entry h4 { margin: 0 0 4px; font-size: 14px; }
+    .notebook-player-entry p { margin: 6px 0 0; white-space: pre-wrap; }
+
+    .notebook-player-entry img {
+      display: block;
+      max-width: 100%;
+      max-height: 220px;
+      margin-top: 8px;
+      object-fit: contain;
+    }
+
+    .notebook-locked {
+      padding: 12px;
+      color: #5c6d82;
+      border: 1px dashed #9eafc5;
+      background: rgba(255,255,255,0.3);
+      font-size: 12px;
+    }
+
+    @media (max-width: 840px) {
+      .notebook-layout { grid-template-columns: 1fr; }
+    }
+
+    .dev-only-nav { display: none !important; }
+
+    body.developer-mode .dev-only-nav { display: flex !important; }
+
+    body.disclaimer-lock .start-menu,
+    body.disclaimer-lock .taskbar {
+      display: none !important;
+    }
+
+    body.disclaimer-lock .desktop {
+      display: block !important;
+    }
+
+    body.disclaimer-lock .desktop > *:not(#consoleWin) {
+      display: none !important;
+    }
+
+    body.disclaimer-lock #consoleWin {
+      position: fixed;
+      inset: 0;
+      width: 100vw !important;
+      height: 100vh;
+      min-height: 100vh;
+      display: block;
+      z-index: 3000;
+      border: 0;
+      box-shadow: none;
+    }
+
+    body.disclaimer-lock #consoleWin .titlebar {
+      height: 44px;
+      cursor: default;
+      padding-left: 18px;
+      font-size: 15px;
+    }
+
+    body.disclaimer-lock #consoleWin .window-controls { display: none; }
+
+    body.disclaimer-lock #consoleWin .window-content {
+      height: calc(100vh - 44px);
+      padding: 20px;
+      background: #0b1420;
+    }
+
+    body.disclaimer-lock #consoleWin .console {
+      height: 100%;
+      max-width: none;
+      border: 0;
+      padding: 24px;
+      color: #d8d8d8;
+      font-family: "Perfect DOS VGA 437", "IBM VGA8", "Courier New", monospace;
+      font-size: clamp(14px, 2vw, 20px);
+      line-height: 1.7;
     }
 
     .game-card {
@@ -742,12 +1102,30 @@
     @media (max-width: 840px) {
       .window { width: min(82vw, 420px); }
       .game-layout { grid-template-columns: 1fr; }
+      .script-layout { grid-template-columns: 1fr; }
       .content-grid { grid-template-columns: 1fr; }
       .taskbar-btn { min-width: 110px; }
     }
   </style>
 </head>
-<body>
+<body class="locked">
+  <div class="login-screen" id="loginScreen">
+    <section class="login-window" aria-labelledby="loginTitle">
+      <h1 class="login-title" id="loginTitle">Windows XP Login</h1>
+      <div class="login-error" id="loginError">Invalid username or password.</div>
+      <form class="login-form" id="loginForm">
+        <label>
+          Username
+          <input id="username" name="username" type="text" value="Misha" autocomplete="username" required />
+        </label>
+        <label>
+          Password
+          <input id="password" name="password" type="password" autocomplete="current-password" autofocus required />
+        </label>
+        <button type="submit">Log in</button>
+      </form>
+    </section>
+  </div>
   <!--
     The desktop is the root area where icons and windows are placed.
     Each .window is a floating app or panel that can be opened, minimized, or closed.
@@ -770,53 +1148,17 @@
         <div class="icon-graphic icon-bin"></div>
         <span>Recycle Bin</span>
       </div>
-      <div class="desktop-icon" data-window="game">
+      <div class="desktop-icon dev-only-nav" data-window="scripts">
+        <div class="icon-graphic icon-folder"></div>
+        <span>Script Workshop</span>
+      </div>
+      <div class="desktop-icon" data-window="notebook">
+        <div class="icon-graphic icon-folder"></div>
+        <span>Notebook</span>
+      </div>
+      <div class="desktop-icon" data-window="music">
         <div class="icon-graphic icon-globe"></div>
-        <span>ARG Game</span>
-      </div>
-    </div>
-
-    <!--
-      Welcome window: this is the startup/overview panel that shows project status.
-      It is visible by default so the user sees the introduction when the page loads.
-    -->
-    <div class="window visible" id="welcome" data-title="Welcome" style="left: 220px; top: 90px; width: 520px;">
-      <div class="titlebar">
-        <div class="left">
-          <div class="window-icon"></div>
-          <div class="title-text">Welcome to ARG</div>
-        </div>
-        <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
-          <button class="window-control" data-action="close">×</button>
-        </div>
-      </div>
-      <div class="toolbar">
-        <button class="btn primary">Start</button>
-        <button class="btn">Open Project</button>
-        <button class="btn">Tools</button>
-      </div>
-      <div class="window-content">
-        <div class="content-grid">
-          <div class="panel">
-            <h3>Project Overview</h3>
-            <div class="stats">
-              <div class="stat"><span>World Build</span><strong>74%</strong></div>
-              <div class="stat"><span>UI System</span><strong>88%</strong></div>
-              <div class="stat"><span>Logic Hooks</span><strong>62%</strong></div>
-            </div>
-            <div class="progress"><span></span></div>
-          </div>
-          <div class="panel">
-            <h3>Quick Actions</h3>
-            <div class="status-area">
-              <span class="status-tag">Load Map</span>
-              <span class="status-tag">AI Boot</span>
-              <span class="status-tag">Sync Data</span>
-              <span class="status-tag">Save Build</span>
-            </div>
-          </div>
-        </div>
+        <span>Background Music</span>
       </div>
     </div>
 
@@ -918,15 +1260,11 @@
       </div>
     </div>
 
-    <!--
-      ARG Game window: this is the gameplay area with the map and quest log.
-      It visually presents the game world and the player objectives.
-    -->
-    <div class="window" id="game" data-title="ARG Game" style="left: 510px; top: 260px; width: 560px;">
+    <div class="window" id="scripts" data-title="Script Workshop" style="left: 250px; top: 100px; width: 680px;">
       <div class="titlebar">
         <div class="left">
           <div class="window-icon"></div>
-          <div class="title-text">ARG Game</div>
+          <div class="title-text">Script Workshop</div>
         </div>
         <div class="window-controls">
           <button class="window-control" data-action="minimize">_</button>
@@ -934,24 +1272,106 @@
         </div>
       </div>
       <div class="window-content">
-        <div class="game-layout">
-          <div class="game-card">
-            <h4>World Map</h4>
-            <div class="map">
-              <div class="terrain one"></div>
-              <div class="terrain two"></div>
-              <div class="terrain three"></div>
-              <div class="character"></div>
+        <div class="script-layout">
+          <div class="panel">
+            <h3>Story Scenes</h3>
+            <ol class="script-list" id="scriptList"></ol>
+            <div class="script-actions" style="margin-top: 8px;">
+              <button type="button" id="newSceneButton">New scene</button>
             </div>
           </div>
-          <div class="game-card">
-            <h4>Quest Log</h4>
-            <ul class="quest-list">
-              <li>Reach the station.</li>
-              <li>Collect the marker.</li>
-              <li>Open the archive.</li>
-            </ul>
+          <div class="panel">
+            <h3>Scene Draft</h3>
+            <form class="script-editor" id="scriptForm">
+              <label>Scene title<input id="sceneTitle" type="text" placeholder="Scene 1: The signal" required /></label>
+              <label>Location / trigger<input id="sceneLocation" type="text" placeholder="Where and when it happens" /></label>
+              <label>Script / dialogue<textarea id="sceneBody" placeholder="Write what the player sees, hears, or can say..." required></textarea></label>
+              <label>Developer notes<textarea id="sceneNotes" placeholder="Clues, conditions, and next scene ideas"></textarea></label>
+              <div class="script-actions">
+                <button type="submit">Save scene</button>
+                <button type="button" id="redactSceneButton">Redact script</button>
+                <button type="button" id="deleteSceneButton">Delete scene</button>
+              </div>
+              <div class="script-status" id="scriptStatus" aria-live="polite"></div>
+            </form>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="window" id="music" data-title="Background Music" style="left: 330px; top: 180px; width: 480px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Background Music</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="music-player">
+          <strong>ARG ORIGINAL SOUNDTRACK</strong>
+          <select id="musicTrack" aria-label="Choose an OST track"></select>
+          <div class="music-controls">
+            <button type="button" id="loadMusicTrack">Load OST</button>
+            <button type="button" id="playMusic">Play</button>
+            <button type="button" id="pauseMusic">Pause</button>
+            <label><input id="musicLoop" type="checkbox" checked /> Loop</label>
+            <label>Volume <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.5" /></label>
+          </div>
+          <div class="music-status" id="musicStatus" aria-live="polite">No track loaded.</div>
+          <audio id="backgroundMusic" preload="metadata"></audio>
+        </div>
+      </div>
+    </div>
+
+    <div class="window" id="notebook" data-title="Developer Notebook" style="left: 190px; top: 80px; width: 720px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Developer Notebook</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="notebook-player-view">
+          <div class="panel">
+            <h3>History Notebook</h3>
+            <div class="notebook-player-list" id="playerNotebookList"></div>
+          </div>
+        </div>
+        <div class="notebook-dev-view">
+        <div class="notebook-layout">
+          <div class="panel">
+            <h3>History Moments</h3>
+            <ol class="notebook-list" id="notebookList"></ol>
+            <div class="notebook-actions" style="margin-top: 8px;">
+              <button type="button" id="newNotebookEntry">New moment</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Moment Entry</h3>
+            <form class="notebook-editor" id="notebookForm">
+              <label>History moment<input id="notebookMoment" type="text" placeholder="1998-04-12 / Before the signal" required /></label>
+              <label>Unlock at story moment<input id="notebookUnlockMoment" type="text" placeholder="station-arrival" required /></label>
+              <label>Entry title<input id="notebookTitle" type="text" placeholder="The first transmission" required /></label>
+              <label>Notes<textarea id="notebookNotes" placeholder="What should the player discover at this moment?" required></textarea></label>
+              <label>Picture URL<input id="notebookImageUrl" type="url" placeholder="Optional image URL" /></label>
+              <label>Or upload picture<input id="notebookImageFile" type="file" accept="image/*" /></label>
+              <img class="notebook-preview" id="notebookPreview" alt="Notebook entry preview" />
+              <div class="notebook-actions">
+                <button type="submit">Save entry</button>
+                <button type="button" id="deleteNotebookEntry">Delete entry</button>
+              </div>
+              <div class="notebook-status" id="notebookStatus" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -990,10 +1410,11 @@
     <div class="start-sidebar">START</div>
     <div class="start-menu-content">
       <div class="menu-group">
-        <div class="menu-item" data-window="welcome"><span class="menu-icon"></span> Welcome</div>
         <div class="menu-item" data-window="explorer"><span class="menu-icon"></span> My Computer</div>
         <div class="menu-item" data-window="documents"><span class="menu-icon"></span> Documents</div>
-        <div class="menu-item" data-window="game"><span class="menu-icon"></span> ARG Game</div>
+        <div class="menu-item dev-only-nav" data-window="scripts"><span class="menu-icon"></span> Script Workshop</div>
+        <div class="menu-item" data-window="notebook"><span class="menu-icon"></span> Notebook</div>
+        <div class="menu-item" data-window="music"><span class="menu-icon"></span> Background Music</div>
         <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
       </div>
       <div class="menu-group" style="margin-top: 18px;">
@@ -1024,6 +1445,492 @@
     const startMenu = document.getElementById('startMenu');
     const startButton = document.getElementById('startButton');
     const clock = document.getElementById('clock');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const DEBUG_USERNAME = 'Misha';
+    const DEBUG_PASSWORD = 'MishaXP2026';
+    // Change this value to control developer-only access to the Script Workshop.
+    const DEVELOPER_SCRIPT_PASSWORD = 'ARG-DEV-2026';
+    const debugMode = new URLSearchParams(window.location.search).get('debug') !== '0';
+    const debugReplay = debugMode;
+    let developerScriptsUnlocked = debugMode;
+
+    if (debugMode) {
+      document.body.classList.add('developer-mode');
+      document.body.classList.remove('locked');
+    }
+
+    function unlockDeveloperTools() {
+      if (developerScriptsUnlocked) return true;
+      const password = window.prompt('Developer password:');
+      if (password !== DEVELOPER_SCRIPT_PASSWORD) return false;
+      developerScriptsUnlocked = true;
+      document.body.classList.add('developer-mode');
+      return true;
+    }
+
+    function typeConsoleText(text, onComplete) {
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      consoleEl.appendChild(line);
+      let index = 0;
+      const typeNextCharacter = () => {
+        line.textContent = text.slice(0, index);
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+        if (index < text.length) {
+          index += 1;
+          window.setTimeout(typeNextCharacter, 28);
+        } else if (onComplete) {
+          onComplete();
+        }
+      };
+      typeNextCharacter();
+    }
+
+    function saveDisclaimerScene() {
+      if (scriptScenes.some(scene => scene.id === disclaimerSceneId)) return;
+      scriptScenes.unshift({
+        id: disclaimerSceneId,
+        title: 'Developer Disclaimer',
+        location: 'First visit console prompt',
+        body: disclaimerText,
+        notes: 'Created automatically when the player accepts the disclaimer.',
+        createdAt: new Date().toISOString()
+      });
+      persistScenes();
+      renderScriptList();
+    }
+
+    function startFirstVisitConsole() {
+      if ((!debugReplay && localStorage.getItem(firstVisitStorageKey)) || firstVisitConsoleActive) return;
+      firstVisitConsoleActive = true;
+      document.body.classList.add('disclaimer-lock');
+      openWindow('consoleWin');
+      consoleEl.innerHTML = '';
+      askDisclaimerQuestion();
+    }
+
+    function waitForYes(question, onYes, onNo) {
+      typeConsoleText(question, () => {
+        const receiveAnswer = event => {
+          const answer = event.key.toLowerCase();
+          if (answer !== 'y' && answer !== 'n') return;
+          document.removeEventListener('keydown', receiveAnswer);
+          if (answer === 'y') onYes();
+          else onNo();
+        };
+        document.addEventListener('keydown', receiveAnswer);
+      });
+    }
+
+    function askDisclaimerQuestion() {
+      waitForYes(
+        'Open disclaimer? type Y/N',
+        () => {
+          saveDisclaimerScene();
+          typeConsoleText(disclaimerText, () => askReadQuestion());
+        },
+        () => {
+          typeConsoleText('You still should read it dummy))<3', () => askDisclaimerQuestion());
+        }
+      );
+    }
+
+    function askReadQuestion() {
+      waitForYes(
+        'Do you read it? Y/N',
+        () => {
+          typeConsoleText('Disclaimer accepted. Welcome to the game.', () => {
+            if (!debugReplay) localStorage.setItem(firstVisitStorageKey, 'true');
+            firstVisitConsoleActive = false;
+            document.body.classList.remove('disclaimer-lock');
+            closeWindow('consoleWin');
+            renderTaskbar();
+          });
+        },
+        () => {
+          typeConsoleText('Do you can read? Because you should', () => askReadQuestion());
+        }
+      );
+    }
+    const scriptList = document.getElementById('scriptList');
+    const scriptForm = document.getElementById('scriptForm');
+    const scriptStatus = document.getElementById('scriptStatus');
+    const scriptStorageKey = 'arg-story-scenes';
+    const firstVisitStorageKey = 'arg-disclaimer-complete-v2';
+    const notebookStorageKey = 'arg-developer-notebook';
+    // Add only approved ARG OST files to this list. Files belong in static/ost/.
+    const PROJECT_OST = [
+      { title: 'Main Theme', source: './static/ost/main-theme.mp3' }
+    ];
+    const disclaimerSceneId = 'developer-disclaimer';
+    const disclaimerText = 'This web game is an experimental interactive story. It may contain fictional danger, mystery, and unsettling themes. Everything in the game is part of the story and should be treated as fiction. Take breaks whenever you need one.';
+    let scriptScenes = [];
+    let selectedSceneId = null;
+    let firstVisitConsoleActive = false;
+    let notebookEntries = [];
+    let selectedNotebookId = null;
+    let notebookImageData = '';
+    let currentStoryMoment = '';
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const musicTrack = document.getElementById('musicTrack');
+    const musicStatus = document.getElementById('musicStatus');
+
+    PROJECT_OST.forEach((track, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = track.title;
+      musicTrack.appendChild(option);
+    });
+
+    if (!PROJECT_OST.length) {
+      musicStatus.textContent = 'No approved ARG OST tracks configured.';
+    }
+
+    function setMusicStatus(message) {
+      musicStatus.textContent = message;
+    }
+
+    function loadMusicSource(source, label) {
+      backgroundMusic.pause();
+      backgroundMusic.src = source;
+      backgroundMusic.load();
+      setMusicStatus(`Loaded: ${label}. Press Play.`);
+    }
+
+    document.getElementById('loadMusicTrack').addEventListener('click', () => {
+      const track = PROJECT_OST[Number(musicTrack.value)];
+      if (!track) {
+        setMusicStatus('No approved ARG OST track is configured.');
+        return;
+      }
+      loadMusicSource(track.source, track.title);
+    });
+
+    document.getElementById('playMusic').addEventListener('click', () => {
+      if (!backgroundMusic.src) {
+        setMusicStatus('Load an audio file or URL first.');
+        return;
+      }
+      backgroundMusic.play()
+        .then(() => setMusicStatus('Playing background music.'))
+        .catch(() => setMusicStatus('This format or URL cannot be played by the browser.'));
+    });
+
+    document.getElementById('pauseMusic').addEventListener('click', () => {
+      backgroundMusic.pause();
+      setMusicStatus('Music paused.');
+    });
+
+    document.getElementById('musicLoop').addEventListener('change', event => {
+      backgroundMusic.loop = event.target.checked;
+    });
+
+    document.getElementById('musicVolume').addEventListener('input', event => {
+      backgroundMusic.volume = Number(event.target.value);
+    });
+
+    backgroundMusic.volume = 0.5;
+    backgroundMusic.addEventListener('error', () => {
+      setMusicStatus('Unable to decode this audio format or load this URL.');
+    });
+
+    try {
+      scriptScenes = JSON.parse(localStorage.getItem(scriptStorageKey) || '[]');
+    } catch (error) {
+      scriptScenes = [];
+    }
+
+    try {
+      notebookEntries = JSON.parse(localStorage.getItem(notebookStorageKey) || '[]');
+    } catch (error) {
+      notebookEntries = [];
+    }
+
+    function setScriptStatus(message) {
+      scriptStatus.textContent = message;
+      window.clearTimeout(setScriptStatus.timeout);
+      setScriptStatus.timeout = window.setTimeout(() => { scriptStatus.textContent = ''; }, 2400);
+    }
+
+    function persistScenes() {
+      localStorage.setItem(scriptStorageKey, JSON.stringify(scriptScenes));
+    }
+
+    function setNotebookStatus(message) {
+      const status = document.getElementById('notebookStatus');
+      status.textContent = message;
+      window.clearTimeout(setNotebookStatus.timeout);
+      setNotebookStatus.timeout = window.setTimeout(() => { status.textContent = ''; }, 2400);
+    }
+
+    function persistNotebook() {
+      localStorage.setItem(notebookStorageKey, JSON.stringify(notebookEntries));
+    }
+
+    function entryIsUnlocked(entry) {
+      return Boolean(entry.unlockMoment && currentStoryMoment === entry.unlockMoment);
+    }
+
+    function renderPlayerNotebook() {
+      const list = document.getElementById('playerNotebookList');
+      list.innerHTML = '';
+      const unlockedEntries = notebookEntries
+        .filter(entryIsUnlocked)
+        .sort((left, right) => left.moment.localeCompare(right.moment));
+      if (!unlockedEntries.length) {
+        const locked = document.createElement('div');
+        locked.className = 'notebook-locked';
+        locked.textContent = 'No notebook entries have been discovered yet.';
+        list.appendChild(locked);
+        return;
+      }
+      unlockedEntries.forEach(entry => {
+        const card = document.createElement('article');
+        card.className = 'notebook-player-entry';
+        const title = document.createElement('h4');
+        title.textContent = `${entry.moment}: ${entry.title}`;
+        const notes = document.createElement('p');
+        notes.textContent = entry.notes;
+        card.append(title, notes);
+        if (entry.imageData || entry.imageUrl) {
+          const image = document.createElement('img');
+          image.src = entry.imageData || entry.imageUrl;
+          image.alt = entry.title;
+          card.appendChild(image);
+        }
+        list.appendChild(card);
+      });
+    }
+
+    window.setStoryMoment = moment => {
+      currentStoryMoment = String(moment || '').trim();
+      renderPlayerNotebook();
+    };
+
+    function updateNotebookPreview(source) {
+      const preview = document.getElementById('notebookPreview');
+      preview.src = source || '';
+      preview.classList.toggle('visible', Boolean(source));
+    }
+
+    function renderNotebookList() {
+      const list = document.getElementById('notebookList');
+      list.innerHTML = '';
+      const orderedEntries = [...notebookEntries].sort((left, right) => left.moment.localeCompare(right.moment));
+      if (!orderedEntries.length) {
+        const empty = document.createElement('li');
+        empty.textContent = 'No history moments yet.';
+        empty.style.fontSize = '12px';
+        empty.style.color = '#5c6d82';
+        list.appendChild(empty);
+        return;
+      }
+      orderedEntries.forEach(entry => {
+        const item = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.classList.toggle('active', entry.id === selectedNotebookId);
+        button.textContent = `${entry.moment} - ${entry.title}`;
+        button.addEventListener('click', () => loadNotebookEntry(entry.id));
+        item.appendChild(button);
+        list.appendChild(item);
+      });
+    }
+
+    function loadNotebookEntry(entryId) {
+      const entry = notebookEntries.find(item => item.id === entryId);
+      if (!entry) return;
+      selectedNotebookId = entry.id;
+      document.getElementById('notebookMoment').value = entry.moment;
+      document.getElementById('notebookUnlockMoment').value = entry.unlockMoment || '';
+      document.getElementById('notebookTitle').value = entry.title;
+      document.getElementById('notebookNotes').value = entry.notes;
+      document.getElementById('notebookImageUrl').value = entry.imageUrl || '';
+      notebookImageData = entry.imageData || '';
+      updateNotebookPreview(notebookImageData || entry.imageUrl || '');
+      renderNotebookList();
+    }
+
+    document.getElementById('notebookImageFile').addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        notebookImageData = String(reader.result);
+        updateNotebookPreview(notebookImageData);
+      });
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('notebookImageUrl').addEventListener('input', event => {
+      if (!notebookImageData) updateNotebookPreview(event.target.value.trim());
+    });
+
+    document.getElementById('notebookForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const draft = {
+        moment: document.getElementById('notebookMoment').value.trim(),
+        unlockMoment: document.getElementById('notebookUnlockMoment').value.trim(),
+        title: document.getElementById('notebookTitle').value.trim(),
+        notes: document.getElementById('notebookNotes').value.trim(),
+        imageUrl: document.getElementById('notebookImageUrl').value.trim(),
+        imageData: notebookImageData
+      };
+      const existing = notebookEntries.find(entry => entry.id === selectedNotebookId);
+      if (existing) {
+        Object.assign(existing, draft, { updatedAt: new Date().toISOString() });
+        setNotebookStatus('History moment updated.');
+      } else {
+        const entry = { id: crypto.randomUUID(), ...draft, createdAt: new Date().toISOString() };
+        notebookEntries.push(entry);
+        selectedNotebookId = entry.id;
+        setNotebookStatus('History moment added.');
+      }
+      persistNotebook();
+      renderNotebookList();
+      renderPlayerNotebook();
+    });
+
+    document.getElementById('newNotebookEntry').addEventListener('click', () => {
+      document.getElementById('notebookForm').reset();
+      selectedNotebookId = null;
+      notebookImageData = '';
+      updateNotebookPreview('');
+      renderNotebookList();
+      document.getElementById('notebookMoment').focus();
+    });
+
+    document.getElementById('deleteNotebookEntry').addEventListener('click', () => {
+      if (!selectedNotebookId) {
+        setNotebookStatus('Select a history moment first.');
+        return;
+      }
+      notebookEntries = notebookEntries.filter(entry => entry.id !== selectedNotebookId);
+      persistNotebook();
+      renderPlayerNotebook();
+      document.getElementById('newNotebookEntry').click();
+      setNotebookStatus('History moment deleted.');
+    });
+
+    renderNotebookList();
+    renderPlayerNotebook();
+
+    function clearSceneEditor() {
+      scriptForm.reset();
+      selectedSceneId = null;
+      renderScriptList();
+      document.getElementById('sceneTitle').focus();
+    }
+
+    function loadScene(sceneId) {
+      const scene = scriptScenes.find(item => item.id === sceneId);
+      if (!scene) return;
+      selectedSceneId = scene.id;
+      document.getElementById('sceneTitle').value = scene.title;
+      document.getElementById('sceneLocation').value = scene.location;
+      document.getElementById('sceneBody').value = scene.body;
+      document.getElementById('sceneNotes').value = scene.notes;
+      renderScriptList();
+    }
+
+    function renderScriptList() {
+      scriptList.innerHTML = '';
+      if (!scriptScenes.length) {
+        const empty = document.createElement('li');
+        empty.textContent = 'No scenes yet.';
+        empty.style.fontSize = '12px';
+        empty.style.color = '#5c6d82';
+        scriptList.appendChild(empty);
+        return;
+      }
+      scriptScenes.forEach((scene, index) => {
+        const item = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.classList.toggle('active', scene.id === selectedSceneId);
+        button.textContent = `${index + 1}. ${scene.title || 'Untitled scene'}`;
+        button.addEventListener('click', () => loadScene(scene.id));
+        item.appendChild(button);
+        scriptList.appendChild(item);
+      });
+    }
+
+    scriptForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const draft = {
+        title: document.getElementById('sceneTitle').value.trim(),
+        location: document.getElementById('sceneLocation').value.trim(),
+        body: document.getElementById('sceneBody').value.trim(),
+        notes: document.getElementById('sceneNotes').value.trim()
+      };
+      const existing = scriptScenes.find(scene => scene.id === selectedSceneId);
+      if (existing) {
+        Object.assign(existing, draft, { updatedAt: new Date().toISOString() });
+        setScriptStatus('Scene updated.');
+      } else {
+        const scene = { id: crypto.randomUUID(), ...draft, createdAt: new Date().toISOString() };
+        scriptScenes.push(scene);
+        selectedSceneId = scene.id;
+        setScriptStatus('Scene added to the story.');
+      }
+      persistScenes();
+      renderScriptList();
+    });
+
+    document.getElementById('newSceneButton').addEventListener('click', clearSceneEditor);
+    document.getElementById('redactSceneButton').addEventListener('click', () => {
+      const fields = ['sceneTitle', 'sceneLocation', 'sceneBody', 'sceneNotes'];
+      fields.forEach(id => {
+        const field = document.getElementById(id);
+        field.value = field.value
+          .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[EMAIL REDACTED]')
+          .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN REDACTED]')
+          .replace(/\b(?:\d[ -]*?){13,19}\b/g, '[CARD REDACTED]')
+          .replace(/(?<!\w)\+?\d[\d .()-]{7,}\d(?!\w)/g, '[PHONE REDACTED]');
+      });
+      setScriptStatus('Draft redacted. Review it, then save the scene.');
+    });
+    document.getElementById('deleteSceneButton').addEventListener('click', () => {
+      if (!selectedSceneId) {
+        setScriptStatus('Select a scene first.');
+        return;
+      }
+      scriptScenes = scriptScenes.filter(scene => scene.id !== selectedSceneId);
+      persistScenes();
+      clearSceneEditor();
+      setScriptStatus('Scene deleted.');
+    });
+    renderScriptList();
+
+    if (debugMode) {
+      document.getElementById('loginScreen')?.remove();
+      document.body.classList.remove('locked');
+      openWindow('explorer');
+      openWindow('documents');
+      openWindow('notebook');
+      renderTaskbar();
+    } else {
+      loginForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (username.toLowerCase() !== DEBUG_USERNAME.toLowerCase() || password !== DEBUG_PASSWORD) {
+          loginError.classList.add('visible');
+          document.getElementById('password').focus();
+          return;
+        }
+
+        loginError.classList.remove('visible');
+        document.body.classList.remove('locked');
+        document.getElementById('loginScreen').remove();
+        startFirstVisitConsole();
+        if (!firstVisitConsoleActive) {
+          renderTaskbar();
+        }
+      });
+    }
 
     // Updates the clock displayed in the bottom-right tray.
     // It uses the user's local time and refreshes once every second.
@@ -1039,6 +1946,9 @@
     function openWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (id === 'scripts' && !developerScriptsUnlocked) {
+        if (!unlockDeveloperTools()) return;
+      }
       win.classList.add('visible');
       win.classList.remove('minimized');
       win.style.zIndex = String(20 + wins.indexOf(win) + 1);
@@ -1127,6 +2037,13 @@
       });
     });
 
+    document.addEventListener('keydown', event => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'd') {
+        event.preventDefault();
+        if (unlockDeveloperTools()) openWindow('scripts');
+      }
+    });
+
     // Dragging behavior lets the user move each window around the desktop.
     // The code records the click offset inside the window and updates its position as the mouse moves.
     wins.forEach((win, index) => {
@@ -1168,7 +2085,7 @@
 
     let consoleIndex = 0;
     setInterval(() => {
-      if (!consoleEl) return;
+      if (!consoleEl || firstVisitConsoleActive) return;
       const line = document.createElement('div');
       line.className = 'console-line';
       line.textContent = consoleLines[consoleIndex % consoleLines.length];
@@ -1177,9 +2094,7 @@
       consoleIndex += 1;
     }, 3000);
 
-    // On page load, the Welcome screen opens and the taskbar is generated.
-    openWindow('welcome');
-    renderTaskbar();
+    // The desktop starts only after the login form accepts the credentials.
   </script>
 </body>
 </html>

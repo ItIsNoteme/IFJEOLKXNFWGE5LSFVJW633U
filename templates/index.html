@@ -1,1195 +1,2100 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARG Desktop</title>
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
-    <style>
-      :root {
-        --xp-blue: #0a5ad3;
-        --xp-blue-dark: #0c3c8d;
-        --xp-teal: #3f7ec2;
-        --xp-surface: #d9d9d9;
-        --xp-panel: #efefef;
-        --xp-menu: #f0f0f0;
-        --xp-text: #0f0f0f;
-        --xp-shadow: rgba(0,0,0,0.28);
-        --xp-taskbar: #e8e8e8;
-        --xp-button-light: #ffffff;
-        --xp-button-dark: #b7b7b7;
-        --xp-button-mid: #d7d7d7;
-        --xp-accent: #e1f0ff;
-        --wp1: linear-gradient(180deg, #5b92d1 0%, #7293c8 25%, #87b3d7 58%, #7ea3d0 100%);
-      }
-
-      * { box-sizing: border-box; }
-
-      html, body, button, input, textarea {
-        -webkit-tap-highlight-color: transparent;
-        touch-action: manipulation;
-      }
-
-      @keyframes windowOpen {
-        0% { opacity: 0; transform: translateY(12px) scale(0.97); }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-      }
-
-      @keyframes menuOpen {
-        0% { opacity: 0; transform: translateY(16px) scaleY(0.92); }
-        100% { opacity: 1; transform: translateY(0) scaleY(1); }
-      }
-
-      @keyframes iconFloat {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-2px); }
-      }
-
-      @keyframes pulseGlow {
-        0%, 100% { box-shadow: 0 0 0 rgba(84, 155, 255, 0.15); }
-        50% { box-shadow: 0 0 16px rgba(84, 155, 255, 0.2); }
-      }
-
-      @keyframes barLoad {
-        0% { width: 42%; }
-        100% { width: 78%; }
-      }
-
-      html, body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        font-family: "Tahoma", "Segoe UI", sans-serif;
-        color: var(--xp-text);
-        background: #000;
-      }
-
-      body {
-        background: var(--wp1);
-        position: relative;
-      }
-
-      .desktop {
-        position: relative;
-        width: 100vw;
-        height: calc(100vh - 52px);
-        overflow: hidden;
-      }
-
-      .desktop-icons {
-        position: absolute;
-        left: 12px;
-        top: 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        z-index: 3;
-      }
-
-      .desktop-icon {
-        width: 88px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 4px;
-        border: 1px solid transparent;
-        border-radius: 4px;
-        color: #fff;
-        cursor: pointer;
-        user-select: none;
-        text-shadow: 1px 1px 1px rgba(0,0,0,0.7);
-        transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, filter 180ms ease;
-        animation: iconFloat 3s ease-in-out infinite;
-      }
-
-      .desktop-icon:hover,
-      .desktop-icon.selected {
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.35);
-        transform: translateY(-2px);
-        filter: brightness(1.08);
-      }
-
-      .icon-graphic {
-        width: 42px;
-        height: 42px;
-        position: relative;
-        border-radius: 8px;
-        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.35);
-        background: linear-gradient(180deg, #f2f2f2 0%, #d0d0d0 100%);
-        display: grid;
-        place-items: center;
-        overflow: hidden;
-      }
-
-      .icon-graphic::before,
-      .icon-graphic::after {
-        content: "";
-        position: absolute;
-      }
-
-      .icon-folder::before {
-        width: 28px; height: 15px;
-        background: linear-gradient(180deg, #ffd98e, #f0b930);
-        border-radius: 4px 4px 2px 2px;
-        left: 7px; top: 12px;
-      }
-
-      .icon-folder::after {
-        width: 30px; height: 20px;
-        background: linear-gradient(180deg, #fddf8e, #e9b12b);
-        border-radius: 5px 5px 6px 6px;
-        left: 6px; top: 16px;
-        box-shadow: inset 0 0 0 1px rgba(85,47,0,0.18);
-      }
-
-      .icon-computer::before {
-        width: 24px; height: 18px;
-        background: linear-gradient(180deg, #c4d7ff, #a4bfe8);
-        border: 1px solid rgba(0,0,0,0.4);
-        border-radius: 2px;
-        top: 10px;
-      }
-
-      .icon-computer::after {
-        width: 28px; height: 5px;
-        background: #a9b7cf;
-        border-radius: 2px;
-        bottom: 9px;
-        left: 7px;
-        box-shadow: 0 8px 0 -2px #8998af;
-      }
-
-      .icon-bin::before {
-        width: 18px; height: 20px;
-        background: linear-gradient(180deg, #d4d4d4, #b6b6b6);
-        border-radius: 3px 3px 4px 4px;
-        top: 11px;
-      }
-
-      .icon-bin::after {
-        width: 22px; height: 5px;
-        background: #b5b5b5;
-        border-radius: 3px;
-        top: 8px;
-        left: 10px;
-        box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
-      }
-
-      .icon-globe::before {
-        width: 22px; height: 22px;
-        border: 2px solid #6397ce;
-        border-radius: 50%;
-      }
-
-      .icon-globe::after {
-        width: 22px; height: 22px;
-        border: 2px solid #6397ce;
-        border-radius: 50%;
-        transform: rotate(90deg);
-        box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
-      }
-
-      .desktop-icon span {
-        display: block;
-        font-size: 12px;
-        line-height: 1.2;
-        text-align: center;
-        word-break: break-word;
-      }
-
-      .taskbar {
-        position: relative;
-        width: 100vw;
-        height: 52px;
-        display: flex;
-        align-items: stretch;
-        padding: 0 6px 0 0;
-        background: linear-gradient(180deg, #f0f0f0 0%, #d9d9d9 35%, #c6c6c6 100%);
-        border-top: 1px solid rgba(255,255,255,0.85);
-        box-shadow: inset 0 1px 0 #fff, 0 -1px 0 rgba(0,0,0,0.2);
-        z-index: 50;
-      }
-
-      .start-button {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 118px;
-        height: calc(100% - 4px);
-        margin: 2px 4px 2px 2px;
-        background: linear-gradient(180deg, #45c64c 0%, #2c9a3a 100%);
-        border-top: 1px solid #a4f5a4;
-        border-left: 1px solid #b9f9bb;
-        border-right: 1px solid #195f2d;
-        border-bottom: 1px solid #195f2d;
-        color: #fff;
-        font-weight: 700;
-        font-size: 14px;
-        cursor: pointer;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.42);
-        text-shadow: 1px 1px 0 rgba(0,0,0,0.45);
-        user-select: none;
-      }
-
-      .start-button::before {
-        content: "";
-        width: 18px; height: 18px;
-        margin-right: 8px;
-        background: linear-gradient(180deg, #fff, #d9d9d9);
-        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-        border-radius: 2px 2px 0 0;
-        box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4);
-        position: relative;
-      }
-
-      .start-button:hover { filter: brightness(1.05); }
-
-      .taskbar-buttons {
-        display: flex;
-        flex: 1;
-        min-width: 0;
-        align-items: center;
-        gap: 4px;
-        padding: 5px 0;
-      }
-
-      .taskbar-btn {
-        height: 100%;
-        min-width: 148px;
-        max-width: 200px;
-        border: 1px solid #9b9b9b;
-        background: linear-gradient(180deg, #f5f5f5 0%, #d8d8d8 100%);
-        padding: 0 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        transition: transform 150ms ease, filter 150ms ease;
-      }
-
-      .taskbar-btn:hover {
-        transform: translateY(-1px);
-        filter: brightness(1.02);
-      }
-
-      .taskbar-btn.active {
-        background: linear-gradient(180deg, #fefefe 0%, #dfe9f7 100%);
-        border-color: #7ea2d7;
-        box-shadow: inset 0 0 0 1px rgba(125,158,219,0.7);
-      }
-
-      .taskbar-btn .tiny-icon {
-        width: 14px; height: 14px;
-        background: linear-gradient(180deg, #6eaefc, #1c63c3);
-        border-radius: 2px;
-        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
-        flex-shrink: 0;
-      }
-
-      .tray {
-        width: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-left: 1px solid rgba(0,0,0,0.3);
-        font-size: 12px;
-        font-weight: 600;
-        color: #2a2a2a;
-        background: linear-gradient(180deg, #e4e4e4 0%, #d5d5d5 100%);
-        box-shadow: inset 1px 0 0 rgba(255,255,255,0.8);
-      }
-
-      .start-menu {
-        position: absolute;
-        left: 0;
-        bottom: 52px;
-        width: 320px;
-        height: 430px;
-        background: linear-gradient(180deg, #f1f1f1 0%, #dfdfdf 100%);
-        border-top: 1px solid #fff;
-        border-left: 1px solid #fff;
-        border-right: 1px solid #6d6d6d;
-        border-bottom: 1px solid #6d6d6d;
-        box-shadow: 3px 3px 8px rgba(0,0,0,0.35);
-        display: none;
-        z-index: 100;
-        overflow: hidden;
-        transform-origin: left bottom;
-      }
-
-      .start-menu.open {
-        display: block;
-        animation: menuOpen 0.22s ease-out forwards;
-      }
-
-      .start-sidebar {
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 38px;
-        background: linear-gradient(180deg, #2a67bd 0%, #0d539b 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        letter-spacing: 2px;
-        color: #fff;
-        font-weight: 700;
-        font-size: 18px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-      }
-
-      .start-menu-content {
-        margin-left: 38px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        padding: 8px 0 0;
-        position: relative;
-      }
-
-      .menu-group {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 0 6px;
-      }
-
-      .menu-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        height: 34px;
-        padding: 0 8px 0 10px;
-        font-size: 13px;
-        background: transparent;
-        border: 1px solid transparent;
-        cursor: pointer;
-        user-select: none;
-        transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease, padding-left 180ms ease;
-      }
-
-      .menu-item:hover {
-        background: linear-gradient(180deg, #4b90eb 0%, #3f83d0 100%);
-        border: 1px solid #345ba8;
-        color: #fff;
-        transform: translateX(2px);
-        padding-left: 12px;
-      }
-
-      .menu-icon {
-        width: 20px; height: 20px;
-        background: linear-gradient(180deg, #fff, #d4d4d4);
-        border: 1px solid rgba(0,0,0,0.35);
-        border-radius: 3px;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .menu-item:hover .menu-icon { background: linear-gradient(180deg, #f3f9ff, #d8e7ff); }
-
-      .window {
-        position: absolute;
-        width: 460px;
-        min-height: 180px;
-        background: linear-gradient(180deg, #f5f5f5 0%, #ececec 100%);
-        border: 2px solid #1d4d93;
-        box-shadow: 3px 3px 12px rgba(0,0,0,0.4);
-        display: none;
-        z-index: 20;
-        overflow: hidden;
-        transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
-        transform-origin: center center;
-      }
-
-      .window.visible {
-        display: block;
-        animation: windowOpen 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
-        box-shadow: 5px 8px 18px rgba(0,0,0,0.42);
-      }
-
-      .window.minimized { display: none !important; }
-
-      .titlebar {
-        background: linear-gradient(180deg, #2b6ed5 0%, #0d4ca8 100%);
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-left: 10px;
-        padding-right: 6px;
-        color: white;
-        font-weight: 700;
-        font-size: 12px;
-        cursor: move;
-        user-select: none;
-      }
-
-      .titlebar .left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        min-width: 0;
-        overflow: hidden;
-      }
-
-      .titlebar .window-icon {
-        width: 20px; height: 20px;
-        background: linear-gradient(180deg, #dfefff, #a8d0ff);
-        border-radius: 3px;
-        border: 1px solid rgba(255,255,255,0.5);
-        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
-        flex-shrink: 0;
-      }
-
-      .titlebar .title-text {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .window-controls {
-        display: flex;
-        gap: 2px;
-      }
-
-      .window-control {
-        width: 24px; height: 18px;
-        border: 1px solid rgba(255,255,255,0.75);
-        background: linear-gradient(180deg, #f0f0f0, #d6d6d6);
-        color: #111;
-        font-weight: 700;
-        font-size: 12px;
-        cursor: pointer;
-        display: grid;
-        place-items: center;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
-      }
-
-      .window-control:hover { filter: brightness(1.1); }
-
-      .window-content {
-        padding: 10px;
-        background: linear-gradient(180deg, #f1f1f1 0%, #dfe7ef 100%);
-        min-height: 120px;
-        font-size: 13px;
-      }
-
-      .content-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-      }
-
-      .panel {
-        background: rgba(255,255,255,0.4);
-        border: 1px solid #b9c8de;
-        padding: 12px;
-        min-height: 96px;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
-      }
-
-      .panel h3 {
-        margin: 0 0 10px;
-        font-size: 15px;
-      }
-
-      .explorer-list {
-        list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
-      }
-
-      .explorer-list li {
-        display: flex; align-items: center; gap: 8px;
-        padding: 4px 6px; background: rgba(255,255,255,0.3);
-        border: 1px solid rgba(88,122,169,0.25);
-      }
-
-      .folder-badge {
-        width: 16px; height: 14px; background: linear-gradient(180deg, #ffd967, #d5a63c);
-        border-radius: 2px; border: 1px solid rgba(0,0,0,0.2);
-      }
-
-      .stats {
-        display: grid; gap: 11px; margin-top: 10px;
-      }
-
-      .stat {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 5px 8px; background: rgba(255,255,255,0.35); border: 1px solid rgba(0,0,0,0.12);
-      }
-
-      .progress {
-        width: 100%; height: 14px; background: #c9ced6; border: 1px solid #9399a7; position: relative; overflow: hidden;
-        margin-top: 8px;
-      }
-
-      .progress > span {
-        position: absolute; left: 0; top: 0; bottom: 0; width: 66%;
-        background: linear-gradient(180deg, #7cc8ff, #2b8ee6);
-        border-right: 1px solid rgba(0,0,0,0.2);
-        animation: barLoad 1.8s ease-in-out infinite alternate;
-      }
-
-      .toolbar {
-        display: flex;
-        gap: 8px;
-        padding: 8px 10px;
-        background: linear-gradient(180deg, #eff4fb 0%, #dfe8f3 100%);
-        border-bottom: 1px solid #b8c8dd;
-      }
-
-      .btn {
-        border: 1px solid #7c9dbd;
-        background: linear-gradient(180deg, #ffffff, #dfeaf7);
-        color: #163d7d;
-        padding: 6px 12px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
-      }
-
-      .btn:hover { filter: brightness(1.04); }
-
-      .btn.primary {
-        background: linear-gradient(180deg, #e4f6ff, #cfe7ff);
-        border-color: #5c7fc2;
-      }
-
-      .status-area {
-        margin-top: 10px;
-        display: flex; gap: 8px; flex-wrap: wrap;
-      }
-
-      .status-tag {
-        padding: 5px 10px; background: #eaf5ff; border: 1px solid #89b4e2; font-size: 12px;
-      }
-
-      .console {
-        width: 100%; height: 200px; background: #0f1b2b; color: #c8f9d1; border: 1px solid #1c2e46; padding: 10px; overflow: auto; font-family: "Consolas", "Courier New", monospace; font-size: 12px; line-height: 1.45;
-      }
-
-      .console-line::before { content: "> "; color: #7ad8ff; }
-
-      .game-layout {
-        display: grid;
-        grid-template-columns: 1.2fr 0.8fr;
-        gap: 12px;
-        align-items: start;
-      }
-
-      .game-card {
-        background: rgba(255,255,255,0.38);
-        border: 1px solid #b9c8de;
-        padding: 12px;
-        min-height: 140px;
-      }
-
-      .game-card h4 { margin: 0 0 10px; font-size: 14px; }
-
-      .map {
-        width: 100%; height: 160px; background: linear-gradient(180deg, #d8f0d8, #9ecb7b); border: 2px solid #3d7b39; position: relative; overflow: hidden;
-      }
-
-      .map::before {
-        content: "";
-        position: absolute; inset: 0;
-        background-image:
-          linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
-        background-size: 22px 22px;
-      }
-
-      .terrain {
-        position: absolute; border-radius: 999px; background: rgba(89, 133, 68, 0.7); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
-      }
-
-      .terrain.one { width: 120px; height: 90px; left: 28px; top: 26px; }
-      .terrain.two { width: 130px; height: 80px; right: 20px; top: 56px; }
-      .terrain.three { width: 90px; height: 90px; left: 110px; bottom: 12px; }
-
-      .character {
-        position: absolute;
-        width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg, #ffec8e, #f3a735); border: 1px solid rgba(0,0,0,0.15);
-        left: 135px; top: 72px;
-        box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
-        animation: pulseGlow 1.8s ease-in-out infinite;
-      }
-
-      .quest-list {
-        list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
-      }
-
-      .quest-list li {
-        display: flex; align-items: baseline; gap: 8px; background: rgba(255,255,255,0.35); padding: 6px 8px; border: 1px solid rgba(0,0,0,0.08);
-      }
-
-      .quest-list li::before { content: "▣"; color: #2a6cbf; }
-
-      .textarea {
-        width: 100%; min-height: 110px; resize: vertical; border: 1px solid #9aa6b9; padding: 8px; font-size: 12px; background: rgba(255,255,255,0.7);
-      }
-
-      .login-panel {
-        position: absolute;
-        right: 22px;
-        top: 18px;
-        z-index: 40;
-        width: min(300px, 40vw);
-        background: rgba(255,255,255,0.82);
-        border: 1px solid rgba(18, 77, 150, 0.7);
-        box-shadow: 3px 3px 12px rgba(0,0,0,0.25);
-        padding: 14px;
-        backdrop-filter: blur(2px);
-      }
-
-      .login-panel h2 {
-        margin: 0 0 12px;
-        font-size: 18px;
-      }
-
-      .login-panel form {
-        display: grid;
-        gap: 10px;
-      }
-
-      .login-panel label {
-        display: grid;
-        gap: 6px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      .login-panel input {
-        width: 100%;
-        padding: 8px 10px;
-        border: 1px solid #aab7c8;
-        background: rgba(255,255,255,0.9);
-      }
-
-      .login-button {
-        padding: 10px 12px;
-        border: 1px solid #537dbd;
-        background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
-        cursor: pointer;
-        font-weight: 700;
-      }
-
-      .login-button.secondary {
-        background: linear-gradient(180deg, #ffffff, #e6e6e6);
-      }
-
-      /* This compact status block makes the seeded demo identity visible in the XP login window. */
-      .login-identity {
-        margin: 0 0 10px;
-        padding: 7px 8px;
-        background: #e2f1df;
-        border: 1px solid #83ae7d;
-        color: #214f24;
-        font-size: 12px;
-      }
-
-      /* These fields keep the requested Misha login prewritten while the session is active. */
-      .login-panel input[readonly] {
-        color: #3f4e5e;
-        background: #edf1f5;
-      }
-
-      /* The redaction result is styled like a small utility output pane inside the desktop. */
-      .redaction-result {
-        margin-top: 12px;
-        padding: 9px;
-        background: #f5f8fb;
-        border: 1px solid #9eb4cc;
-        font-size: 12px;
-      }
-
-      .redaction-result pre {
-        margin: 8px 0;
-        padding: 8px;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-        background: #fff;
-        border: 1px solid #ccd5df;
-        font-family: "Consolas", "Courier New", monospace;
-      }
-
-      .login-success,
-      .login-error {
-        display: inline-block;
-        padding: 8px 10px;
-        background: rgba(224, 247, 227, 0.9);
-        border: 1px solid #7ec97d;
-        color: #1e5d2f;
-        font-size: 12px;
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-
-      .login-error {
-        background: rgba(255, 232, 232, 0.9);
-        border-color: #d57d7d;
-        color: #7c1f1f;
-      }
-
-      .save-form {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin-top: 10px;
-      }
-
-      .save-form input,
-      .save-form textarea,
-      .save-form button {
-        font: inherit;
-      }
-
-      .save-form input,
-      .save-form textarea {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #aab7c8;
-        background: rgba(255,255,255,0.75);
-      }
-
-      .save-form button {
-        padding: 10px 12px;
-        border: 1px solid #537dbd;
-        background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
-        cursor: pointer;
-      }
-
-      .orientation-lock {
-        position: fixed;
-        inset: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        background: rgba(7, 18, 34, 0.9);
-        color: #fff;
-        text-align: center;
-        z-index: 2000;
-        padding: 24px;
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-      }
-
-      .orientation-lock small {
-        display: block;
-        margin-top: 10px;
-        font-size: 12px;
-        opacity: 0.85;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-
-      body.orientation-portrait .orientation-lock {
-        display: flex;
-      }
-
-      body.orientation-portrait .desktop,
-      body.orientation-portrait .taskbar,
-      body.orientation-portrait .login-panel {
-        display: none !important;
-      }
-
-      @media (max-width: 840px) {
-        .window { width: min(82vw, 420px); }
-        .game-layout { grid-template-columns: 1fr; }
-        .content-grid { grid-template-columns: 1fr; }
-        .taskbar-btn { min-width: 110px; }
-      }
-
-      @media (orientation: portrait) {
-        body {
-          background: #0d1d32;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="orientation-lock">
-      Rotate device<br>
-      <small>Landscape mode required</small>
-    </div>
-
-    <div id="auth-panel" class="login-panel">
-      {% if logged_in_user %}
-        <!-- The server has already verified the seeded wilbur account for this demo session. -->
-        <div class="login-success">Logged in as {{ logged_in_user }}</div>
-        <div class="login-identity">Test account: wilbur</div>
+<head>
+  <!--
+    The head section defines the page metadata and the CSS styling.
+    This is where the desktop appearance, window visuals, animations, and layout rules are set.
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARG Desktop</title>
+  <style>
+    /*
+      This CSS variable block creates the color palette for the entire interface.
+      It gives the desktop a Windows XP-inspired look with blue, gray, and white tones.
+      Each variable stores a reusable color so the design stays consistent across the page.
+    */
+    :root {
+      --xp-blue: #0a5ad3;
+      --xp-blue-dark: #0c3c8d;
+      --xp-teal: #3f7ec2;
+      --xp-surface: #d9d9d9;
+      --xp-panel: #efefef;
+      --xp-menu: #f0f0f0;
+      --xp-text: #0f0f0f;
+      --xp-shadow: rgba(0,0,0,0.28);
+      --xp-taskbar: #e8e8e8;
+      --xp-button-light: #ffffff;
+      --xp-button-dark: #b7b7b7;
+      --xp-button-mid: #d7d7d7;
+      --xp-accent: #e1f0ff;
+      --wp1: linear-gradient(180deg, #5b92d1 0%, #7293c8 25%, #87b3d7 58%, #7ea3d0 100%);
+    }
+
+    /*
+      Global reset: this makes box sizing consistent for all elements.
+      It prevents padding or borders from making elements wider than expected.
+    */
+    * { box-sizing: border-box; }
+
+    /*
+      Animation keyframes define smooth motion for windows, menus, icons, and map elements.
+      These make the interface feel alive and more like a desktop app or game UI.
+    */
+    @keyframes windowOpen {
+      0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes menuOpen {
+      0% {
+        opacity: 0;
+        transform: translateY(16px) scaleY(0.92);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+      }
+    }
+
+    @keyframes iconFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-2px); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(84, 155, 255, 0.2); }
+      50% { box-shadow: 0 0 16px rgba(84, 155, 255, 0.26); }
+    }
+
+    @keyframes mapBob {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+      50% { transform: translate(-50%, -50%) translateY(-5px); }
+    }
+
+    @keyframes barLoad {
+      0% { width: 42%; }
+      100% { width: 78%; }
+    }
+
+    /*
+      Base page styling: this creates the full-screen desktop canvas.
+      The body uses a blue gradient background and hides overflow so the app behaves like a desktop.
+    */
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Tahoma", "Segoe UI", sans-serif;
+      color: var(--xp-text);
+      background: #000;
+    }
+
+    body {
+      background: var(--wp1);
+      position: relative;
+    }
+
+    /*
+      The desktop container is the main work area below the taskbar.
+      It fills the screen and holds the background, icons, and floating windows.
+    */
+    .desktop {
+      position: relative;
+      width: 100vw;
+      height: calc(100vh - 52px);
+      background: inherit;
+      overflow: hidden;
+    }
+
+    body.locked .desktop,
+    body.locked .start-menu,
+    body.locked .taskbar {
+      display: none;
+    }
+
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      background: var(--wp1);
+    }
+
+    .login-window {
+      width: min(390px, calc(100vw - 36px));
+      padding: 3px 4px 14px;
+      background: var(--xp-panel);
+      border: 2px solid #0b4fae;
+      box-shadow: 4px 5px 0 rgba(0,0,0,0.32);
+    }
+
+    .login-title {
+      margin: 0 -2px 18px;
+      padding: 7px 9px;
+      color: #fff;
+      background: linear-gradient(180deg, #2f8ee8, #0754b8);
+      font-size: 14px;
+      font-weight: 700;
+      text-shadow: 1px 1px #12427c;
+    }
+
+    .login-form {
+      display: grid;
+      gap: 10px;
+    }
+
+    .login-form label {
+      display: grid;
+      gap: 6px;
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #aab7c8;
+      background: #fff;
+    }
+
+    .login-form button {
+      margin: 4px 10px 0;
+      padding: 10px 12px;
+      border: 1px solid #537dbd;
+      background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .login-error {
+      display: none;
+      margin: 0 10px 12px;
+      padding: 8px 10px;
+      color: #7c1f1f;
+      background: #ffe8e8;
+      border: 1px solid #d57d7d;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .login-error.visible { display: block; }
+
+    /*
+      Desktop icon stack: these are the shortcut icons placed on the left side of the screen.
+      They are arranged vertically and appear like a Windows desktop with clickable app shortcuts.
+    */
+    .desktop-icons {
+      position: absolute;
+      left: 12px;
+      top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 3;
+    }
+
+    .desktop-icon {
+      width: 88px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 4px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+      user-select: none;
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.7);
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, filter 180ms ease;
+      animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    .desktop-icon:hover,
+    .desktop-icon.selected {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.35);
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+
+    /*
+      Icon graphics are built with pseudo-elements, so each symbol is drawn with CSS shapes.
+      This lets the interface use custom folder, document, recycle bin, computer, and globe icons without images.
+    */
+    .icon-graphic {
+      width: 42px;
+      height: 42px;
+      position: relative;
+      border-radius: 8px;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.35);
+      background: linear-gradient(180deg, #f2f2f2 0%, #d0d0d0 100%);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .icon-graphic::before,
+    .icon-graphic::after {
+      content: "";
+      position: absolute;
+    }
+
+    .icon-doc::before {
+      width: 18px; height: 22px;
+      background: linear-gradient(180deg, #fff, #e9e9e9);
+      border: 1px solid rgba(0,0,0,0.3);
+      border-radius: 2px;
+      box-shadow: inset -10px 0 0 rgba(115, 154, 255, 0.25);
+    }
+
+    .icon-doc::after {
+      width: 9px; height: 9px;
+      background: #fff;
+      border-left: 1px solid rgba(0,0,0,0.25);
+      border-top: 1px solid rgba(0,0,0,0.25);
+      right: 10px; top: 7px;
+      transform: rotate(45deg);
+    }
+
+    .icon-folder::before {
+      width: 28px; height: 15px;
+      background: linear-gradient(180deg, #ffd98e, #f0b930);
+      border-radius: 4px 4px 2px 2px;
+      left: 7px; top: 12px;
+    }
+
+    .icon-folder::after {
+      width: 30px; height: 20px;
+      background: linear-gradient(180deg, #fddf8e, #e9b12b);
+      border-radius: 5px 5px 6px 6px;
+      left: 6px; top: 16px;
+      box-shadow: inset 0 0 0 1px rgba(85,47,0,0.18);
+    }
+
+    .icon-computer::before {
+      width: 24px; height: 18px;
+      background: linear-gradient(180deg, #c4d7ff, #a4bfe8);
+      border: 1px solid rgba(0,0,0,0.4);
+      border-radius: 2px;
+      top: 10px;
+    }
+
+    .icon-computer::after {
+      width: 28px; height: 5px;
+      background: #a9b7cf;
+      border-radius: 2px;
+      bottom: 9px;
+      left: 7px;
+      box-shadow: 0 8px 0 -2px #8998af;
+    }
+
+    .icon-bin::before {
+      width: 18px; height: 20px;
+      background: linear-gradient(180deg, #d4d4d4, #b6b6b6);
+      border-radius: 3px 3px 4px 4px;
+      top: 11px;
+    }
+
+    .icon-bin::after {
+      width: 22px; height: 5px;
+      background: #b5b5b5;
+      border-radius: 3px;
+      top: 8px;
+      left: 10px;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.2);
+    }
+
+    .icon-globe::before {
+      width: 22px; height: 22px;
+      border: 2px solid #6397ce;
+      border-radius: 50%;
+    }
+
+    .icon-globe::after {
+      width: 22px; height: 22px;
+      border: 2px solid #6397ce;
+      border-radius: 50%;
+      transform: rotate(90deg);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
+    }
+
+    .desktop-icon span {
+      display: block;
+      font-size: 12px;
+      line-height: 1.2;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    /*
+      The taskbar is the bottom bar that acts like the Windows Start bar.
+      It holds the Start button, open app buttons, and the digital clock.
+    */
+    .taskbar {
+      position: relative;
+      width: 100vw;
+      height: 52px;
+      display: flex;
+      align-items: stretch;
+      padding: 0 6px 0 0;
+      background: linear-gradient(180deg, #f0f0f0 0%, #d9d9d9 35%, #c6c6c6 100%);
+      border-top: 1px solid rgba(255,255,255,0.85);
+      box-shadow: inset 0 1px 0 #fff, 0 -1px 0 rgba(0,0,0,0.2);
+      z-index: 50;
+    }
+
+    .start-button {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 118px;
+      height: calc(100% - 4px);
+      margin: 2px 4px 2px 2px;
+      background: linear-gradient(180deg, #45c64c 0%, #2c9a3a 100%);
+      border-top: 1px solid #a4f5a4;
+      border-left: 1px solid #b9f9bb;
+      border-right: 1px solid #195f2d;
+      border-bottom: 1px solid #195f2d;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.42);
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.45);
+      user-select: none;
+    }
+
+    .start-button::before {
+      content: "";
+      width: 18px; height: 18px;
+      margin-right: 8px;
+      background: linear-gradient(180deg, #fff, #d9d9d9);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      border-radius: 2px 2px 0 0;
+      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4);
+      position: relative;
+    }
+
+    .start-button:hover { filter: brightness(1.05); }
+
+    .taskbar-buttons {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 0;
+    }
+
+    .taskbar-btn {
+      height: 100%;
+      min-width: 148px;
+      max-width: 200px;
+      border: 1px solid #9b9b9b;
+      background: linear-gradient(180deg, #f5f5f5 0%, #d8d8d8 100%);
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease;
+    }
+
+    .taskbar-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+
+    .taskbar-btn.active {
+      background: linear-gradient(180deg, #fefefe 0%, #dfe9f7 100%);
+      border-color: #7ea2d7;
+      box-shadow: inset 0 0 0 1px rgba(125,158,219,0.7);
+    }
+
+    .taskbar-btn .tiny-icon {
+      width: 14px; height: 14px;
+      background: linear-gradient(180deg, #6eaefc, #1c63c3);
+      border-radius: 2px;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+      flex-shrink: 0;
+    }
+
+    .tray {
+      width: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid rgba(0,0,0,0.3);
+      font-size: 12px;
+      font-weight: 600;
+      color: #2a2a2a;
+      background: linear-gradient(180deg, #e4e4e4 0%, #d5d5d5 100%);
+      box-shadow: inset 1px 0 0 rgba(255,255,255,0.8);
+    }
+
+    /*
+      Start menu styling: this dropdown appears from the taskbar and contains app launch shortcuts.
+      It is hidden by default and shown only when toggled by the Start button.
+    */
+    .start-menu {
+      position: absolute;
+      left: 0;
+      bottom: 52px;
+      width: 320px;
+      height: 430px;
+      background: linear-gradient(180deg, #f1f1f1 0%, #dfdfdf 100%);
+      border-top: 1px solid #fff;
+      border-left: 1px solid #fff;
+      border-right: 1px solid #6d6d6d;
+      border-bottom: 1px solid #6d6d6d;
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.35);
+      display: none;
+      z-index: 100;
+      overflow: hidden;
+      transform-origin: left bottom;
+    }
+
+    .start-menu.open {
+      display: block;
+      animation: menuOpen 0.22s ease-out forwards;
+    }
+
+    .start-sidebar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 38px;
+      background: linear-gradient(180deg, #2a67bd 0%, #0d539b 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      letter-spacing: 2px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .start-menu-content {
+      margin-left: 38px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 8px 0 0;
+      position: relative;
+    }
+
+    .menu-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 0 6px;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 34px;
+      padding: 0 8px 0 10px;
+      font-size: 13px;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      user-select: none;
+      transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease, padding-left 180ms ease;
+    }
+
+    .menu-item:hover {
+      background: linear-gradient(180deg, #4b90eb 0%, #3f83d0 100%);
+      border: 1px solid #345ba8;
+      color: #fff;
+      transform: translateX(2px);
+      padding-left: 12px;
+    }
+
+    .menu-icon {
+      width: 20px; height: 20px;
+      background: linear-gradient(180deg, #fff, #d4d4d4);
+      border: 1px solid rgba(0,0,0,0.35);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .menu-item:hover .menu-icon { background: linear-gradient(180deg, #f3f9ff, #d8e7ff); }
+
+    /*
+      Window styling: these are the floating application panels.
+      They mimic classic desktop windows with a title bar, controls, and content area.
+    */
+    .window {
+      position: absolute;
+      width: 460px;
+      min-height: 180px;
+      background: linear-gradient(180deg, #f5f5f5 0%, #ececec 100%);
+      border: 2px solid #1d4d93;
+      box-shadow: 3px 3px 12px rgba(0,0,0,0.4);
+      display: none;
+      z-index: 20;
+      overflow: hidden;
+      transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+      transform-origin: center center;
+    }
+
+    .window.visible {
+      display: block;
+      animation: windowOpen 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 5px 8px 18px rgba(0,0,0,0.42);
+    }
+
+    .window.minimized {
+      display: none !important;
+    }
+
+    .titlebar {
+      background: linear-gradient(180deg, #2b6ed5 0%, #0d4ca8 100%);
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 10px;
+      padding-right: 6px;
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: move;
+      user-select: none;
+    }
+
+    .titlebar .left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .titlebar .window-icon {
+      width: 20px; height: 20px;
+      background: linear-gradient(180deg, #dfefff, #a8d0ff);
+      border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.5);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
+
+    .titlebar .title-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 2px;
+    }
+
+    .window-control {
+      width: 24px; height: 18px;
+      border: 1px solid rgba(255,255,255,0.75);
+      background: linear-gradient(180deg, #f0f0f0, #d6d6d6);
+      color: #111;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .window-control:hover { filter: brightness(1.1); }
+
+    .window-content {
+      padding: 10px;
+      background: linear-gradient(180deg, #f1f1f1 0%, #dfe7ef 100%);
+      min-height: 120px;
+      font-size: 13px;
+    }
+
+    /*
+      The content-grid and panel classes structure the internal layout inside windows.
+      These sections create two-column cards for explorer panes, system data, and project details.
+    */
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.4);
+      border: 1px solid #b9c8de;
+      padding: 12px;
+      min-height: 96px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+
+    .panel h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .explorer-list {
+      list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
+    }
+
+    .explorer-list li {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 6px; background: rgba(255,255,255,0.3);
+      border: 1px solid rgba(88,122,169,0.25);
+    }
+
+    .folder-badge {
+      width: 16px; height: 14px; background: linear-gradient(180deg, #ffd967, #d5a63c);
+      border-radius: 2px; border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    .stats {
+      display: grid; gap: 11px; margin-top: 10px;
+    }
+
+    .stat {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 8px; background: rgba(255,255,255,0.35); border: 1px solid rgba(0,0,0,0.12);
+    }
+
+    .progress {
+      width: 100%; height: 14px; background: #c9ced6; border: 1px solid #9399a7; position: relative; overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress > span {
+      position: absolute; left: 0; top: 0; bottom: 0; width: 66%;
+      background: linear-gradient(180deg, #7cc8ff, #2b8ee6);
+      border-right: 1px solid rgba(0,0,0,0.2);
+      animation: barLoad 1.8s ease-in-out infinite alternate;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 8px 10px;
+      background: linear-gradient(180deg, #eff4fb 0%, #dfe8f3 100%);
+      border-bottom: 1px solid #b8c8dd;
+    }
+
+    .btn {
+      border: 1px solid #7c9dbd;
+      background: linear-gradient(180deg, #ffffff, #dfeaf7);
+      color: #163d7d;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .btn:hover { filter: brightness(1.04); }
+
+    .btn.primary {
+      background: linear-gradient(180deg, #e4f6ff, #cfe7ff);
+      border-color: #5c7fc2;
+    }
+
+    .status-area {
+      margin-top: 10px;
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+
+    .status-tag {
+      padding: 5px 10px; background: #eaf5ff; border: 1px solid #89b4e2; font-size: 12px;
+    }
+
+    .console {
+      width: 100%; height: 200px; background: #000; color: #d8d8d8; border: 1px solid #777; padding: 10px; overflow: auto; font-family: "Perfect DOS VGA 437", "IBM VGA8", "Courier New", monospace; font-size: 12px; line-height: 1.45; letter-spacing: 0;
+    }
+
+    .console-line::before {
+      content: "> ";
+      color: #d8d8d8;
+    }
+
+    /*
+      Game-specific styling: this section draws the map and quest cards used in the ARG game window.
+      The map uses simple colored shapes to simulate terrain, and the character sits on top as a marker.
+    */
+    .game-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .script-layout {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.4fr);
+      gap: 12px;
+    }
+
+    .script-list {
+      display: grid;
+      align-content: start;
+      gap: 4px;
+      max-height: 290px;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .script-list button {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid #b7c5d7;
+      background: #f7fbff;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .script-list button.active,
+    .script-list button:hover {
+      color: #fff;
+      background: #347dcc;
+      border-color: #1d4d93;
+    }
+
+    .script-editor { display: grid; gap: 8px; }
+
+    .script-editor label {
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .script-editor input,
+    .script-editor textarea {
+      width: 100%;
+      padding: 7px;
+      border: 1px solid #aab7c8;
+      background: #fff;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .script-editor textarea { min-height: 86px; resize: vertical; }
+
+    .script-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .script-actions button {
+      padding: 7px 9px;
+      border: 1px solid #537dbd;
+      background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .script-status { min-height: 16px; color: #1e5d2f; font-size: 11px; }
+
+    .music-player {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      color: #d8d8d8;
+      background: #000;
+      border: 1px solid #777;
+      font-family: "Perfect DOS VGA 437", "IBM VGA8", "Courier New", monospace;
+    }
+
+    .music-player input[type="url"],
+    .music-player input[type="file"] {
+      width: 100%;
+      color: #d8d8d8;
+      background: #101010;
+      border: 1px solid #777;
+      padding: 6px;
+      font: inherit;
+    }
+
+    .music-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+    .music-controls button,
+    .music-controls label {
+      padding: 6px 9px;
+      color: #d8d8d8;
+      background: #111;
+      border: 1px solid #777;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .music-controls input[type="range"] { accent-color: #d8d8d8; }
+
+    .music-status { min-height: 16px; color: #d8d8d8; font-size: 11px; }
+
+    .notebook-layout {
+      display: grid;
+      grid-template-columns: minmax(170px, 0.8fr) minmax(0, 1.4fr);
+      gap: 12px;
+    }
+
+    .notebook-list {
+      display: grid;
+      align-content: start;
+      gap: 4px;
+      max-height: 330px;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .notebook-list button {
+      width: 100%;
+      padding: 7px 8px;
+      border: 1px solid #b7c5d7;
+      background: #f7fbff;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .notebook-list button.active,
+    .notebook-list button:hover {
+      color: #fff;
+      background: #347dcc;
+      border-color: #1d4d93;
+    }
+
+    .notebook-editor { display: grid; gap: 8px; }
+
+    .notebook-editor label {
+      display: grid;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .notebook-editor input,
+    .notebook-editor textarea {
+      width: 100%;
+      padding: 7px;
+      border: 1px solid #aab7c8;
+      background: #fff;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .notebook-editor textarea { min-height: 92px; resize: vertical; }
+
+    .notebook-preview {
+      display: none;
+      max-width: 100%;
+      max-height: 170px;
+      object-fit: contain;
+      border: 1px solid #8c9caf;
+      background: #111;
+    }
+
+    .notebook-preview.visible { display: block; }
+
+    .notebook-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .notebook-actions button {
+      padding: 7px 9px;
+      border: 1px solid #537dbd;
+      background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .notebook-status { min-height: 16px; color: #1e5d2f; font-size: 11px; }
+
+    .notebook-player-view { display: block; }
+    .notebook-dev-view { display: none; }
+    body.developer-mode .notebook-player-view { display: none; }
+    body.developer-mode .notebook-dev-view { display: block; }
+
+    .notebook-player-list {
+      display: grid;
+      gap: 8px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .notebook-player-entry {
+      padding: 10px;
+      border: 1px solid #b9c8de;
+      background: rgba(255,255,255,0.42);
+    }
+
+    .notebook-player-entry h4 { margin: 0 0 4px; font-size: 14px; }
+    .notebook-player-entry p { margin: 6px 0 0; white-space: pre-wrap; }
+
+    .notebook-player-entry img {
+      display: block;
+      max-width: 100%;
+      max-height: 220px;
+      margin-top: 8px;
+      object-fit: contain;
+    }
+
+    .notebook-locked {
+      padding: 12px;
+      color: #5c6d82;
+      border: 1px dashed #9eafc5;
+      background: rgba(255,255,255,0.3);
+      font-size: 12px;
+    }
+
+    @media (max-width: 840px) {
+      .notebook-layout { grid-template-columns: 1fr; }
+    }
+
+    .dev-only-nav { display: none !important; }
+
+    body.developer-mode .dev-only-nav { display: flex !important; }
+
+    body.disclaimer-lock .start-menu,
+    body.disclaimer-lock .taskbar {
+      display: none !important;
+    }
+
+    body.disclaimer-lock .desktop {
+      display: block !important;
+    }
+
+    body.disclaimer-lock .desktop > *:not(#consoleWin) {
+      display: none !important;
+    }
+
+    body.disclaimer-lock #consoleWin {
+      position: fixed;
+      inset: 0;
+      width: 100vw !important;
+      height: 100vh;
+      min-height: 100vh;
+      display: block;
+      z-index: 3000;
+      border: 0;
+      box-shadow: none;
+    }
+
+    body.disclaimer-lock #consoleWin .titlebar {
+      height: 44px;
+      cursor: default;
+      padding-left: 18px;
+      font-size: 15px;
+    }
+
+    body.disclaimer-lock #consoleWin .window-controls { display: none; }
+
+    body.disclaimer-lock #consoleWin .window-content {
+      height: calc(100vh - 44px);
+      padding: 20px;
+      background: #0b1420;
+    }
+
+    body.disclaimer-lock #consoleWin .console {
+      height: 100%;
+      max-width: none;
+      border: 0;
+      padding: 24px;
+      color: #d8d8d8;
+      font-family: "Perfect DOS VGA 437", "IBM VGA8", "Courier New", monospace;
+      font-size: clamp(14px, 2vw, 20px);
+      line-height: 1.7;
+    }
+
+    .game-card {
+      background: rgba(255,255,255,0.38);
+      border: 1px solid #b9c8de;
+      padding: 12px;
+      min-height: 140px;
+    }
+
+    .game-card h4 {
+      margin: 0 0 10px; font-size: 14px;
+    }
+
+    .map {
+      width: 100%; height: 160px; background: linear-gradient(180deg, #d8f0d8, #9ecb7b); border: 2px solid #3d7b39; position: relative; overflow: hidden;
+    }
+
+    .map::before {
+      content: "";
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    .terrain {
+      position: absolute; border-radius: 999px; background: rgba(89, 133, 68, 0.7); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
+    }
+
+    .terrain.one { width: 120px; height: 90px; left: 28px; top: 26px; }
+    .terrain.two { width: 130px; height: 80px; right: 20px; top: 56px; }
+    .terrain.three { width: 90px; height: 90px; left: 110px; bottom: 12px; }
+
+    .character {
+      position: absolute;
+      width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(180deg, #ffec8e, #f3a735); border: 1px solid rgba(0,0,0,0.15);
+      left: 135px; top: 72px;
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+      animation: pulseGlow 1.8s ease-in-out infinite;
+    }
+
+    .terrain {
+      animation: mapBob 4.2s ease-in-out infinite alternate;
+    }
+
+    .quest-list {
+      list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
+    }
+
+    .quest-list li {
+      display: flex; align-items: baseline; gap: 8px; background: rgba(255,255,255,0.35); padding: 6px 8px; border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .quest-list li::before { content: "▣"; color: #2a6cbf; }
+
+    .textarea {
+      width: 100%; min-height: 110px; resize: vertical; border: 1px solid #9aa6b9; padding: 8px; font-size: 12px; background: rgba(255,255,255,0.7);
+    }
+
+    /*
+      Media query ensures the layout still looks good on smaller screens.
+      It shrinks columns and keeps the windows readable on tablets or narrow browser widths.
+    */
+    @media (max-width: 840px) {
+      .window { width: min(82vw, 420px); }
+      .game-layout { grid-template-columns: 1fr; }
+      .script-layout { grid-template-columns: 1fr; }
+      .content-grid { grid-template-columns: 1fr; }
+      .taskbar-btn { min-width: 110px; }
+    }
+  </style>
+</head>
+<body class="locked">
+  <div class="login-screen" id="loginScreen">
+    <section class="login-window" aria-labelledby="loginTitle">
+      <h1 class="login-title" id="loginTitle">Windows XP Login</h1>
+      <div class="login-error" id="loginError">Invalid username or password.</div>
+      <form class="login-form" id="loginForm">
         <label>
-          Login
-          <input type="text" value="{{ login_name }}" readonly />
+          Username
+          <input id="username" name="username" type="text" value="Misha" autocomplete="username" required />
         </label>
-        <form hx-post="/logout" hx-target="#auth-panel" hx-swap="outerHTML">
-          <button class="login-button secondary" type="submit">Log out</button>
-        </form>
-      {% else %}
-        <h2>Login</h2>
-        <!-- The demo form starts with the requested display name and generated database password. -->
-        <form hx-post="/login" hx-target="#auth-panel" hx-swap="outerHTML">
-          <label>
-            Login
-            <input type="text" name="username" value="{{ login_name }}" required />
-          </label>
-          <label>
-            Password
-            <input type="password" name="password" value="{{ demo_password }}" required />
-          </label>
-          <button class="login-button" type="submit">Log in</button>
-        </form>
-      {% endif %}
+        <label>
+          Password
+          <input id="password" name="password" type="password" autocomplete="current-password" autofocus required />
+        </label>
+        <button type="submit">Log in</button>
+      </form>
+    </section>
+  </div>
+  <!--
+    The desktop is the root area where icons and windows are placed.
+    Each .window is a floating app or panel that can be opened, minimized, or closed.
+  -->
+  <div class="desktop">
+    <div class="desktop-icons">
+      <!--
+        These desktop shortcuts act like launch buttons for the virtual desktop environment.
+        Each icon uses data-window to point to its matching popup window.
+      -->
+      <div class="desktop-icon" data-window="explorer">
+        <div class="icon-graphic icon-computer"></div>
+        <span>My Computer</span>
+      </div>
+      <div class="desktop-icon" data-window="documents">
+        <div class="icon-graphic icon-folder"></div>
+        <span>Documents</span>
+      </div>
+      <div class="desktop-icon" data-window="recycle">
+        <div class="icon-graphic icon-bin"></div>
+        <span>Recycle Bin</span>
+      </div>
+      <div class="desktop-icon dev-only-nav" data-window="scripts">
+        <div class="icon-graphic icon-folder"></div>
+        <span>Script Workshop</span>
+      </div>
+      <div class="desktop-icon" data-window="notebook">
+        <div class="icon-graphic icon-folder"></div>
+        <span>Notebook</span>
+      </div>
+      <div class="desktop-icon" data-window="music">
+        <div class="icon-graphic icon-globe"></div>
+        <span>Background Music</span>
+      </div>
     </div>
 
-    <div class="desktop">
-      <div class="desktop-icons">
-        <div class="desktop-icon" data-window="explorer">
-          <div class="icon-graphic icon-computer"></div>
-          <span>My Computer</span>
+    <!--
+      My Computer window: this acts like a system explorer panel with file/folder categories.
+      It presents a fake operating system environment and device details.
+    -->
+    <div class="window" id="explorer" data-title="My Computer" style="left: 360px; top: 150px; width: 520px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">My Computer</div>
         </div>
-        <div class="desktop-icon" data-window="documents">
-          <div class="icon-graphic icon-folder"></div>
-          <span>Documents</span>
-        </div>
-        <div class="desktop-icon" data-window="recycle">
-          <div class="icon-graphic icon-bin"></div>
-          <span>Recycle Bin</span>
-        </div>
-        <!-- This shortcut opens the database-backed text redaction tool. -->
-        <div class="desktop-icon" data-window="redaction">
-          <div class="icon-graphic icon-doc"></div>
-          <span>Redaction Lab</span>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
         </div>
       </div>
-
-      <div class="window" id="explorer" data-title="My Computer" style="left: 360px; top: 150px; width: 520px;">
-        <div class="titlebar">
-          <div class="left">
-            <div class="window-icon"></div>
-            <div class="title-text">My Computer</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-control" data-action="minimize">_</button>
-            <button class="window-control" data-action="close">×</button>
-          </div>
-        </div>
-        <div class="window-content">
-          <div class="content-grid">
-            <div class="panel">
-              <h3>Explorer</h3>
-              <ul class="explorer-list">
-                <li><span class="folder-badge"></span> Projects</li>
-                <li><span class="folder-badge"></span> Assets</li>
-                <li><span class="folder-badge"></span> Audio</li>
-                <li><span class="folder-badge"></span> Lore</li>
-              </ul>
-            </div>
-            <div class="panel">
-              <h3>System Info</h3>
-              <div class="stats">
-                <div class="stat"><span>CPU</span><strong>i7</strong></div>
-                <div class="stat"><span>RAM</span><strong>16 GB</strong></div>
-                <div class="stat"><span>Graphics</span><strong>RTX</strong></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="window" id="documents" data-title="Documents" style="left: 440px; top: 110px; width: 510px;">
-        <div class="titlebar">
-          <div class="left">
-            <div class="window-icon"></div>
-            <div class="title-text">Documents</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-control" data-action="minimize">_</button>
-            <button class="window-control" data-action="close">×</button>
-          </div>
-        </div>
-        <div class="window-content">
-          <div class="game-layout">
-            <div class="game-card">
-              <h4>Mission Notes</h4>
-              <ul class="quest-list">
-                <li>Locate the secret server cluster.</li>
-                <li>Recover the blue archive key.</li>
-                <li>Uncover the missing map fragments.</li>
-              </ul>
-            </div>
-            <div class="game-card">
-              <h4>Briefing</h4>
-              <textarea class="textarea">Project ARG is a browser-ready game prototype. Future expansions include dialogue states, inventory, map traversal, and faction events.</textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="window" id="recycle" data-title="Recycle Bin" style="left: 270px; top: 200px; width: 460px;">
-        <div class="titlebar">
-          <div class="left">
-            <div class="window-icon"></div>
-            <div class="title-text">Recycle Bin</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-control" data-action="minimize">_</button>
-            <button class="window-control" data-action="close">×</button>
-          </div>
-        </div>
-        <div class="window-content">
+      <div class="window-content">
+        <div class="content-grid">
           <div class="panel">
-            <h3>Deleted Items</h3>
+            <h3>Explorer</h3>
             <ul class="explorer-list">
-              <li><span class="folder-badge"></span> old_wireframe.map</li>
-              <li><span class="folder-badge"></span> debug_ui_backup</li>
-              <li><span class="folder-badge"></span> idle_quest_notes</li>
+              <li><span class="folder-badge"></span> Projects</li>
+              <li><span class="folder-badge"></span> Assets</li>
+              <li><span class="folder-badge"></span> Audio</li>
+              <li><span class="folder-badge"></span> Lore</li>
             </ul>
           </div>
-        </div>
-      </div>
-
-      <div class="window" id="consoleWin" data-title="Command Console" style="left: 160px; top: 260px; width: 430px;">
-        <div class="titlebar">
-          <div class="left">
-            <div class="window-icon"></div>
-            <div class="title-text">Command Console</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-control" data-action="minimize">_</button>
-            <button class="window-control" data-action="close">×</button>
-          </div>
-        </div>
-        <div class="window-content">
-          <div class="console" id="console">
-            <div class="console-line">system online</div>
-            <div class="console-line">loading interface profile...</div>
-            <div class="console-line">boot sequence complete</div>
-            <div class="console-line">awaiting command...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- The redaction window sends text to FastAPI and stores each result in SQLite. -->
-      <div class="window" id="redaction" data-title="Redaction Lab" style="left: 570px; top: 105px; width: 520px;">
-        <div class="titlebar">
-          <div class="left">
-            <div class="window-icon"></div>
-            <div class="title-text">Redaction Lab</div>
-          </div>
-          <div class="window-controls">
-            <button class="window-control" data-action="minimize">_</button>
-            <button class="window-control" data-action="close">×</button>
-          </div>
-        </div>
-        <div class="window-content">
           <div class="panel">
-            <h3>Text Redaction</h3>
-            <p>Remove common personal and secret values before archiving text.</p>
-            <form hx-post="/api/redact" hx-target="#redaction-result" hx-swap="innerHTML">
-              <textarea class="textarea" name="text" rows="7" placeholder="Paste text containing an email, phone number, SSN, or API key."></textarea>
-              <button class="btn primary" type="submit" style="margin-top: 8px;">Redact and save</button>
-            </form>
-            <div id="redaction-result"></div>
+            <h3>System Info</h3>
+            <div class="stats">
+              <div class="stat"><span>CPU</span><strong>i7</strong></div>
+              <div class="stat"><span>RAM</span><strong>16 GB</strong></div>
+              <div class="stat"><span>Graphics</span><strong>RTX</strong></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="start-menu" id="startMenu">
-      <div class="start-sidebar">START</div>
-      <div class="start-menu-content">
-        <div class="menu-group">
-          <div class="menu-item" data-window="explorer"><span class="menu-icon"></span> My Computer</div>
-          <div class="menu-item" data-window="documents"><span class="menu-icon"></span> Documents</div>
-          <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
-          <div class="menu-item" data-window="redaction"><span class="menu-icon"></span> Redaction Lab</div>
+    <!--
+      Documents window: this is a lore/mission panel that looks like a note or briefing document.
+      It contains story tasks and a textarea used to display narrative context.
+    -->
+    <div class="window" id="documents" data-title="Documents" style="left: 440px; top: 110px; width: 510px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Documents</div>
         </div>
-        <div class="menu-group" style="margin-top: 18px;">
-          <div class="menu-item" data-window="recycle"><span class="menu-icon"></span> Recycle Bin</div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="game-layout">
+          <div class="game-card">
+            <h4>Mission Notes</h4>
+            <ul class="quest-list">
+              <li>Locate the secret server cluster.</li>
+              <li>Recover the blue archive key.</li>
+              <li>Uncover the missing map fragments.</li>
+            </ul>
+          </div>
+          <div class="game-card">
+            <h4>Briefing</h4>
+            <textarea class="textarea">Project ARG is a browser-ready game prototype. Future expansions include dialogue states, inventory, map traversal, and faction events.</textarea>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="taskbar">
-      <button class="start-button" id="startButton">start</button>
-      <div class="taskbar-buttons" id="taskbarButtons"></div>
-      <div class="tray" id="clock">00:00</div>
+    <!--
+      Recycle Bin window: this simulates a deleted-files tray with a list of fake items.
+      It reinforces the desktop interface feel and provides another app container.
+    -->
+    <div class="window" id="recycle" data-title="Recycle Bin" style="left: 270px; top: 200px; width: 460px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Recycle Bin</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="panel">
+          <h3>Deleted Items</h3>
+          <ul class="explorer-list">
+            <li><span class="folder-badge"></span> old_wireframe.map</li>
+            <li><span class="folder-badge"></span> debug_ui_backup</li>
+            <li><span class="folder-badge"></span> idle_quest_notes</li>
+          </ul>
+        </div>
+      </div>
     </div>
 
-    <script>
-      const wins = [...document.querySelectorAll('.window')];
-      const taskbarButtons = document.getElementById('taskbarButtons');
-      const startMenu = document.getElementById('startMenu');
-      const startButton = document.getElementById('startButton');
-      const clock = document.getElementById('clock');
+    <div class="window" id="scripts" data-title="Script Workshop" style="left: 250px; top: 100px; width: 680px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Script Workshop</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="script-layout">
+          <div class="panel">
+            <h3>Story Scenes</h3>
+            <ol class="script-list" id="scriptList"></ol>
+            <div class="script-actions" style="margin-top: 8px;">
+              <button type="button" id="newSceneButton">New scene</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Scene Draft</h3>
+            <form class="script-editor" id="scriptForm">
+              <label>Scene title<input id="sceneTitle" type="text" placeholder="Scene 1: The signal" required /></label>
+              <label>Location / trigger<input id="sceneLocation" type="text" placeholder="Where and when it happens" /></label>
+              <label>Script / dialogue<textarea id="sceneBody" placeholder="Write what the player sees, hears, or can say..." required></textarea></label>
+              <label>Developer notes<textarea id="sceneNotes" placeholder="Clues, conditions, and next scene ideas"></textarea></label>
+              <div class="script-actions">
+                <button type="submit">Save scene</button>
+                <button type="button" id="redactSceneButton">Redact script</button>
+                <button type="button" id="deleteSceneButton">Delete scene</button>
+              </div>
+              <div class="script-status" id="scriptStatus" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      function updateOrientationState() {
-        const portrait = window.matchMedia('(orientation: portrait)').matches;
-        document.body.classList.toggle('orientation-portrait', portrait);
+    <div class="window" id="music" data-title="Background Music" style="left: 330px; top: 180px; width: 480px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Background Music</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="music-player">
+          <strong>ARG ORIGINAL SOUNDTRACK</strong>
+          <select id="musicTrack" aria-label="Choose an OST track"></select>
+          <div class="music-controls">
+            <button type="button" id="loadMusicTrack">Load OST</button>
+            <button type="button" id="playMusic">Play</button>
+            <button type="button" id="pauseMusic">Pause</button>
+            <label><input id="musicLoop" type="checkbox" checked /> Loop</label>
+            <label>Volume <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.5" /></label>
+          </div>
+          <div class="music-status" id="musicStatus" aria-live="polite">No track loaded.</div>
+          <audio id="backgroundMusic" preload="metadata"></audio>
+        </div>
+      </div>
+    </div>
 
-        if (portrait) {
-          startMenu.classList.remove('open');
-        }
-      }
+    <div class="window" id="notebook" data-title="Developer Notebook" style="left: 190px; top: 80px; width: 720px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Developer Notebook</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="notebook-player-view">
+          <div class="panel">
+            <h3>History Notebook</h3>
+            <div class="notebook-player-list" id="playerNotebookList"></div>
+          </div>
+        </div>
+        <div class="notebook-dev-view">
+        <div class="notebook-layout">
+          <div class="panel">
+            <h3>History Moments</h3>
+            <ol class="notebook-list" id="notebookList"></ol>
+            <div class="notebook-actions" style="margin-top: 8px;">
+              <button type="button" id="newNotebookEntry">New moment</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Moment Entry</h3>
+            <form class="notebook-editor" id="notebookForm">
+              <label>History moment<input id="notebookMoment" type="text" placeholder="1998-04-12 / Before the signal" required /></label>
+              <label>Unlock at story moment<input id="notebookUnlockMoment" type="text" placeholder="station-arrival" required /></label>
+              <label>Entry title<input id="notebookTitle" type="text" placeholder="The first transmission" required /></label>
+              <label>Notes<textarea id="notebookNotes" placeholder="What should the player discover at this moment?" required></textarea></label>
+              <label>Picture URL<input id="notebookImageUrl" type="url" placeholder="Optional image URL" /></label>
+              <label>Or upload picture<input id="notebookImageFile" type="file" accept="image/*" /></label>
+              <img class="notebook-preview" id="notebookPreview" alt="Notebook entry preview" />
+              <div class="notebook-actions">
+                <button type="submit">Save entry</button>
+                <button type="button" id="deleteNotebookEntry">Delete entry</button>
+              </div>
+              <div class="notebook-status" id="notebookStatus" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
 
-      if (screen.orientation && typeof screen.orientation.lock === 'function') {
-        screen.orientation.lock('landscape').catch(() => {});
-      }
+    <!--
+      Console window: this displays fake system logs to create the impression of a running terminal environment.
+      It gets updated periodically by JavaScript to simulate a live console.
+    -->
+    <div class="window" id="consoleWin" data-title="Command Console" style="left: 160px; top: 260px; width: 430px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Command Console</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="console" id="console">
+          <div class="console-line">system online</div>
+          <div class="console-line">loading interface profile...</div>
+          <div class="console-line">boot sequence complete</div>
+          <div class="console-line">awaiting command...</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-      window.addEventListener('orientationchange', updateOrientationState);
-      window.addEventListener('resize', updateOrientationState);
-      updateOrientationState();
+  <!--
+    The Start menu is a dropdown panel connected to the taskbar button.
+    It lists frequently used windows and closes when a menu item is clicked.
+  -->
+  <div class="start-menu" id="startMenu">
+    <div class="start-sidebar">START</div>
+    <div class="start-menu-content">
+      <div class="menu-group">
+        <div class="menu-item" data-window="explorer"><span class="menu-icon"></span> My Computer</div>
+        <div class="menu-item" data-window="documents"><span class="menu-icon"></span> Documents</div>
+        <div class="menu-item dev-only-nav" data-window="scripts"><span class="menu-icon"></span> Script Workshop</div>
+        <div class="menu-item" data-window="notebook"><span class="menu-icon"></span> Notebook</div>
+        <div class="menu-item" data-window="music"><span class="menu-icon"></span> Background Music</div>
+        <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
+      </div>
+      <div class="menu-group" style="margin-top: 18px;">
+        <div class="menu-item" data-window="recycle"><span class="menu-icon"></span> Recycle Bin</div>
+      </div>
+    </div>
+  </div>
 
-      function updateClock() {
-        const now = new Date();
-        clock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      }
-      setInterval(updateClock, 1000);
-      updateClock();
+  <!--
+    The taskbar lives at the bottom of the page and hosts the main desktop actions.
+    It provides the Start button, app buttons, and the live current time display.
+  -->
+  <div class="taskbar">
+    <button class="start-button" id="startButton">start</button>
+    <div class="taskbar-buttons" id="taskbarButtons"></div>
+    <div class="tray" id="clock">00:00</div>
+  </div>
 
-      function openWindow(id) {
-        const win = document.getElementById(id);
-        if (!win) return;
-        win.classList.add('visible');
-        win.classList.remove('minimized');
-        win.style.zIndex = String(20 + wins.indexOf(win) + 1);
-        renderTaskbar();
-      }
+  <script>
+    //
+    // JavaScript handles all desktop behavior, including window actions, taskbar updates,
+    // and simple fake system interactions. This is the interactive layer that makes the page feel alive.
+    //
 
-      function closeWindow(id) {
-        const win = document.getElementById(id);
-        if (!win) return;
-        win.classList.remove('visible');
-        win.classList.add('minimized');
-        renderTaskbar();
-      }
+    // Get all window elements so the app can open, close, and track them.
+    const wins = [...document.querySelectorAll('.window')];
+    const taskbarButtons = document.getElementById('taskbarButtons');
+    const startMenu = document.getElementById('startMenu');
+    const startButton = document.getElementById('startButton');
+    const clock = document.getElementById('clock');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const DEBUG_USERNAME = 'Misha';
+    const DEBUG_PASSWORD = 'MishaXP2026';
+    // Change this value to control developer-only access to the Script Workshop.
+    const DEVELOPER_SCRIPT_PASSWORD = 'ARG-DEV-2026';
+    const debugMode = new URLSearchParams(window.location.search).get('debug') !== '0';
+    const debugReplay = debugMode;
+    let developerScriptsUnlocked = debugMode;
 
-      function minimizeWindow(id) {
-        const win = document.getElementById(id);
-        if (!win) return;
-        win.classList.add('minimized');
-        win.classList.remove('visible');
-        renderTaskbar();
-      }
+    if (debugMode) {
+      document.body.classList.add('developer-mode');
+      document.body.classList.remove('locked');
+    }
 
-      function renderTaskbar() {
-        taskbarButtons.innerHTML = '';
-        wins.forEach(win => {
-          const id = win.id;
-          const isVisible = win.classList.contains('visible');
-          if (!isVisible && !win.classList.contains('minimized')) return;
-          if (!win.classList.contains('visible') && win.classList.contains('minimized')) return;
-          const btn = document.createElement('button');
-          btn.className = 'taskbar-btn' + (isVisible ? ' active' : '');
-          btn.innerHTML = '<span class="tiny-icon"></span><span>' + (win.dataset.title || id) + '</span>';
-          btn.addEventListener('click', () => {
-            if (win.classList.contains('visible')) {
-              minimizeWindow(id);
-            } else {
-              openWindow(id);
-            }
-          });
-          taskbarButtons.appendChild(btn);
-        });
-      }
+    function unlockDeveloperTools() {
+      if (developerScriptsUnlocked) return true;
+      const password = window.prompt('Developer password:');
+      if (password !== DEVELOPER_SCRIPT_PASSWORD) return false;
+      developerScriptsUnlocked = true;
+      document.body.classList.add('developer-mode');
+      return true;
+    }
 
-      document.querySelectorAll('.desktop-icon').forEach(icon => {
-        icon.addEventListener('dblclick', () => openWindow(icon.dataset.window));
-        icon.addEventListener('click', () => {
-          document.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
-          icon.classList.add('selected');
-        });
-      });
-
-      document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const target = item.dataset.window;
-          if (target) openWindow(target);
-          startMenu.classList.remove('open');
-        });
-      });
-
-      startButton.addEventListener('click', () => startMenu.classList.toggle('open'));
-      document.addEventListener('click', (e) => {
-        if (!startMenu.contains(e.target) && !startButton.contains(e.target)) {
-          startMenu.classList.remove('open');
-        }
-      });
-
-      document.querySelectorAll('.window-control').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const win = btn.closest('.window');
-          const action = btn.dataset.action;
-          if (!win) return;
-          const id = win.id;
-          if (action === 'close') closeWindow(id);
-          if (action === 'minimize') minimizeWindow(id);
-        });
-      });
-
-      wins.forEach((win, index) => {
-        const titlebar = win.querySelector('.titlebar');
-        let dragging = false;
-        let offsetX = 0;
-        let offsetY = 0;
-
-        titlebar.addEventListener('mousedown', e => {
-          dragging = true;
-          const rect = win.getBoundingClientRect();
-          offsetX = e.clientX - rect.left;
-          offsetY = e.clientY - rect.top;
-          win.style.zIndex = String(100 + index + 1);
-        });
-
-        document.addEventListener('mousemove', e => {
-          if (!dragging) return;
-          win.style.left = Math.max(0, Math.min(window.innerWidth - win.offsetWidth, e.clientX - offsetX)) + 'px';
-          win.style.top = Math.max(0, Math.min(window.innerHeight - win.offsetHeight - 52, e.clientY - offsetY)) + 'px';
-        });
-
-        document.addEventListener('mouseup', () => { dragging = false; });
-      });
-
-      const consoleEl = document.getElementById('console');
-      const consoleLines = [
-        'system online',
-        'interface ready',
-        'synced with ARG core',
-        'awaiting user input',
-        'status: project active',
-        'recon package loaded',
-        'sync check passed',
-        'marker pulse stable'
-      ];
-
-      let consoleIndex = 0;
-      setInterval(() => {
-        if (!consoleEl) return;
-        const line = document.createElement('div');
-        line.className = 'console-line';
-        line.textContent = consoleLines[consoleIndex % consoleLines.length];
-        consoleEl.appendChild(line);
+    function typeConsoleText(text, onComplete) {
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      consoleEl.appendChild(line);
+      let index = 0;
+      const typeNextCharacter = () => {
+        line.textContent = text.slice(0, index);
         consoleEl.scrollTop = consoleEl.scrollHeight;
-        consoleIndex += 1;
-      }, 3000);
+        if (index < text.length) {
+          index += 1;
+          window.setTimeout(typeNextCharacter, 28);
+        } else if (onComplete) {
+          onComplete();
+        }
+      };
+      typeNextCharacter();
+    }
 
-      openWindow('welcome');
+    function saveDisclaimerScene() {
+      if (scriptScenes.some(scene => scene.id === disclaimerSceneId)) return;
+      scriptScenes.unshift({
+        id: disclaimerSceneId,
+        title: 'Developer Disclaimer',
+        location: 'First visit console prompt',
+        body: disclaimerText,
+        notes: 'Created automatically when the player accepts the disclaimer.',
+        createdAt: new Date().toISOString()
+      });
+      persistScenes();
+      renderScriptList();
+    }
+
+    function startFirstVisitConsole() {
+      if ((!debugReplay && localStorage.getItem(firstVisitStorageKey)) || firstVisitConsoleActive) return;
+      firstVisitConsoleActive = true;
+      document.body.classList.add('disclaimer-lock');
+      openWindow('consoleWin');
+      consoleEl.innerHTML = '';
+      askDisclaimerQuestion();
+    }
+
+    function waitForYes(question, onYes, onNo) {
+      typeConsoleText(question, () => {
+        const receiveAnswer = event => {
+          const answer = event.key.toLowerCase();
+          if (answer !== 'y' && answer !== 'n') return;
+          document.removeEventListener('keydown', receiveAnswer);
+          if (answer === 'y') onYes();
+          else onNo();
+        };
+        document.addEventListener('keydown', receiveAnswer);
+      });
+    }
+
+    function askDisclaimerQuestion() {
+      waitForYes(
+        'Open disclaimer? type Y/N',
+        () => {
+          saveDisclaimerScene();
+          typeConsoleText(disclaimerText, () => askReadQuestion());
+        },
+        () => {
+          typeConsoleText('You still should read it dummy))<3', () => askDisclaimerQuestion());
+        }
+      );
+    }
+
+    function askReadQuestion() {
+      waitForYes(
+        'Do you read it? Y/N',
+        () => {
+          typeConsoleText('Disclaimer accepted. Welcome to the game.', () => {
+            if (!debugReplay) localStorage.setItem(firstVisitStorageKey, 'true');
+            firstVisitConsoleActive = false;
+            document.body.classList.remove('disclaimer-lock');
+            closeWindow('consoleWin');
+            renderTaskbar();
+          });
+        },
+        () => {
+          typeConsoleText('Do you can read? Because you should', () => askReadQuestion());
+        }
+      );
+    }
+    const scriptList = document.getElementById('scriptList');
+    const scriptForm = document.getElementById('scriptForm');
+    const scriptStatus = document.getElementById('scriptStatus');
+    const scriptStorageKey = 'arg-story-scenes';
+    const firstVisitStorageKey = 'arg-disclaimer-complete-v2';
+    const notebookStorageKey = 'arg-developer-notebook';
+    // Add only approved ARG OST files to this list. Files belong in static/ost/.
+    const PROJECT_OST = [
+      { title: 'Main Theme', source: './static/ost/main-theme.mp3' }
+    ];
+    const disclaimerSceneId = 'developer-disclaimer';
+    const disclaimerText = 'This web game is an experimental interactive story. It may contain fictional danger, mystery, and unsettling themes. Everything in the game is part of the story and should be treated as fiction. Take breaks whenever you need one.';
+    let scriptScenes = [];
+    let selectedSceneId = null;
+    let firstVisitConsoleActive = false;
+    let notebookEntries = [];
+    let selectedNotebookId = null;
+    let notebookImageData = '';
+    let currentStoryMoment = '';
+    const backgroundMusic = document.getElementById('backgroundMusic');
+    const musicTrack = document.getElementById('musicTrack');
+    const musicStatus = document.getElementById('musicStatus');
+
+    PROJECT_OST.forEach((track, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = track.title;
+      musicTrack.appendChild(option);
+    });
+
+    if (!PROJECT_OST.length) {
+      musicStatus.textContent = 'No approved ARG OST tracks configured.';
+    }
+
+    function setMusicStatus(message) {
+      musicStatus.textContent = message;
+    }
+
+    function loadMusicSource(source, label) {
+      backgroundMusic.pause();
+      backgroundMusic.src = source;
+      backgroundMusic.load();
+      setMusicStatus(`Loaded: ${label}. Press Play.`);
+    }
+
+    document.getElementById('loadMusicTrack').addEventListener('click', () => {
+      const track = PROJECT_OST[Number(musicTrack.value)];
+      if (!track) {
+        setMusicStatus('No approved ARG OST track is configured.');
+        return;
+      }
+      loadMusicSource(track.source, track.title);
+    });
+
+    document.getElementById('playMusic').addEventListener('click', () => {
+      if (!backgroundMusic.src) {
+        setMusicStatus('Load an audio file or URL first.');
+        return;
+      }
+      backgroundMusic.play()
+        .then(() => setMusicStatus('Playing background music.'))
+        .catch(() => setMusicStatus('This format or URL cannot be played by the browser.'));
+    });
+
+    document.getElementById('pauseMusic').addEventListener('click', () => {
+      backgroundMusic.pause();
+      setMusicStatus('Music paused.');
+    });
+
+    document.getElementById('musicLoop').addEventListener('change', event => {
+      backgroundMusic.loop = event.target.checked;
+    });
+
+    document.getElementById('musicVolume').addEventListener('input', event => {
+      backgroundMusic.volume = Number(event.target.value);
+    });
+
+    backgroundMusic.volume = 0.5;
+    backgroundMusic.addEventListener('error', () => {
+      setMusicStatus('Unable to decode this audio format or load this URL.');
+    });
+
+    try {
+      scriptScenes = JSON.parse(localStorage.getItem(scriptStorageKey) || '[]');
+    } catch (error) {
+      scriptScenes = [];
+    }
+
+    try {
+      notebookEntries = JSON.parse(localStorage.getItem(notebookStorageKey) || '[]');
+    } catch (error) {
+      notebookEntries = [];
+    }
+
+    function setScriptStatus(message) {
+      scriptStatus.textContent = message;
+      window.clearTimeout(setScriptStatus.timeout);
+      setScriptStatus.timeout = window.setTimeout(() => { scriptStatus.textContent = ''; }, 2400);
+    }
+
+    function persistScenes() {
+      localStorage.setItem(scriptStorageKey, JSON.stringify(scriptScenes));
+    }
+
+    function setNotebookStatus(message) {
+      const status = document.getElementById('notebookStatus');
+      status.textContent = message;
+      window.clearTimeout(setNotebookStatus.timeout);
+      setNotebookStatus.timeout = window.setTimeout(() => { status.textContent = ''; }, 2400);
+    }
+
+    function persistNotebook() {
+      localStorage.setItem(notebookStorageKey, JSON.stringify(notebookEntries));
+    }
+
+    function entryIsUnlocked(entry) {
+      return Boolean(entry.unlockMoment && currentStoryMoment === entry.unlockMoment);
+    }
+
+    function renderPlayerNotebook() {
+      const list = document.getElementById('playerNotebookList');
+      list.innerHTML = '';
+      const unlockedEntries = notebookEntries
+        .filter(entryIsUnlocked)
+        .sort((left, right) => left.moment.localeCompare(right.moment));
+      if (!unlockedEntries.length) {
+        const locked = document.createElement('div');
+        locked.className = 'notebook-locked';
+        locked.textContent = 'No notebook entries have been discovered yet.';
+        list.appendChild(locked);
+        return;
+      }
+      unlockedEntries.forEach(entry => {
+        const card = document.createElement('article');
+        card.className = 'notebook-player-entry';
+        const title = document.createElement('h4');
+        title.textContent = `${entry.moment}: ${entry.title}`;
+        const notes = document.createElement('p');
+        notes.textContent = entry.notes;
+        card.append(title, notes);
+        if (entry.imageData || entry.imageUrl) {
+          const image = document.createElement('img');
+          image.src = entry.imageData || entry.imageUrl;
+          image.alt = entry.title;
+          card.appendChild(image);
+        }
+        list.appendChild(card);
+      });
+    }
+
+    window.setStoryMoment = moment => {
+      currentStoryMoment = String(moment || '').trim();
+      renderPlayerNotebook();
+    };
+
+    function updateNotebookPreview(source) {
+      const preview = document.getElementById('notebookPreview');
+      preview.src = source || '';
+      preview.classList.toggle('visible', Boolean(source));
+    }
+
+    function renderNotebookList() {
+      const list = document.getElementById('notebookList');
+      list.innerHTML = '';
+      const orderedEntries = [...notebookEntries].sort((left, right) => left.moment.localeCompare(right.moment));
+      if (!orderedEntries.length) {
+        const empty = document.createElement('li');
+        empty.textContent = 'No history moments yet.';
+        empty.style.fontSize = '12px';
+        empty.style.color = '#5c6d82';
+        list.appendChild(empty);
+        return;
+      }
+      orderedEntries.forEach(entry => {
+        const item = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.classList.toggle('active', entry.id === selectedNotebookId);
+        button.textContent = `${entry.moment} - ${entry.title}`;
+        button.addEventListener('click', () => loadNotebookEntry(entry.id));
+        item.appendChild(button);
+        list.appendChild(item);
+      });
+    }
+
+    function loadNotebookEntry(entryId) {
+      const entry = notebookEntries.find(item => item.id === entryId);
+      if (!entry) return;
+      selectedNotebookId = entry.id;
+      document.getElementById('notebookMoment').value = entry.moment;
+      document.getElementById('notebookUnlockMoment').value = entry.unlockMoment || '';
+      document.getElementById('notebookTitle').value = entry.title;
+      document.getElementById('notebookNotes').value = entry.notes;
+      document.getElementById('notebookImageUrl').value = entry.imageUrl || '';
+      notebookImageData = entry.imageData || '';
+      updateNotebookPreview(notebookImageData || entry.imageUrl || '');
+      renderNotebookList();
+    }
+
+    document.getElementById('notebookImageFile').addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        notebookImageData = String(reader.result);
+        updateNotebookPreview(notebookImageData);
+      });
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('notebookImageUrl').addEventListener('input', event => {
+      if (!notebookImageData) updateNotebookPreview(event.target.value.trim());
+    });
+
+    document.getElementById('notebookForm').addEventListener('submit', event => {
+      event.preventDefault();
+      const draft = {
+        moment: document.getElementById('notebookMoment').value.trim(),
+        unlockMoment: document.getElementById('notebookUnlockMoment').value.trim(),
+        title: document.getElementById('notebookTitle').value.trim(),
+        notes: document.getElementById('notebookNotes').value.trim(),
+        imageUrl: document.getElementById('notebookImageUrl').value.trim(),
+        imageData: notebookImageData
+      };
+      const existing = notebookEntries.find(entry => entry.id === selectedNotebookId);
+      if (existing) {
+        Object.assign(existing, draft, { updatedAt: new Date().toISOString() });
+        setNotebookStatus('History moment updated.');
+      } else {
+        const entry = { id: crypto.randomUUID(), ...draft, createdAt: new Date().toISOString() };
+        notebookEntries.push(entry);
+        selectedNotebookId = entry.id;
+        setNotebookStatus('History moment added.');
+      }
+      persistNotebook();
+      renderNotebookList();
+      renderPlayerNotebook();
+    });
+
+    document.getElementById('newNotebookEntry').addEventListener('click', () => {
+      document.getElementById('notebookForm').reset();
+      selectedNotebookId = null;
+      notebookImageData = '';
+      updateNotebookPreview('');
+      renderNotebookList();
+      document.getElementById('notebookMoment').focus();
+    });
+
+    document.getElementById('deleteNotebookEntry').addEventListener('click', () => {
+      if (!selectedNotebookId) {
+        setNotebookStatus('Select a history moment first.');
+        return;
+      }
+      notebookEntries = notebookEntries.filter(entry => entry.id !== selectedNotebookId);
+      persistNotebook();
+      renderPlayerNotebook();
+      document.getElementById('newNotebookEntry').click();
+      setNotebookStatus('History moment deleted.');
+    });
+
+    renderNotebookList();
+    renderPlayerNotebook();
+
+    function clearSceneEditor() {
+      scriptForm.reset();
+      selectedSceneId = null;
+      renderScriptList();
+      document.getElementById('sceneTitle').focus();
+    }
+
+    function loadScene(sceneId) {
+      const scene = scriptScenes.find(item => item.id === sceneId);
+      if (!scene) return;
+      selectedSceneId = scene.id;
+      document.getElementById('sceneTitle').value = scene.title;
+      document.getElementById('sceneLocation').value = scene.location;
+      document.getElementById('sceneBody').value = scene.body;
+      document.getElementById('sceneNotes').value = scene.notes;
+      renderScriptList();
+    }
+
+    function renderScriptList() {
+      scriptList.innerHTML = '';
+      if (!scriptScenes.length) {
+        const empty = document.createElement('li');
+        empty.textContent = 'No scenes yet.';
+        empty.style.fontSize = '12px';
+        empty.style.color = '#5c6d82';
+        scriptList.appendChild(empty);
+        return;
+      }
+      scriptScenes.forEach((scene, index) => {
+        const item = document.createElement('li');
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.classList.toggle('active', scene.id === selectedSceneId);
+        button.textContent = `${index + 1}. ${scene.title || 'Untitled scene'}`;
+        button.addEventListener('click', () => loadScene(scene.id));
+        item.appendChild(button);
+        scriptList.appendChild(item);
+      });
+    }
+
+    scriptForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const draft = {
+        title: document.getElementById('sceneTitle').value.trim(),
+        location: document.getElementById('sceneLocation').value.trim(),
+        body: document.getElementById('sceneBody').value.trim(),
+        notes: document.getElementById('sceneNotes').value.trim()
+      };
+      const existing = scriptScenes.find(scene => scene.id === selectedSceneId);
+      if (existing) {
+        Object.assign(existing, draft, { updatedAt: new Date().toISOString() });
+        setScriptStatus('Scene updated.');
+      } else {
+        const scene = { id: crypto.randomUUID(), ...draft, createdAt: new Date().toISOString() };
+        scriptScenes.push(scene);
+        selectedSceneId = scene.id;
+        setScriptStatus('Scene added to the story.');
+      }
+      persistScenes();
+      renderScriptList();
+    });
+
+    document.getElementById('newSceneButton').addEventListener('click', clearSceneEditor);
+    document.getElementById('redactSceneButton').addEventListener('click', () => {
+      const fields = ['sceneTitle', 'sceneLocation', 'sceneBody', 'sceneNotes'];
+      fields.forEach(id => {
+        const field = document.getElementById(id);
+        field.value = field.value
+          .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[EMAIL REDACTED]')
+          .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN REDACTED]')
+          .replace(/\b(?:\d[ -]*?){13,19}\b/g, '[CARD REDACTED]')
+          .replace(/(?<!\w)\+?\d[\d .()-]{7,}\d(?!\w)/g, '[PHONE REDACTED]');
+      });
+      setScriptStatus('Draft redacted. Review it, then save the scene.');
+    });
+    document.getElementById('deleteSceneButton').addEventListener('click', () => {
+      if (!selectedSceneId) {
+        setScriptStatus('Select a scene first.');
+        return;
+      }
+      scriptScenes = scriptScenes.filter(scene => scene.id !== selectedSceneId);
+      persistScenes();
+      clearSceneEditor();
+      setScriptStatus('Scene deleted.');
+    });
+    renderScriptList();
+
+    if (debugMode) {
+      document.getElementById('loginScreen')?.remove();
+      document.body.classList.remove('locked');
+      openWindow('explorer');
+      openWindow('documents');
+      openWindow('notebook');
       renderTaskbar();
-    </script>
-  </body>
+    } else {
+      loginForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (username.toLowerCase() !== DEBUG_USERNAME.toLowerCase() || password !== DEBUG_PASSWORD) {
+          loginError.classList.add('visible');
+          document.getElementById('password').focus();
+          return;
+        }
+
+        loginError.classList.remove('visible');
+        document.body.classList.remove('locked');
+        document.getElementById('loginScreen').remove();
+        startFirstVisitConsole();
+        if (!firstVisitConsoleActive) {
+          renderTaskbar();
+        }
+      });
+    }
+
+    // Updates the clock displayed in the bottom-right tray.
+    // It uses the user's local time and refreshes once every second.
+    function updateClock() {
+      const now = new Date();
+      clock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Opens a window by ID and makes it visible.
+    // It sets the z-index so the active window sits on top of others.
+    function openWindow(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      if (id === 'scripts' && !developerScriptsUnlocked) {
+        if (!unlockDeveloperTools()) return;
+      }
+      win.classList.add('visible');
+      win.classList.remove('minimized');
+      win.style.zIndex = String(20 + wins.indexOf(win) + 1);
+      renderTaskbar();
+    }
+
+    // Closes a window by hiding it and marking it minimized.
+    // The window is not removed from the DOM; it is simply hidden from view.
+    function closeWindow(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      win.classList.remove('visible');
+      win.classList.add('minimized');
+      renderTaskbar();
+    }
+
+    // Minimizes a window by hiding it while keeping it in the taskbar.
+    function minimizeWindow(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      win.classList.add('minimized');
+      win.classList.remove('visible');
+      renderTaskbar();
+    }
+
+    // Renders the taskbar buttons for all windows.
+    // Each button shows the window title and toggles the window open or minimized when clicked.
+    function renderTaskbar() {
+      taskbarButtons.innerHTML = '';
+      wins.forEach(win => {
+        const id = win.id;
+        const isVisible = win.classList.contains('visible');
+        if (!isVisible && !win.classList.contains('minimized')) return;
+        if (!win.classList.contains('visible') && win.classList.contains('minimized')) return;
+        const btn = document.createElement('button');
+        btn.className = 'taskbar-btn' + (isVisible ? ' active' : '');
+        btn.innerHTML = '<span class="tiny-icon"></span><span>' + (win.dataset.title || id) + '</span>';
+        btn.addEventListener('click', () => {
+          if (win.classList.contains('visible')) {
+            minimizeWindow(id);
+          } else {
+            openWindow(id);
+          }
+        });
+        taskbarButtons.appendChild(btn);
+      });
+    }
+
+    // Desktop icons open their matching windows when the user double-clicks them.
+    // Single click also highlights the icon to give selection feedback.
+    document.querySelectorAll('.desktop-icon').forEach(icon => {
+      icon.addEventListener('dblclick', () => openWindow(icon.dataset.window));
+      icon.addEventListener('click', () => {
+        document.querySelectorAll('.desktop-icon').forEach(el => el.classList.remove('selected'));
+        icon.classList.add('selected');
+      });
+    });
+
+    // Clicking a menu item opens the chosen window and closes the start menu.
+    document.querySelectorAll('.menu-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const target = item.dataset.window;
+        if (target) openWindow(target);
+        startMenu.classList.remove('open');
+      });
+    });
+
+    // The Start button toggles the menu open/closed.
+    // Clicking outside the menu closes it as well.
+    startButton.addEventListener('click', () => startMenu.classList.toggle('open'));
+    document.addEventListener('click', (e) => {
+      if (!startMenu.contains(e.target) && !startButton.contains(e.target)) {
+        startMenu.classList.remove('open');
+      }
+    });
+
+    // Window control buttons handle minimize and close actions.
+    document.querySelectorAll('.window-control').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const win = btn.closest('.window');
+        const action = btn.dataset.action;
+        if (!win) return;
+        const id = win.id;
+        if (action === 'close') closeWindow(id);
+        if (action === 'minimize') minimizeWindow(id);
+      });
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'd') {
+        event.preventDefault();
+        if (unlockDeveloperTools()) openWindow('scripts');
+      }
+    });
+
+    // Dragging behavior lets the user move each window around the desktop.
+    // The code records the click offset inside the window and updates its position as the mouse moves.
+    wins.forEach((win, index) => {
+      const titlebar = win.querySelector('.titlebar');
+      let dragging = false;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      titlebar.addEventListener('mousedown', e => {
+        dragging = true;
+        const rect = win.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        win.style.zIndex = String(100 + index + 1);
+      });
+
+      document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        win.style.left = Math.max(0, Math.min(window.innerWidth - win.offsetWidth, e.clientX - offsetX)) + 'px';
+        win.style.top = Math.max(0, Math.min(window.innerHeight - win.offsetHeight - 52, e.clientY - offsetY)) + 'px';
+      });
+
+      document.addEventListener('mouseup', () => { dragging = false; });
+    });
+
+    // The console is a fake terminal that appends new status lines periodically.
+    // This creates the impression of a live system updating itself.
+    const consoleEl = document.getElementById('console');
+    const consoleLines = [
+      'system online',
+      'interface ready',
+      'synced with ARG core',
+      'awaiting user input',
+      'status: project active',
+      'recon package loaded',
+      'sync check passed',
+      'marker pulse stable'
+    ];
+
+    let consoleIndex = 0;
+    setInterval(() => {
+      if (!consoleEl || firstVisitConsoleActive) return;
+      const line = document.createElement('div');
+      line.className = 'console-line';
+      line.textContent = consoleLines[consoleIndex % consoleLines.length];
+      consoleEl.appendChild(line);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+      consoleIndex += 1;
+    }, 3000);
+
+    // The desktop starts only after the login form accepts the credentials.
+  </script>
+</body>
 </html>
