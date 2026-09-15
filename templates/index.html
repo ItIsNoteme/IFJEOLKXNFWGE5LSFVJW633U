@@ -733,6 +733,167 @@
       padding: 5px 10px; background: #eaf5ff; border: 1px solid #89b4e2; font-size: 12px;
     }
 
+    .messenger-layout {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      min-height: 280px;
+      border: 1px solid #8c9caf;
+      background: #fff;
+    }
+
+    .messenger-contacts {
+      padding: 6px;
+      background: #e6edf6;
+      border-right: 1px solid #aab7c8;
+    }
+
+    .messenger-contact {
+      width: 100%;
+      padding: 9px 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .messenger-contact.active,
+    .messenger-contact:hover {
+      color: #fff;
+      background: #347dcc;
+      border-color: #1d4d93;
+    }
+
+    .messenger-chat {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .messenger-chat-header {
+      padding: 9px 10px;
+      color: #163d7d;
+      background: #eaf4ff;
+      border-bottom: 1px solid #b8c8dd;
+      font-weight: 700;
+    }
+
+    .messenger-messages {
+      display: grid;
+      align-content: start;
+      gap: 7px;
+      flex: 1;
+      min-height: 190px;
+      padding: 10px;
+      overflow-y: auto;
+      background: #f7f7f7;
+    }
+
+    .messenger-message {
+      max-width: 82%;
+      padding: 7px 9px;
+      border: 1px solid #c3ccd8;
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .messenger-message.from-user {
+      justify-self: end;
+      background: #e1f0ff;
+      border-color: #9bbce0;
+    }
+
+    .messenger-composer {
+      display: flex;
+      gap: 6px;
+      padding: 7px;
+      border-top: 1px solid #b8c8dd;
+      background: #e6edf6;
+    }
+
+    .messenger-composer input {
+      flex: 1;
+      min-width: 0;
+      padding: 6px;
+      border: 1px solid #aab7c8;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .messenger-composer button {
+      padding: 6px 10px;
+      border: 1px solid #537dbd;
+      background: linear-gradient(180deg, #eaf4ff, #d2e5ff);
+      cursor: pointer;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .email-layout {
+      display: grid;
+      grid-template-columns: 190px minmax(0, 1fr);
+      min-height: 320px;
+      border: 1px solid #8c9caf;
+      background: #fff;
+    }
+
+    .email-list {
+      padding: 6px;
+      overflow-y: auto;
+      background: #e6edf6;
+      border-right: 1px solid #aab7c8;
+    }
+
+    .email-item {
+      width: 100%;
+      display: grid;
+      gap: 3px;
+      padding: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      font-size: 11px;
+    }
+
+    .email-item.unread { background: #fff; border-color: #9bbce0; }
+    .email-item strong { font-size: 12px; }
+    .email-item span { color: #52677e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .email-item.active,
+    .email-item:hover {
+      color: #fff;
+      background: #347dcc;
+      border-color: #1d4d93;
+    }
+
+    .email-item.active span,
+    .email-item:hover span { color: #eaf4ff; }
+
+    .email-reader {
+      min-width: 0;
+      background: #fff;
+    }
+
+    .email-header {
+      padding: 10px;
+      border-bottom: 1px solid #b8c8dd;
+      background: #eaf4ff;
+    }
+
+    .email-subject { margin: 0 0 6px; font-size: 15px; color: #163d7d; }
+    .email-meta { color: #52677e; font-size: 11px; }
+
+    .email-body {
+      padding: 12px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 12px;
+    }
+
     .console {
       width: 100%; height: 200px; background: #000; color: #d8d8d8; border: 1px solid #777; padding: 10px; overflow: auto; font-family: "Perfect DOS VGA 437", "IBM VGA8", "Courier New", monospace; font-size: 12px; line-height: 1.45; letter-spacing: 0;
     }
@@ -1104,6 +1265,8 @@
       .game-layout { grid-template-columns: 1fr; }
       .script-layout { grid-template-columns: 1fr; }
       .content-grid { grid-template-columns: 1fr; }
+      .messenger-layout { grid-template-columns: 110px minmax(0, 1fr); }
+      .email-layout { grid-template-columns: 125px minmax(0, 1fr); }
       .taskbar-btn { min-width: 110px; }
     }
   </style>
@@ -1159,6 +1322,14 @@
       <div class="desktop-icon" data-window="music">
         <div class="icon-graphic icon-globe"></div>
         <span>Background Music</span>
+      </div>
+      <div class="desktop-icon" data-window="messenger">
+        <div class="icon-graphic icon-computer"></div>
+        <span>Messenger</span>
+      </div>
+      <div class="desktop-icon" data-window="email">
+        <div class="icon-graphic icon-doc"></div>
+        <span>E-Mail</span>
       </div>
     </div>
 
@@ -1376,6 +1547,57 @@
       </div>
     </div>
 
+    <div class="window" id="messenger" data-title="Messenger" style="left: 500px; top: 110px; width: 560px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">Messenger</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="messenger-layout">
+          <div class="messenger-contacts" id="messengerContacts"></div>
+          <div class="messenger-chat">
+            <div class="messenger-chat-header" id="messengerChatHeader">Kai</div>
+            <div class="messenger-messages" id="messengerMessages"></div>
+            <form class="messenger-composer" id="messengerComposer">
+              <input id="messengerInput" type="text" placeholder="Write a message..." autocomplete="off" />
+              <button type="submit">Send</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="window" id="email" data-title="E-Mail" style="left: 230px; top: 130px; width: 650px;">
+      <div class="titlebar">
+        <div class="left">
+          <div class="window-icon"></div>
+          <div class="title-text">E-Mail</div>
+        </div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="email-layout">
+          <div class="email-list" id="emailList"></div>
+          <article class="email-reader" id="emailReader">
+            <header class="email-header">
+              <h3 class="email-subject" id="emailSubject"></h3>
+              <div class="email-meta" id="emailMeta"></div>
+            </header>
+            <div class="email-body" id="emailBody"></div>
+          </article>
+        </div>
+      </div>
+    </div>
+
     <!--
       Console window: this displays fake system logs to create the impression of a running terminal environment.
       It gets updated periodically by JavaScript to simulate a live console.
@@ -1415,6 +1637,8 @@
         <div class="menu-item dev-only-nav" data-window="scripts"><span class="menu-icon"></span> Script Workshop</div>
         <div class="menu-item" data-window="notebook"><span class="menu-icon"></span> Notebook</div>
         <div class="menu-item" data-window="music"><span class="menu-icon"></span> Background Music</div>
+        <div class="menu-item" data-window="messenger"><span class="menu-icon"></span> Messenger</div>
+        <div class="menu-item" data-window="email"><span class="menu-icon"></span> E-Mail</div>
         <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
       </div>
       <div class="menu-group" style="margin-top: 18px;">
@@ -1545,6 +1769,7 @@
             firstVisitConsoleActive = false;
             document.body.classList.remove('disclaimer-lock');
             closeWindow('consoleWin');
+            openWindow('messenger');
             renderTaskbar();
           });
         },
@@ -1572,9 +1797,114 @@
     let selectedNotebookId = null;
     let notebookImageData = '';
     let currentStoryMoment = '';
+    const messengerContacts = [
+      {
+        name: 'Kai',
+        messages: [
+          { text: 'You made it online.', fromUser: false },
+          { text: 'I left the light on. Do not open the second file.', fromUser: false }
+        ]
+      }
+    ];
+    let selectedMessengerContact = 'Kai';
     const backgroundMusic = document.getElementById('backgroundMusic');
     const musicTrack = document.getElementById('musicTrack');
     const musicStatus = document.getElementById('musicStatus');
+    const messengerContactsElement = document.getElementById('messengerContacts');
+    const messengerMessagesElement = document.getElementById('messengerMessages');
+    const messengerChatHeader = document.getElementById('messengerChatHeader');
+    const messengerComposer = document.getElementById('messengerComposer');
+    const messengerInput = document.getElementById('messengerInput');
+    const emailMessages = [
+      {
+        id: 'archive-notice',
+        sender: 'Kai <kai@northstar.local>',
+        subject: 'Do not trust the archive index',
+        preview: 'The names in the index are not the names of the people.',
+        body: 'The names in the index are not the names of the people.\n\nI found a second directory behind the maintenance logs. It is still updating, even though the server says it has been offline for six years.\n\nDo not answer from the archive account. Use the messenger if you need me.',
+        read: false
+      },
+      {
+        id: 'welcome-message',
+        sender: 'system@arg.local',
+        subject: 'Welcome to the ARG network',
+        preview: 'Your local desktop profile is ready.',
+        body: 'Your local desktop profile is ready.\n\nSome applications may contain archived story material. Check the sender and timestamp before opening attachments.',
+        read: true
+      }
+    ];
+    let selectedEmailId = 'archive-notice';
+    const emailList = document.getElementById('emailList');
+    const emailSubject = document.getElementById('emailSubject');
+    const emailMeta = document.getElementById('emailMeta');
+    const emailBody = document.getElementById('emailBody');
+
+    function renderMessenger() {
+      messengerContactsElement.innerHTML = '';
+      messengerMessagesElement.innerHTML = '';
+      messengerContacts.forEach(contact => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'messenger-contact';
+        button.classList.toggle('active', contact.name === selectedMessengerContact);
+        button.textContent = contact.name;
+        button.addEventListener('click', () => {
+          selectedMessengerContact = contact.name;
+          renderMessenger();
+        });
+        messengerContactsElement.appendChild(button);
+      });
+
+      const contact = messengerContacts.find(item => item.name === selectedMessengerContact);
+      if (!contact) return;
+      messengerChatHeader.textContent = contact.name;
+      contact.messages.forEach(message => {
+        const bubble = document.createElement('div');
+        bubble.className = `messenger-message${message.fromUser ? ' from-user' : ''}`;
+        bubble.textContent = message.text;
+        messengerMessagesElement.appendChild(bubble);
+      });
+      messengerMessagesElement.scrollTop = messengerMessagesElement.scrollHeight;
+    }
+
+    messengerComposer.addEventListener('submit', event => {
+      event.preventDefault();
+      const text = messengerInput.value.trim();
+      if (!text) return;
+      const contact = messengerContacts.find(item => item.name === selectedMessengerContact);
+      contact.messages.push({ text, fromUser: true });
+      messengerInput.value = '';
+      renderMessenger();
+      messengerInput.focus();
+    });
+
+    renderMessenger();
+
+    function renderEmail() {
+      emailList.innerHTML = '';
+      emailMessages.forEach(message => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'email-item';
+        button.classList.toggle('active', message.id === selectedEmailId);
+        button.classList.toggle('unread', !message.read);
+        button.innerHTML = `<strong>${message.subject}</strong><span>${message.sender}</span><span>${message.preview}</span>`;
+        button.addEventListener('click', () => {
+          selectedEmailId = message.id;
+          message.read = true;
+          renderEmail();
+        });
+        emailList.appendChild(button);
+      });
+
+      const message = emailMessages.find(item => item.id === selectedEmailId);
+      if (!message) return;
+      emailSubject.textContent = message.subject;
+      emailMeta.textContent = `From: ${message.sender}`;
+      emailBody.textContent = message.body;
+    }
+
+    renderEmail();
 
     PROJECT_OST.forEach((track, index) => {
       const option = document.createElement('option');
@@ -1934,6 +2264,7 @@
       openWindow('explorer');
       openWindow('documents');
       openWindow('notebook');
+      openWindow('messenger');
       renderTaskbar();
     } else {
       loginForm.addEventListener('submit', event => {
