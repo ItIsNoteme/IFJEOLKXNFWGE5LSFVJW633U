@@ -4,6 +4,7 @@ import json
 import os
 import re
 import secrets
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import cast
 
@@ -22,6 +23,7 @@ STATIC_DIR = BASE_DIR / "static"
 # Change this value when the developer wants to change the local login password.
 DEVELOPER_PASSWORD = "MishaXP2026"
 DEBUG = os.getenv("ARG_DEBUG", "false").casefold() in {"1", "true", "yes", "on"}
+RELEASE_AT = os.getenv("ARG_RELEASE_AT", "2026-09-30T00:00:00+00:00")
 STATIC_DIR.mkdir(exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
@@ -136,13 +138,19 @@ def serialize_progress(progress: GameProgress | None):
     }
 
 
-@app.get("/", response_class=HTMLResponse)
-async def index(request: Request, db: Session = Depends(get_db)):
+def get_release_time() -> datetime:
+    release_time = datetime.fromisoformat(RELEASE_AT)
+    if release_time.tzinfo is None:
+        release_time = release_time.replace(tzinfo=timezone.utc)
+    return release_time.astimezone(timezone.utc)
+
+
+def desktop_response(request: Request, db: Session) -> HTMLResponse:
     test_user = ensure_test_user(db)
     logged_in_user = get_logged_in_user(request, db)
     progress = db.query(GameProgress).order_by(GameProgress.id.desc()).first()
     payload = serialize_progress(progress)
-    response = templates.TemplateResponse(
+    return templates.TemplateResponse(
         "index.html",
         {
             "request": request,
@@ -151,7 +159,34 @@ async def index(request: Request, db: Session = Depends(get_db)):
             "default_username": test_user.display_name,
         },
     )
-    return response
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request, db: Session = Depends(get_db)):
+    return desktop_response(request, db)
+
+
+@app.get("/main", response_class=HTMLResponse)
+async def gated_main(request: Request, db: Session = Depends(get_db)):
+    """Keep the main desktop unavailable until the server release time."""
+    now = datetime.now(timezone.utc)
+    if now < get_release_time():
+        return HTMLResponse(
+            "<h1>ARG desktop is not available yet.</h1>",
+            status_code=403,
+        )
+    return desktop_response(request, db)
+
+
+@app.get("/api/release-status")
+async def release_status():
+    now = datetime.now(timezone.utc)
+    release_time = get_release_time()
+    return {
+        "server_time": now.isoformat(),
+        "release_time": release_time.isoformat(),
+        "released": now >= release_time,
+    }
 
 
 @app.post("/login")

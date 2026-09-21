@@ -1,0 +1,86 @@
+:root {
+  color-scheme: dark;
+  --dos-green: #33ff66;
+  --dos-dim: #159b3a;
+  --dos-black: #020702;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  background: #071407;
+  color: var(--dos-green);
+  font: 16px/1.6 "Courier New", monospace;
+  text-shadow: 0 0 5px rgba(51, 255, 102, 0.65);
+}
+
+.dos-window {
+  width: min(760px, 100%);
+  border: 2px solid var(--dos-green);
+  background: var(--dos-black);
+  box-shadow: 0 0 0 5px #0a260f, 0 0 35px rgba(51, 255, 102, 0.2);
+}
+
+.dos-title {
+  padding: 3px 12px;
+  overflow: hidden;
+  background: var(--dos-green);
+  color: var(--dos-black);
+  font-weight: 700;
+  text-shadow: none;
+  white-space: nowrap;
+}
+
+.dos-screen { padding: 26px clamp(18px, 5vw, 48px) 34px; }
+.dos-screen p { margin: 0 0 8px; }
+.blank { height: 16px; }
+.cursor { animation: blink 1s steps(2, start) infinite; }
+
+.progress {
+  height: 18px;
+  margin: 22px 0 18px;
+  border: 1px solid var(--dos-dim);
+  padding: 2px;
+}
+
+.progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--dos-green);
+  box-shadow: 0 0 8px var(--dos-green);
+  transition: width 1s linear;
+}
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.dos-button {
+  border: 1px solid var(--dos-green);
+  padding: 8px 12px;
+  background: var(--dos-black);
+  color: var(--dos-green);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  text-shadow: inherit;
+}
+.dos-button:hover, .dos-button:focus-visible { background: var(--dos-green); color: var(--dos-black); text-shadow: none; }
+.primary { background: var(--dos-dim); }
+
+@keyframes blink { 50% { opacity: 0; } }
+
+@media (max-width: 520px) {
+  body { padding: 12px; font-size: 14px; }
+  .dos-screen { padding: 20px 14px 24px; }
+  .actions { flex-direction: column; }
+  .dos-button { text-align: center; }
+}
