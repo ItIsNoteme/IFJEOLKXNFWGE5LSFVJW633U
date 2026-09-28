@@ -83,6 +83,18 @@
       100% { width: 78%; }
     }
 
+    @keyframes hyperficationGlitch {
+      0%, 88%, 100% { transform: translate(0); filter: none; }
+      90% { transform: translate(2px, -1px); filter: drop-shadow(-2px 0 #ef4770); }
+      92% { transform: translate(-2px, 1px); filter: drop-shadow(2px 0 #52e0d0); }
+      94% { transform: translate(0); filter: none; }
+    }
+
+    @keyframes depressionGrayscale {
+      from { filter: grayscale(0) contrast(1); }
+      to { filter: grayscale(1) contrast(0.92); }
+    }
+
     /*
       Base page styling: this creates the full-screen desktop canvas.
       The body uses a blue gradient background and hides overflow so the app behaves like a desktop.
@@ -114,6 +126,48 @@
       overflow: hidden;
     }
 
+    body.timeline-part-a-beginning { background: var(--wp1); }
+    body.timeline-part-b-hyperfication {
+      background:
+        repeating-linear-gradient(0deg, rgba(22, 18, 38, 0.06) 0 1px, transparent 1px 4px),
+        linear-gradient(140deg, #9c89b6 0%, #88adae 45%, #d0a4a5 100%);
+    }
+    body.timeline-part-b-original { background: linear-gradient(180deg, #5998d2 0%, #72a1d0 46%, #83b4d1 100%); }
+    body.timeline-part-a-depression { background: var(--wp1); }
+    body.timeline-part-b-narru-misha { background: linear-gradient(145deg, #87bdd0 0%, #8ebac0 48%, #7eaa9a 100%); }
+    body.timeline-part-b-orange { background: linear-gradient(150deg, #a86c36 0%, #d09a57 45%, #8d6948 100%); }
+
+    body.timeline-part-b-hyperfication .window.visible {
+      animation: hyperficationGlitch 3.6s steps(1, end) infinite;
+    }
+
+    body.timeline-part-a-depression .desktop {
+      animation: depressionGrayscale 75s linear forwards;
+    }
+
+    body.timeline-part-b-orange .titlebar {
+      background: linear-gradient(180deg, #f0a047 0%, #bd5e19 100%);
+    }
+
+    .timeline-hud {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      z-index: 4;
+      display: grid;
+      gap: 3px;
+      min-width: 160px;
+      padding: 7px 9px;
+      color: #fff;
+      background: rgba(16, 31, 45, 0.62);
+      border: 1px solid rgba(255,255,255,0.6);
+      font-size: 11px;
+      text-shadow: 1px 1px rgba(0,0,0,0.7);
+      pointer-events: none;
+    }
+
+    .timeline-hud strong { font-size: 12px; }
+
     body.locked .desktop,
     body.locked .start-menu,
     body.locked .taskbar {
@@ -129,6 +183,8 @@
       z-index: 1000;
       background: var(--wp1);
     }
+
+    .login-screen.waiting { display: none; }
 
     .login-window {
       width: min(390px, calc(100vw - 36px));
@@ -784,11 +840,98 @@
       align-content: start;
       gap: 7px;
       flex: 1;
-      min-height: 190px;
+      min-height: 140px;
+      max-height: 140px;
       padding: 10px;
       overflow-y: auto;
       background: #f7f7f7;
+      scroll-behavior: smooth;
     }
+
+    .messenger-date,
+    .messenger-loading {
+      justify-self: center;
+      color: #64768a;
+      font-size: 11px;
+    }
+
+    .messenger-empty {
+      align-self: center;
+      justify-self: center;
+      color: #64768a;
+      font-size: 12px;
+    }
+
+    .messenger-notification {
+      display: none;
+      padding: 8px 10px;
+      color: #153c6a;
+      background: #eaf4ff;
+      border: 1px solid #89b4e2;
+      font-size: 12px;
+    }
+
+    .messenger-notification.visible { display: block; }
+
+    .messenger-status {
+      min-height: 16px;
+      color: #53677d;
+      font-size: 11px;
+    }
+
+    .messenger-composer input:disabled,
+    .messenger-composer button:disabled {
+      color: #7b8794;
+      background: #e2e2e2;
+      cursor: not-allowed;
+    }
+
+    .window.error-page {
+      width: min(320px, calc(100vw - 20px));
+      height: 182px;
+      min-height: 0;
+    }
+
+    .error-page .window-content {
+      min-height: 0;
+      height: calc(100% - 34px);
+      padding: 12px;
+      background: #f2f0e7;
+      font-family: Tahoma, "Segoe UI", sans-serif;
+    }
+
+    .error-page-message {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .error-page-code {
+      color: #4f5560;
+      font: 11px Consolas, "Courier New", monospace;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 3px;
+      margin: 8px 0;
+    }
+
+    .calendar-grid button,
+    .calendar-grid span {
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1;
+      min-width: 0;
+      padding: 2px;
+      border: 1px solid #c1cad6;
+      background: #fff;
+      font: inherit;
+      font-size: 11px;
+    }
+
+    .calendar-grid button { cursor: pointer; }
+    .calendar-grid button.selected { color: #fff; background: #347dcc; border-color: #1d4d93; }
 
     .messenger-message {
       max-width: 82%;
@@ -1065,6 +1208,14 @@
       font-weight: 700;
     }
 
+    .notebook-editor label.notebook-positive-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .notebook-positive-option input { width: auto; }
+
     .notebook-editor input,
     .notebook-editor textarea {
       width: 100%;
@@ -1112,6 +1263,62 @@
       gap: 8px;
       max-height: 420px;
       overflow-y: auto;
+    }
+
+    .notebook-player-list[hidden] { display: none; }
+
+    .notebook-gate[hidden],
+    .notebook-contents[hidden] { display: none; }
+
+    .notebook-gate {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 18px;
+      min-height: 390px;
+      padding: 32px;
+      color: #202020;
+      background: #bdbdbd;
+      text-align: center;
+    }
+
+    .notebook-gate p {
+      max-width: 420px;
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .notebook-unlock-form {
+      display: grid;
+      gap: 9px;
+      width: min(280px, 100%);
+    }
+
+    .notebook-unlock-form input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid #777;
+      background: #f7f7f7;
+      font: inherit;
+      text-align: center;
+    }
+
+    .notebook-unlock-form button {
+      justify-self: center;
+      min-width: 100px;
+      padding: 7px 14px;
+      border: 1px solid #777;
+      background: linear-gradient(#fff, #ddd);
+      cursor: pointer;
+      font: inherit;
+      text-transform: lowercase;
+    }
+
+    .notebook-unlock-status {
+      min-height: 16px;
+      color: #7d2020;
+      font-size: 12px;
     }
 
     .notebook-player-entry {
@@ -1271,15 +1478,15 @@
     }
   </style>
 </head>
-<body class="locked">
-  <div class="login-screen" id="loginScreen">
+<body class="locked" data-authenticated="{{ 'true' if logged_in_user else 'false' }}" data-developer="{{ 'true' if developer_access else 'false' }}" data-timeline-stage="{{ progress.stage }}">
+  <div class="login-screen waiting" id="loginScreen">
     <section class="login-window" aria-labelledby="loginTitle">
       <h1 class="login-title" id="loginTitle">Windows XP Login</h1>
-      <div class="login-error" id="loginError">Invalid username or password.</div>
+      <div class="login-error" id="loginError" role="alert" aria-live="polite"></div>
       <form class="login-form" id="loginForm">
         <label>
           Username
-          <input id="username" name="username" type="text" value="Misha" autocomplete="username" required />
+          <input id="username" name="username" type="text" value="{{ default_username }}" autocomplete="username" required />
         </label>
         <label>
           Password
@@ -1294,6 +1501,11 @@
     Each .window is a floating app or panel that can be opened, minimized, or closed.
   -->
   <div class="desktop">
+    <div class="timeline-hud" aria-live="polite">
+      <strong id="timelineStageLabel">Timeline</strong>
+      <span id="wallpaperName">Wallpaper</span>
+      <span id="timelineHearts">Hearts: -- / 3</span>
+    </div>
     <div class="desktop-icons">
       <!--
         These desktop shortcuts act like launch buttons for the virtual desktop environment.
@@ -1317,7 +1529,7 @@
       </div>
       <div class="desktop-icon" data-window="notebook">
         <div class="icon-graphic icon-folder"></div>
-        <span>Notebook</span>
+        <span>Notepad</span>
       </div>
       <div class="desktop-icon" data-window="music">
         <div class="icon-graphic icon-globe"></div>
@@ -1330,6 +1542,14 @@
       <div class="desktop-icon" data-window="email">
         <div class="icon-graphic icon-doc"></div>
         <span>E-Mail</span>
+      </div>
+      <div class="desktop-icon" data-window="cart">
+        <div class="icon-graphic icon-folder"></div>
+        <span>Shopping Cart</span>
+      </div>
+      <div class="desktop-icon" data-window="calendar">
+        <div class="icon-graphic icon-doc"></div>
+        <span>Calendar</span>
       </div>
     </div>
 
@@ -1360,11 +1580,11 @@
             </ul>
           </div>
           <div class="panel">
-            <h3>System Info</h3>
+            <h3>Settings</h3>
             <div class="stats">
-              <div class="stat"><span>CPU</span><strong>i7</strong></div>
-              <div class="stat"><span>RAM</span><strong>16 GB</strong></div>
-              <div class="stat"><span>Graphics</span><strong>RTX</strong></div>
+              <div class="stat"><span>Profile</span><strong>Section B</strong></div>
+              <div class="stat"><span>Current date</span><strong>February 8</strong></div>
+              <div class="stat"><span>Network</span><strong>Connected</strong></div>
             </div>
           </div>
         </div>
@@ -1401,6 +1621,12 @@
             <textarea class="textarea">Project ARG is a browser-ready game prototype. Future expansions include dialogue states, inventory, map traversal, and faction events.</textarea>
           </div>
         </div>
+        <div class="status-area" id="savedProgress" aria-label="Saved player progression">
+          <span class="status-tag">Stage: {{ progress.stage }}</span>
+          <span class="status-tag">XP: {{ progress.xp }}</span>
+          <span class="status-tag">Coins: {{ progress.coins }}</span>
+        </div>
+        <p id="progressNotes">{{ progress.progress_notes }}</p>
       </div>
     </div>
 
@@ -1421,12 +1647,9 @@
       </div>
       <div class="window-content">
         <div class="panel">
-          <h3>Deleted Items</h3>
-          <ul class="explorer-list">
-            <li><span class="folder-badge"></span> old_wireframe.map</li>
-            <li><span class="folder-badge"></span> debug_ui_backup</li>
-            <li><span class="folder-badge"></span> idle_quest_notes</li>
-          </ul>
+          <h3 id="recycleTitle">Recycle Bin</h3>
+          <ul class="explorer-list" id="recycleItems"></ul>
+          <p id="recycleEmpty">Recycle Bin is empty.</p>
         </div>
       </div>
     </div>
@@ -1498,22 +1721,33 @@
       </div>
     </div>
 
-    <div class="window" id="notebook" data-title="Developer Notebook" style="left: 190px; top: 80px; width: 720px;">
+    <div class="window" id="notebook" data-title="Notepad" style="left: 190px; top: 80px; width: 720px;">
       <div class="titlebar">
         <div class="left">
           <div class="window-icon"></div>
-          <div class="title-text">Developer Notebook</div>
+          <div class="title-text">Notepad</div>
         </div>
         <div class="window-controls">
           <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
-      <div class="window-content">
+      <div class="window-content" style="padding: 0;">
+        <div class="notebook-gate" id="notebookGate">
+          <p>Don't you think reading someone else's diary is kind of rude?</p>
+          <form class="notebook-unlock-form" id="notebookUnlockForm">
+            <label for="notebookUnlockCode">Code</label>
+            <input id="notebookUnlockCode" type="text" inputmode="numeric" autocomplete="off" maxlength="7" required />
+            <button type="submit">confirm</button>
+            <div class="notebook-unlock-status" id="notebookUnlockStatus" aria-live="polite"></div>
+          </form>
+        </div>
+        <div class="notebook-contents" id="notebookContents" hidden>
         <div class="notebook-player-view">
           <div class="panel">
-            <h3>History Notebook</h3>
-            <div class="notebook-player-list" id="playerNotebookList"></div>
+            <h3>Notepad</h3>
+            <div class="notebook-locked" id="notepadLocked" hidden>Notepad is locked.</div>
+            <div class="notebook-player-list" id="playerNotebookList" hidden></div>
           </div>
         </div>
         <div class="notebook-dev-view">
@@ -1532,6 +1766,7 @@
               <label>Unlock at story moment<input id="notebookUnlockMoment" type="text" placeholder="station-arrival" required /></label>
               <label>Entry title<input id="notebookTitle" type="text" placeholder="The first transmission" required /></label>
               <label>Notes<textarea id="notebookNotes" placeholder="What should the player discover at this moment?" required></textarea></label>
+              <label class="notebook-positive-option"><input id="notebookPositive" type="checkbox" /> Positive entry</label>
               <label>Picture URL<input id="notebookImageUrl" type="url" placeholder="Optional image URL" /></label>
               <label>Or upload picture<input id="notebookImageFile" type="file" accept="image/*" /></label>
               <img class="notebook-preview" id="notebookPreview" alt="Notebook entry preview" />
@@ -1544,14 +1779,16 @@
           </div>
         </div>
         </div>
+        <div class="notebook-locked" id="journalBrokenState" hidden>Journal is BROKEN.</div>
+        </div>
       </div>
     </div>
 
-    <div class="window" id="messenger" data-title="Messenger" style="left: 500px; top: 110px; width: 560px;">
+    <div class="window" id="messenger" data-title="Chirp" style="left: 500px; top: 110px; width: 560px;">
       <div class="titlebar">
         <div class="left">
           <div class="window-icon"></div>
-          <div class="title-text">Messenger</div>
+          <div class="title-text">Chirp</div>
         </div>
         <div class="window-controls">
           <button class="window-control" data-action="minimize">_</button>
@@ -1562,12 +1799,14 @@
         <div class="messenger-layout">
           <div class="messenger-contacts" id="messengerContacts"></div>
           <div class="messenger-chat">
-            <div class="messenger-chat-header" id="messengerChatHeader">Kai</div>
+            <div class="messenger-chat-header" id="messengerChatHeader">Kai · Today</div>
             <div class="messenger-messages" id="messengerMessages"></div>
+            <div class="messenger-notification" id="messengerNotification" role="status" aria-live="polite"></div>
             <form class="messenger-composer" id="messengerComposer">
               <input id="messengerInput" type="text" placeholder="Write a message..." autocomplete="off" />
               <button type="submit">Send</button>
             </form>
+            <div class="messenger-status" id="messengerStatus" aria-live="polite"></div>
           </div>
         </div>
       </div>
@@ -1594,6 +1833,34 @@
             </header>
             <div class="email-body" id="emailBody"></div>
           </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="window" id="cart" data-title="Shopping Cart" style="left: 390px; top: 250px; width: 360px;">
+      <div class="titlebar">
+        <div class="left"><div class="window-icon"></div><div class="title-text">Shopping Cart</div></div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content"><div class="panel"><h3>Your cart is empty</h3><p>No items have been added.</p></div></div>
+    </div>
+
+    <div class="window" id="calendar" data-title="Calendar" style="left: 620px; top: 200px; width: 340px;">
+      <div class="titlebar">
+        <div class="left"><div class="window-icon"></div><div class="title-text">Calendar</div></div>
+        <div class="window-controls">
+          <button class="window-control" data-action="minimize">_</button>
+          <button class="window-control" data-action="close">×</button>
+        </div>
+      </div>
+      <div class="window-content">
+        <div class="panel">
+          <h3 id="calendarMonth">February</h3>
+          <div class="calendar-grid" id="calendarGrid" aria-label="February calendar"></div>
+          <div class="music-status" id="calendarSelection" aria-live="polite">Selected: February 8</div>
         </div>
       </div>
     </div>
@@ -1639,6 +1906,8 @@
         <div class="menu-item" data-window="music"><span class="menu-icon"></span> Background Music</div>
         <div class="menu-item" data-window="messenger"><span class="menu-icon"></span> Messenger</div>
         <div class="menu-item" data-window="email"><span class="menu-icon"></span> E-Mail</div>
+        <div class="menu-item" data-window="cart"><span class="menu-icon"></span> Shopping Cart</div>
+        <div class="menu-item" data-window="calendar"><span class="menu-icon"></span> Calendar</div>
         <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
       </div>
       <div class="menu-group" style="margin-top: 18px;">
@@ -1669,22 +1938,88 @@
     const startMenu = document.getElementById('startMenu');
     const startButton = document.getElementById('startButton');
     const clock = document.getElementById('clock');
+    const consoleEl = document.getElementById('console');
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
-    const DEBUG_USERNAME = 'Misha';
-    const DEBUG_PASSWORD = 'MishaXP2026';
+    const authenticated = document.body.dataset.authenticated === 'true';
+    const developerAccess = document.body.dataset.developer === 'true';
     // Change this value to control developer-only access to the Script Workshop.
     const DEVELOPER_SCRIPT_PASSWORD = 'ARG-DEV-2026';
-    const debugMode = new URLSearchParams(window.location.search).get('debug') !== '0';
-    const debugReplay = debugMode;
+    const debugMode = developerAccess && new URLSearchParams(window.location.search).get('debug') !== '0';
+    const TIMELINE_STAGES = {
+      'part-a-beginning': {
+        label: 'Part A · The Beginning', wallpaper: 'The_Beggining', hearts: '2.5',
+        trashFull: false, journalBroken: false, positiveJournalOnly: false, messengerEmpty: false, bandagedHearts: false
+      },
+      'part-b-hyperfication': {
+        label: 'Part B · Hyperfication', wallpaper: 'Hyperfication', hearts: null,
+        trashFull: false, journalBroken: false, positiveJournalOnly: true, messengerEmpty: false, bandagedHearts: false
+      },
+      'part-b-original': {
+        label: 'Part B · The Original', wallpaper: 'The_Original', hearts: '0.5',
+        trashFull: true, journalBroken: true, positiveJournalOnly: false, messengerEmpty: true, bandagedHearts: false
+      },
+      'part-a-depression': {
+        label: 'Part A · Depression', wallpaper: 'Depression', hearts: '1',
+        trashFull: false, journalBroken: false, positiveJournalOnly: false, messengerEmpty: false, bandagedHearts: false
+      },
+      'part-b-narru-misha': {
+        label: 'Part B · Narru_Misha', wallpaper: 'Narru_Misha', hearts: '2.5',
+        trashFull: false, journalBroken: false, positiveJournalOnly: false, messengerEmpty: false, bandagedHearts: false
+      },
+      'part-b-orange': {
+        label: 'Part B · Orange', wallpaper: 'Wallpaper (needs to be finished)', hearts: '2.5',
+        trashFull: false, journalBroken: false, positiveJournalOnly: false, messengerEmpty: false, bandagedHearts: true
+      }
+    };
+    const timelineParams = new URLSearchParams(window.location.search);
+    const requestedTimelineStage = developerAccess ? timelineParams.get('timeline') : null;
+    const rawTimelineStage = String(requestedTimelineStage || document.body.dataset.timelineStage || 'intro')
+      .trim()
+      .toLowerCase()
+      .replace(/[_\s]+/g, '-');
+    const timelineStageId = Object.hasOwn(TIMELINE_STAGES, rawTimelineStage)
+      ? rawTimelineStage
+      : 'part-a-beginning';
+    const timelineState = TIMELINE_STAGES[timelineStageId];
+    const debugDisclaimerStorageKey = 'arg-debug-disclaimer-complete';
+    const loginStorageKey = 'arg-login-complete';
     let developerScriptsUnlocked = debugMode;
 
     if (debugMode) {
       document.body.classList.add('developer-mode');
-      document.body.classList.remove('locked');
     }
 
+    document.body.dataset.timelineStage = timelineStageId;
+    document.body.classList.add(`timeline-${timelineStageId}`);
+    document.getElementById('timelineStageLabel').textContent = timelineState.label;
+    document.getElementById('wallpaperName').textContent = timelineState.wallpaper;
+    const heartUnit = timelineState.hearts === '1' ? 'heart' : 'hearts';
+    document.getElementById('timelineHearts').textContent = timelineState.hearts === null
+      ? 'Hearts: -- / 3'
+      : `${timelineState.hearts}${timelineState.bandagedHearts ? ' bandaged' : ''} ${heartUnit} / 3`;
+
+    function renderRecycleBin() {
+      const items = timelineState.trashFull
+        ? ['old_wireframe.map', 'debug_ui_backup', 'idle_quest_notes', 'chirp_cache.tmp']
+        : [];
+      const list = document.getElementById('recycleItems');
+      list.innerHTML = '';
+      items.forEach(name => {
+        const item = document.createElement('li');
+        const badge = document.createElement('span');
+        badge.className = 'folder-badge';
+        item.append(badge, document.createTextNode(` ${name}`));
+        list.appendChild(item);
+      });
+      document.getElementById('recycleTitle').textContent = items.length ? 'Deleted Items' : 'Recycle Bin';
+      document.getElementById('recycleEmpty').hidden = Boolean(items.length);
+    }
+
+    renderRecycleBin();
+
     function unlockDeveloperTools() {
+      if (!developerAccess) return false;
       if (developerScriptsUnlocked) return true;
       const password = window.prompt('Developer password:');
       if (password !== DEVELOPER_SCRIPT_PASSWORD) return false;
@@ -1718,7 +2053,7 @@
         title: 'Developer Disclaimer',
         location: 'First visit console prompt',
         body: disclaimerText,
-        notes: 'Created automatically when the player accepts the disclaimer.',
+        notes: 'Created automatically for the Script Workshop.',
         createdAt: new Date().toISOString()
       });
       persistScenes();
@@ -1726,7 +2061,10 @@
     }
 
     function startFirstVisitConsole() {
-      if ((!debugReplay && localStorage.getItem(firstVisitStorageKey)) || firstVisitConsoleActive) return;
+      const disclaimerComplete = debugMode
+        ? sessionStorage.getItem(debugDisclaimerStorageKey) === 'true'
+        : localStorage.getItem(firstVisitStorageKey) === 'true';
+      if (disclaimerComplete || firstVisitConsoleActive) return;
       firstVisitConsoleActive = true;
       document.body.classList.add('disclaimer-lock');
       openWindow('consoleWin');
@@ -1765,11 +2103,12 @@
         'Do you read it? Y/N',
         () => {
           typeConsoleText('Disclaimer accepted. Welcome to the game.', () => {
-            if (!debugReplay) localStorage.setItem(firstVisitStorageKey, 'true');
+            localStorage.setItem(firstVisitStorageKey, 'true');
+            if (debugMode) sessionStorage.setItem(debugDisclaimerStorageKey, 'true');
             firstVisitConsoleActive = false;
             document.body.classList.remove('disclaimer-lock');
             closeWindow('consoleWin');
-            openWindow('messenger');
+            document.getElementById('loginScreen')?.classList.remove('waiting');
             renderTaskbar();
           });
         },
@@ -1784,12 +2123,20 @@
     const scriptStorageKey = 'arg-story-scenes';
     const firstVisitStorageKey = 'arg-disclaimer-complete-v2';
     const notebookStorageKey = 'arg-developer-notebook';
+    const notebookUnlockStorageKey = 'arg-notebook-unlocked-v1';
+    const NOTEBOOK_UNLOCK_CODE = 'NoIdont';
+    const notebookGate = document.getElementById('notebookGate');
+    const notebookContents = document.getElementById('notebookContents');
+    const notebookUnlockForm = document.getElementById('notebookUnlockForm');
+    const notebookUnlockCode = document.getElementById('notebookUnlockCode');
+    const notebookUnlockStatus = document.getElementById('notebookUnlockStatus');
     // Add only approved ARG OST files to this list. Files belong in static/ost/.
     const PROJECT_OST = [
       { title: 'Main Theme', source: './static/ost/main-theme.wav' }
     ];
     const disclaimerSceneId = 'developer-disclaimer';
-    const disclaimerText = 'This web game is an experimental interactive story. It may contain fictional danger, mystery, and unsettling themes. Everything in the game is part of the story and should be treated as fiction. Take breaks whenever you need one.';
+    const defaultDisclaimerText = 'This web game is an experimental interactive story. It may contain fictional danger, mystery, and unsettling themes. Everything in the game is part of the story and should be treated as fiction. Take breaks whenever you need one.';
+    let disclaimerText = defaultDisclaimerText;
     let scriptScenes = [];
     let selectedSceneId = null;
     let firstVisitConsoleActive = false;
@@ -1797,12 +2144,44 @@
     let selectedNotebookId = null;
     let notebookImageData = '';
     let currentStoryMoment = '';
-    const messengerContacts = [
+    let kaiReplyUnlocked = false;
+    let kaiReplySent = false;
+    let kaiHistoryStarted = false;
+    let kaiUnlockTimer = null;
+    const scriptedKaiHistory = [
+      `Good morning! :3`,
+      `Morning. It’s already afternoon. Did you sleep well?`,
+      `Nah, I barely slept at all, actually`,
+      `Are you fucking insane? Did you work all night again?`,
+      `Noooo, I mean, yeeeah, but no :,)\n\nLike… I got a commission for matching bracelets and another commission, so I spent a few more hours working on those`,
+      `You were the one telling me I need to pay attention to how much I sleep`,
+      `Oh, fuck off…\n\nI’m literally saving up to come visit you!`,
+      `Good for you, but… Take care of yourself, damn it. When did you go to bed?`,
+      `I’d rather not answer that, or you’re going to yell at me (> - <)\n\nBesides, what’s the difference if I feel well-rested?`,
+      `Okay. I decided to forget about school this time and went to bed earlier`,
+      `BROOO, you’re doing great! I’m glad you’re starting to take it a little easier`,
+      `Yeah, kinda.\n\nAnything new?`,
+      `I let my little sister listen to some of the songs, and she was like, “This is music for old people!”\n\nI LOST MY SHIT AT THAT HAHAHAHAHAHA`,
+      `Music for old people? What? Why?\n\nShe’s like…\n\n10?`,
+      `Yeah, she listens to K-pop, but apparently any rock sounds old to her :)`,
+      `But why does it sound old?`,
+      `Dunno, maybe because Dad is always playing old-school classics from the last century in the car whenever we go somewhere? Honestly, I have no fucking clue`,
+      `Like The Juices?`,
+      `Like Guns N’ Tulips, duuuude :>\n\nYou’re actually old`,
+      `Dumbass, that’s heavy metal. The Juices are classic rock`,
+      `Dumbass, go read Wikipedia—they played HEAVY MEEETAL AND HARD ROOOOCK!!!!`,
+      `Okay, okay. :)`,
+      `Hey Misha, there’s something I wanted to ask you about\n\nI kinda get that it’s not really my business and all thatttt\n\nBut I’m kinda worried—sorry if I’m overstepping or whatever`,
+      `Don’t worry about it—what’s up?`,
+      `Wait, I’m being called for dinner—I’ll be back soon :3`
+    ].map((text, index) => ({ text, fromUser: index % 2 === 0 }));
+    const messengerContacts = timelineState.messengerEmpty ? [] : [
       {
         name: 'Kai',
         messages: [
-          { text: 'You made it online.', fromUser: false },
-          { text: 'I left the light on. Do not open the second file.', fromUser: false }
+          { kind: 'date', text: 'February 8' },
+          { kind: 'date', text: 'TODAY' },
+          ...scriptedKaiHistory
         ]
       }
     ];
@@ -1815,25 +2194,20 @@
     const messengerChatHeader = document.getElementById('messengerChatHeader');
     const messengerComposer = document.getElementById('messengerComposer');
     const messengerInput = document.getElementById('messengerInput');
+    const messengerSend = messengerComposer.querySelector('button');
+    const messengerNotification = document.getElementById('messengerNotification');
+    const messengerStatus = document.getElementById('messengerStatus');
     const emailMessages = [
       {
-        id: 'archive-notice',
-        sender: 'Kai <kai@northstar.local>',
-        subject: 'Do not trust the archive index',
-        preview: 'The names in the index are not the names of the people.',
-        body: 'The names in the index are not the names of the people.\n\nI found a second directory behind the maintenance logs. It is still updating, even though the server says it has been offline for six years.\n\nDo not answer from the archive account. Use the messenger if you need me.',
+        id: 'parents-meeting',
+        sender: 'Northside School Office <office@northside.local>',
+        subject: 'Parents’ meeting - February 8',
+        preview: 'Reminder: parents’ meeting today at 6:00 PM.',
+        body: 'Hello,\n\nThis is a reminder that the Section B parents’ meeting is scheduled for today, February 8, at 6:00 PM in the school library. Please make sure a parent or guardian attends.\n\nRegards,\nNorthside School Office',
         read: false
-      },
-      {
-        id: 'welcome-message',
-        sender: 'system@arg.local',
-        subject: 'Welcome to the ARG network',
-        preview: 'Your local desktop profile is ready.',
-        body: 'Your local desktop profile is ready.\n\nSome applications may contain archived story material. Check the sender and timestamp before opening attachments.',
-        read: true
       }
     ];
-    let selectedEmailId = 'archive-notice';
+    let selectedEmailId = 'parents-meeting';
     const emailList = document.getElementById('emailList');
     const emailSubject = document.getElementById('emailSubject');
     const emailMeta = document.getElementById('emailMeta');
@@ -1856,29 +2230,264 @@
       });
 
       const contact = messengerContacts.find(item => item.name === selectedMessengerContact);
-      if (!contact) return;
-      messengerChatHeader.textContent = contact.name;
+      if (!contact) {
+        messengerChatHeader.textContent = 'Chirp';
+        const empty = document.createElement('div');
+        empty.className = 'messenger-empty';
+        empty.textContent = 'No conversations.';
+        messengerMessagesElement.appendChild(empty);
+        messengerInput.disabled = true;
+        messengerSend.disabled = true;
+        return;
+      }
+      messengerChatHeader.textContent = `${contact.name} · Today`;
       contact.messages.forEach(message => {
         const bubble = document.createElement('div');
-        bubble.className = `messenger-message${message.fromUser ? ' from-user' : ''}`;
+        bubble.className = message.kind === 'date'
+          ? 'messenger-date'
+          : message.kind === 'loading'
+            ? 'messenger-loading'
+            : `messenger-message${message.fromUser ? ' from-user' : ''}`;
         bubble.textContent = message.text;
         messengerMessagesElement.appendChild(bubble);
       });
       messengerMessagesElement.scrollTop = messengerMessagesElement.scrollHeight;
     }
 
+    const timelineErrorMessages = [
+      { text: "It didn't work out once already... There's no point in trying again.", code: '0x8007006E' },
+      { text: "I got a 2 again. She's gonna kill me...", code: '0x8007006F' },
+      { text: 'Three plus four has always been seven. Why were they laughing at me again this time when I got it right?', code: '0x80070020' },
+      { text: 'I was only a quarter of an hour late, and they still made me sit by the door.', code: '0x80070049' },
+      { text: "Even Natasha's fifth cousin cares about her more than my family does.", code: '0x80070020' },
+      { text: "Med school takes six years. I'd rather die than make it through all that...", code: '0x80070064' },
+      { text: 'I miss seventh grade, when you could just forget about all your problems with school...', code: '0x8007006F' },
+      { text: 'How much time has passed? Why do I still have to sit here for eight hours?', code: '0x8007006E' },
+      { text: 'Who came up with the idea of having an exam in ninth grade?', code: '0x80070027' },
+      { text: "She asked me ten times, and I still don't know the answer.", code: '0x80070074' }
+    ];
+    let timelineErrorPagesCreated = false;
+
+    function bringWindowToFront(win) {
+      const highest = wins.reduce((maximum, current) => {
+        return Math.max(maximum, Number.parseInt(current.style.zIndex, 10) || 20);
+      }, 20);
+      win.style.zIndex = String(highest + 1);
+    }
+
+    function getErrorPageSlots(desktop, pageCount) {
+      const gap = 8;
+      const columnCount = Math.min(4, Math.max(1, Math.floor((desktop.clientWidth + gap) / 198)));
+      const rowCount = Math.ceil(pageCount / columnCount);
+      const cellWidth = desktop.clientWidth / columnCount;
+      const cellHeight = desktop.clientHeight / rowCount;
+      const pageWidth = Math.max(1, Math.min(320, cellWidth - gap));
+      const pageHeight = Math.max(1, Math.min(182, cellHeight - gap));
+      const slots = Array.from({ length: columnCount * rowCount }, (_, index) => {
+        const row = Math.floor(index / columnCount);
+        const column = index % columnCount;
+        return {
+          left: Math.round(column * cellWidth + (cellWidth - pageWidth) / 2),
+          top: Math.round(row * cellHeight + (cellHeight - pageHeight) / 2),
+          width: pageWidth,
+          height: pageHeight
+        };
+      });
+      for (let index = slots.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [slots[index], slots[swapIndex]] = [slots[swapIndex], slots[index]];
+      }
+      return slots;
+    }
+
+    function relocateErrorPage(win) {
+      const desktop = document.querySelector('.desktop');
+      const currentLeft = Number.parseFloat(win.style.left) || 0;
+      const currentTop = Number.parseFloat(win.style.top) || 0;
+      const candidates = getErrorPageSlots(desktop, timelineErrorMessages.length)
+        .filter(slot => (slot.left !== currentLeft || slot.top !== currentTop) && !wins.some(other => {
+          if (!other.classList.contains('error-page') || other === win || !other.classList.contains('visible')) return false;
+          const otherLeft = Number.parseFloat(other.style.left) || 0;
+          const otherTop = Number.parseFloat(other.style.top) || 0;
+          return slot.left < otherLeft + other.offsetWidth
+            && slot.left + slot.width > otherLeft
+            && slot.top < otherTop + other.offsetHeight
+            && slot.top + slot.height > otherTop;
+        }));
+      const destination = candidates[Math.floor(Math.random() * candidates.length)];
+      if (destination) {
+        win.style.left = `${destination.left}px`;
+        win.style.top = `${destination.top}px`;
+        win.style.width = `${destination.width}px`;
+        win.style.height = `${destination.height}px`;
+      }
+      bringWindowToFront(win);
+    }
+
+    function openTimelineErrorPages() {
+      if (timelineErrorPagesCreated || timelineState.messengerEmpty) return;
+      timelineErrorPagesCreated = true;
+      const desktop = document.querySelector('.desktop');
+      const pageSlots = getErrorPageSlots(desktop, timelineErrorMessages.length);
+
+      timelineErrorMessages.forEach((error, index) => {
+        const slot = pageSlots[index];
+        const win = document.createElement('section');
+        win.className = 'window error-page';
+        win.id = `timelineError${index + 1}`;
+        win.dataset.title = `System Error ${index + 1}`;
+        win.setAttribute('role', 'dialog');
+        win.setAttribute('aria-label', `System error ${index + 1}`);
+        win.style.left = `${slot.left}px`;
+        win.style.top = `${slot.top}px`;
+        win.style.width = `${slot.width}px`;
+        win.style.height = `${slot.height}px`;
+        win.style.zIndex = '300';
+
+        const titlebar = document.createElement('div');
+        titlebar.className = 'titlebar';
+        const left = document.createElement('div');
+        left.className = 'left';
+        const icon = document.createElement('div');
+        icon.className = 'window-icon';
+        const title = document.createElement('div');
+        title.className = 'title-text';
+        title.textContent = `System Error ${index + 1}`;
+        left.append(icon, title);
+        const controls = document.createElement('div');
+        controls.className = 'window-controls';
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'window-control';
+        close.setAttribute('aria-label', 'Close error window');
+        close.textContent = '×';
+        controls.appendChild(close);
+        titlebar.append(left, controls);
+
+        const content = document.createElement('div');
+        content.className = 'window-content';
+        const message = document.createElement('div');
+        message.className = 'error-page-message';
+        message.textContent = error.text;
+        const code = document.createElement('div');
+        code.className = 'error-page-code';
+        code.textContent = `Error code: ${error.code}`;
+        content.append(message, code);
+        win.append(titlebar, content);
+        desktop.appendChild(win);
+        wins.push(win);
+        window.setTimeout(() => {
+          win.classList.add('visible');
+          bringWindowToFront(win);
+        }, index * 300);
+
+        close.addEventListener('mousedown', event => event.stopPropagation());
+        close.addEventListener('click', event => {
+          event.preventDefault();
+          event.stopPropagation();
+          relocateErrorPage(win);
+        });
+
+        let dragging = false;
+        let offsetX = 0;
+        let offsetY = 0;
+        titlebar.addEventListener('mousedown', event => {
+          if (event.target.closest('.window-control')) return;
+          dragging = true;
+          const rect = win.getBoundingClientRect();
+          offsetX = event.clientX - rect.left;
+          offsetY = event.clientY - rect.top;
+          bringWindowToFront(win);
+          event.preventDefault();
+        });
+        document.addEventListener('mousemove', event => {
+          if (!dragging) return;
+          const bounds = desktop.getBoundingClientRect();
+          const maxX = Math.max(0, desktop.clientWidth - win.offsetWidth);
+          const maxY = Math.max(0, desktop.clientHeight - win.offsetHeight);
+          const leftPosition = event.clientX - bounds.left - offsetX;
+          const topPosition = event.clientY - bounds.top - offsetY;
+          win.style.left = `${Math.max(0, Math.min(maxX, leftPosition))}px`;
+          win.style.top = `${Math.max(0, Math.min(maxY, topPosition))}px`;
+        });
+        document.addEventListener('mouseup', () => { dragging = false; });
+      });
+      renderTaskbar();
+    }
+
+    function unlockKaiReply() {
+      if (kaiReplyUnlocked || timelineState.messengerEmpty) return;
+      kaiReplyUnlocked = true;
+      const contact = messengerContacts.find(item => item.name === 'Kai');
+      contact.messages.push({ text: 'She still isn’t talking to you?', fromUser: false });
+      messengerNotification.textContent = 'New message from Kai';
+      messengerNotification.classList.add('visible');
+      messengerInput.disabled = false;
+      messengerSend.disabled = false;
+      messengerStatus.textContent = 'New message received.';
+      renderMessenger();
+      messengerMessagesElement.scrollTop = messengerMessagesElement.scrollHeight;
+      openTimelineErrorPages();
+    }
+
+    messengerInput.disabled = true;
+    messengerSend.disabled = true;
+    messengerMessagesElement.addEventListener('scroll', () => {
+      if (timelineState.messengerEmpty || kaiReplyUnlocked || kaiUnlockTimer) return;
+      const atTop = messengerMessagesElement.scrollTop <= 1;
+      const atBottom = messengerMessagesElement.scrollTop + messengerMessagesElement.clientHeight
+        >= messengerMessagesElement.scrollHeight - 2;
+      if (atTop) kaiHistoryStarted = true;
+      if (!kaiHistoryStarted || !atBottom) return;
+      messengerStatus.textContent = 'Waiting for Kai…';
+      kaiUnlockTimer = window.setTimeout(unlockKaiReply, 6000);
+    });
+
     messengerComposer.addEventListener('submit', event => {
       event.preventDefault();
       const text = messengerInput.value.trim();
       if (!text) return;
+      if (!kaiReplyUnlocked || kaiReplySent) return;
+      if (!/^mother\??$/i.test(text)) {
+        messengerStatus.textContent = 'Message not sent.';
+        return;
+      }
       const contact = messengerContacts.find(item => item.name === selectedMessengerContact);
-      contact.messages.push({ text, fromUser: true });
+      contact.messages.push({ text: 'Mother?', fromUser: true });
+      kaiReplySent = true;
       messengerInput.value = '';
+      messengerInput.disabled = true;
+      messengerSend.disabled = true;
+      messengerStatus.textContent = 'Message sent.';
       renderMessenger();
-      messengerInput.focus();
     });
 
     renderMessenger();
+
+    const calendarGrid = document.getElementById('calendarGrid');
+    const calendarSelection = document.getElementById('calendarSelection');
+    ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(day => {
+      const label = document.createElement('span');
+      label.textContent = day;
+      calendarGrid.appendChild(label);
+    });
+    for (let day = 1; day <= 28; day += 1) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = String(day);
+      button.classList.toggle('selected', day === 8);
+      button.setAttribute('aria-pressed', String(day === 8));
+      button.addEventListener('click', () => {
+        calendarGrid.querySelectorAll('button').forEach(date => {
+          date.classList.remove('selected');
+          date.setAttribute('aria-pressed', 'false');
+        });
+        button.classList.add('selected');
+        button.setAttribute('aria-pressed', 'true');
+        calendarSelection.textContent = `Selected: February ${day}`;
+      });
+      calendarGrid.appendChild(button);
+    }
 
     function renderEmail() {
       emailList.innerHTML = '';
@@ -1995,6 +2604,9 @@
     } catch (error) {
       scriptScenes = [];
     }
+    saveDisclaimerScene();
+    const savedDisclaimerScene = scriptScenes.find(scene => scene.id === disclaimerSceneId);
+    disclaimerText = savedDisclaimerScene?.body || defaultDisclaimerText;
 
     try {
       notebookEntries = JSON.parse(localStorage.getItem(notebookStorageKey) || '[]');
@@ -2030,7 +2642,10 @@
     function renderPlayerNotebook() {
       const list = document.getElementById('playerNotebookList');
       list.innerHTML = '';
-      const unlockedEntries = notebookEntries
+      const stageEntries = timelineState.positiveJournalOnly
+        ? notebookEntries.filter(entry => entry.positive === true)
+        : notebookEntries;
+      const unlockedEntries = stageEntries
         .filter(entryIsUnlocked)
         .sort((left, right) => left.moment.localeCompare(right.moment));
       if (!unlockedEntries.length) {
@@ -2101,6 +2716,7 @@
       document.getElementById('notebookUnlockMoment').value = entry.unlockMoment || '';
       document.getElementById('notebookTitle').value = entry.title;
       document.getElementById('notebookNotes').value = entry.notes;
+      document.getElementById('notebookPositive').checked = Boolean(entry.positive);
       document.getElementById('notebookImageUrl').value = entry.imageUrl || '';
       notebookImageData = entry.imageData || '';
       updateNotebookPreview(notebookImageData || entry.imageUrl || '');
@@ -2129,6 +2745,7 @@
         unlockMoment: document.getElementById('notebookUnlockMoment').value.trim(),
         title: document.getElementById('notebookTitle').value.trim(),
         notes: document.getElementById('notebookNotes').value.trim(),
+        positive: document.getElementById('notebookPositive').checked,
         imageUrl: document.getElementById('notebookImageUrl').value.trim(),
         imageData: notebookImageData
       };
@@ -2170,6 +2787,37 @@
 
     renderNotebookList();
     renderPlayerNotebook();
+
+    function revealNotebook() {
+      notebookGate.hidden = true;
+      notebookContents.hidden = false;
+      const isBroken = timelineState.journalBroken;
+      document.getElementById('journalBrokenState').hidden = !isBroken;
+      notebookContents.querySelectorAll('.notebook-player-view, .notebook-dev-view').forEach(view => {
+        view.hidden = isBroken;
+      });
+      document.getElementById('notepadLocked').hidden = true;
+      document.getElementById('playerNotebookList').hidden = false;
+      renderNotebookList();
+      renderPlayerNotebook();
+    }
+
+    if (localStorage.getItem(notebookUnlockStorageKey) === 'true') {
+      revealNotebook();
+    }
+
+    notebookUnlockForm.addEventListener('submit', event => {
+      event.preventDefault();
+      if (notebookUnlockCode.value.trim() !== NOTEBOOK_UNLOCK_CODE) {
+        notebookUnlockStatus.textContent = 'Incorrect code.';
+        notebookUnlockCode.select();
+        return;
+      }
+      localStorage.setItem(notebookUnlockStorageKey, 'true');
+      notebookUnlockCode.value = '';
+      notebookUnlockStatus.textContent = '';
+      revealNotebook();
+    });
 
     function clearSceneEditor() {
       scriptForm.reset();
@@ -2229,12 +2877,22 @@
         selectedSceneId = scene.id;
         setScriptStatus('Scene added to the story.');
       }
+      if (selectedSceneId === disclaimerSceneId) disclaimerText = draft.body;
       persistScenes();
       renderScriptList();
     });
 
     document.getElementById('newSceneButton').addEventListener('click', clearSceneEditor);
     document.getElementById('redactSceneButton').addEventListener('click', () => {
+      const bodyField = document.getElementById('sceneBody');
+      const selectionStart = bodyField.selectionStart;
+      const selectionEnd = bodyField.selectionEnd;
+      if (selectionStart !== selectionEnd) {
+        bodyField.setRangeText('[REDACTED]', selectionStart, selectionEnd, 'select');
+        setScriptStatus('Selected text redacted. Save the scene to keep the change.');
+        return;
+      }
+
       const fields = ['sceneTitle', 'sceneLocation', 'sceneBody', 'sceneNotes'];
       fields.forEach(id => {
         const field = document.getElementById(id);
@@ -2258,33 +2916,49 @@
     });
     renderScriptList();
 
-    if (debugMode) {
+    const loginCompleteThisTab = sessionStorage.getItem(loginStorageKey) === 'true';
+    if (authenticated && loginCompleteThisTab) {
+      sessionStorage.removeItem(loginStorageKey);
       document.getElementById('loginScreen')?.remove();
       document.body.classList.remove('locked');
-      openWindow('explorer');
-      openWindow('documents');
-      openWindow('notebook');
-      openWindow('messenger');
+      if (debugMode) {
+        openWindow('explorer');
+        openWindow('documents');
+        openWindow('notebook');
+        openWindow('messenger');
+      }
       renderTaskbar();
     } else {
-      loginForm.addEventListener('submit', event => {
-        event.preventDefault();
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-
-        if (username.toLowerCase() !== DEBUG_USERNAME.toLowerCase() || password !== DEBUG_PASSWORD) {
-          loginError.classList.add('visible');
-          document.getElementById('password').focus();
-          return;
-        }
-
-        loginError.classList.remove('visible');
-        document.body.classList.remove('locked');
-        document.getElementById('loginScreen').remove();
+      const loginScreen = document.getElementById('loginScreen');
+      const disclaimerComplete = debugMode
+        ? sessionStorage.getItem(debugDisclaimerStorageKey) === 'true'
+        : localStorage.getItem(firstVisitStorageKey) === 'true';
+      if (disclaimerComplete) {
+        loginScreen.classList.remove('waiting');
+      } else {
         startFirstVisitConsole();
-        if (!firstVisitConsoleActive) {
-          renderTaskbar();
+      }
+
+      loginForm.addEventListener('submit', async event => {
+        event.preventDefault();
+        loginError.classList.remove('visible');
+        try {
+          const response = await fetch('/login', {
+            method: 'POST',
+            body: new FormData(loginForm)
+          });
+          if (response.ok) {
+            sessionStorage.setItem(loginStorageKey, 'true');
+            window.location.reload();
+            return;
+          }
+          const result = await response.json().catch(() => ({}));
+          loginError.textContent = result.detail || 'Unable to sign in.';
+        } catch (error) {
+          loginError.textContent = 'Unable to reach the login service.';
         }
+        loginError.classList.add('visible');
+        document.getElementById('password').focus();
       });
     }
 
@@ -2307,7 +2981,15 @@
       }
       win.classList.add('visible');
       win.classList.remove('minimized');
-      win.style.zIndex = String(20 + wins.indexOf(win) + 1);
+      const highestZIndex = wins.reduce((highest, current) => {
+        return Math.max(highest, Number.parseInt(current.style.zIndex, 10) || 20);
+      }, 20);
+      win.style.zIndex = String(highestZIndex + 1);
+      if (id === 'messenger') {
+        window.requestAnimationFrame(() => {
+          messengerMessagesElement.scrollTop = messengerMessagesElement.scrollHeight;
+        });
+      }
       renderTaskbar();
     }
 
@@ -2413,7 +3095,10 @@
         const rect = win.getBoundingClientRect();
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
-        win.style.zIndex = String(100 + index + 1);
+        const highestZIndex = wins.reduce((highest, current) => {
+          return Math.max(highest, Number.parseInt(current.style.zIndex, 10) || 20);
+        }, 20);
+        win.style.zIndex = String(highestZIndex + 1);
       });
 
       document.addEventListener('mousemove', e => {
@@ -2427,7 +3112,6 @@
 
     // The console is a fake terminal that appends new status lines periodically.
     // This creates the impression of a live system updating itself.
-    const consoleEl = document.getElementById('console');
     const consoleLines = [
       'system online',
       'interface ready',

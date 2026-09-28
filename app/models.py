@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Integer, String, Text, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
 
 from app.database import Base
 
@@ -9,6 +9,7 @@ class GameProgress(Base):
     __tablename__ = "game_progress"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     player_name = Column(String(100), default="Player")
     stage = Column(String(100), default="intro")
     xp = Column(Integer, default=0)
@@ -26,6 +27,7 @@ class User(Base):
     username = Column(String(100), unique=True, nullable=False, index=True)
     display_name = Column(String(100), nullable=False)
     password_hash = Column(String(300), nullable=False)
+    is_developer = Column(Boolean, nullable=False, default=False)
 
 
 class RedactionRecord(Base):

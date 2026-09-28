@@ -12,6 +12,7 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from app.database import Base, SessionLocal, engine
@@ -21,12 +22,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 # Change this value when the developer wants to change the local login password.
-DEVELOPER_PASSWORD = "MishaXP2026"
+DEVELOPER_PASSWORD = "D.(;m4tsns5Hs1#^"
 DEBUG = os.getenv("ARG_DEBUG", "false").casefold() in {"1", "true", "yes", "on"}
 RELEASE_AT = os.getenv("ARG_RELEASE_AT", "2026-09-30T00:00:00+00:00")
 STATIC_DIR.mkdir(exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
+if "is_developer" not in {column["name"] for column in inspect(engine).get_columns("users")}:
+    with engine.begin() as connection:
+        connection.execute(
+            text("ALTER TABLE users ADD COLUMN is_developer BOOLEAN NOT NULL DEFAULT 0")
+        )
+if "user_id" not in {column["name"] for column in inspect(engine).get_columns("game_progress")}:
+    with engine.begin() as connection:
+        connection.execute(
+            text("ALTER TABLE game_progress ADD COLUMN user_id INTEGER REFERENCES users(id)")
+        )
+        connection.execute(
+            text("CREATE INDEX IF NOT EXISTS ix_game_progress_user_id ON game_progress (user_id)")
+        )
 
 app = FastAPI(title="ARG Desktop", version="1.0.0", debug=DEBUG)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -65,6 +79,7 @@ def ensure_test_user(db: Session) -> User:
             username="Misha",
             display_name="Misha",
             password_hash=hash_password(get_test_password()),
+            is_developer=True,
         )
         db.add(user)
         db.commit()
@@ -76,6 +91,13 @@ def ensure_test_user(db: Session) -> User:
     if cast(str, user.username) != "Misha":
         setattr(user, "username", "Misha")
         db.commit()
+    if not user.is_developer:
+        user.is_developer = True
+        db.commit()
+    db.query(GameProgress).filter(GameProgress.user_id.is_(None)).update(
+        {GameProgress.user_id: user.id}, synchronize_session=False
+    )
+    db.commit()
     return user
 
 
@@ -146,9 +168,16 @@ def get_release_time() -> datetime:
 
 
 def desktop_response(request: Request, db: Session) -> HTMLResponse:
-    test_user = ensure_test_user(db)
+    ensure_test_user(db)
     logged_in_user = get_logged_in_user(request, db)
-    progress = db.query(GameProgress).order_by(GameProgress.id.desc()).first()
+    progress = (
+        db.query(GameProgress)
+        .filter(GameProgress.user_id == logged_in_user.id)
+        .order_by(GameProgress.id.desc())
+        .first()
+        if logged_in_user
+        else None
+    )
     payload = serialize_progress(progress)
     return templates.TemplateResponse(
         "index.html",
@@ -156,7 +185,8 @@ def desktop_response(request: Request, db: Session) -> HTMLResponse:
             "request": request,
             "progress": payload,
             "logged_in_user": logged_in_user.display_name if logged_in_user else "",
-            "default_username": test_user.display_name,
+            "default_username": logged_in_user.display_name if logged_in_user else "Misha",
+            "developer_access": bool(logged_in_user and logged_in_user.is_developer),
         },
     )
 
@@ -202,26 +232,22 @@ async def login(request: Request, db: Session = Depends(get_db)):
     if not password:
         return HTMLResponse("<div class='login-error'>Enter a password.</div>")
 
-    user = ensure_test_user(db)
-    username_matches = username.casefold() == user.username.casefold()
-    if not username_matches or not verify_password(password, cast(str, user.password_hash)):
-        return HTMLResponse(
-            """
-            <div id="auth-panel" class="login-panel">
-              <h2>Windows XP Login</h2>
-              <div class="login-error">Invalid username or password.</div>
-              <form hx-post="/login" hx-target="#auth-panel" hx-swap="outerHTML">
-                <label>Username<input type="text" name="username" value="Misha" required /></label>
-                <label>Password<input type="password" name="password" required autofocus /></label>
-                <button class="login-button" type="submit">Log in</button>
-              </form>
-            </div>
-            """
+    ensure_test_user(db)
+    user = db.query(User).filter(User.username.ilike(username)).first()
+    if user is None or not verify_password(password, cast(str, user.password_hash)):
+        return JSONResponse(
+            {"detail": "Invalid username or password."},
+            status_code=401,
         )
 
-    progress = db.query(GameProgress).order_by(GameProgress.id.desc()).first()
+    progress = (
+        db.query(GameProgress)
+        .filter(GameProgress.user_id == user.id)
+        .order_by(GameProgress.id.desc())
+        .first()
+    )
     if progress is None:
-        progress = GameProgress(player_name=user.display_name, stage="intro")
+        progress = GameProgress(user_id=user.id, player_name=user.display_name, stage="intro")
         db.add(progress)
     else:
         progress.player_name = user.display_name
@@ -229,7 +255,6 @@ async def login(request: Request, db: Session = Depends(get_db)):
     db.commit()
 
     response = Response(status_code=204)
-    response.headers["HX-Redirect"] = "/"
     response.set_cookie(
         key="arg_user",
         value=str(user.username),
@@ -267,13 +292,24 @@ async def redact(request: Request, db: Session = Depends(get_db)):
 
 
 @app.get("/api/progress")
-async def get_progress(db: Session = Depends(get_db)):
-    progress = db.query(GameProgress).order_by(GameProgress.id.desc()).first()
+async def get_progress(request: Request, db: Session = Depends(get_db)):
+    user = get_logged_in_user(request, db)
+    if user is None:
+        return JSONResponse({"detail": "Log in to view progress."}, status_code=401)
+    progress = (
+        db.query(GameProgress)
+        .filter(GameProgress.user_id == user.id)
+        .order_by(GameProgress.id.desc())
+        .first()
+    )
     return JSONResponse(content=serialize_progress(progress))
 
 
 @app.post("/api/progress")
 async def save_progress(request: Request, db: Session = Depends(get_db)):
+    user = get_logged_in_user(request, db)
+    if user is None:
+        return HTMLResponse("Log in to save progress.", status_code=401)
     form = await request.form()
     stage = form.get("stage", "intro")
 
@@ -295,7 +331,7 @@ async def save_progress(request: Request, db: Session = Depends(get_db)):
 
     notes = form.get("notes", "")
     inventory_raw = form.get("inventory", "[]")
-    player_name = form.get("player_name") or request.cookies.get("arg_user") or "Player"
+    player_name = user.display_name
 
     if isinstance(inventory_raw, str):
         inventory_str = inventory_raw or "[]"
@@ -307,9 +343,14 @@ async def save_progress(request: Request, db: Session = Depends(get_db)):
     except (TypeError, ValueError, json.JSONDecodeError):
         inventory = []
 
-    progress = db.query(GameProgress).order_by(GameProgress.id.desc()).first()
+    progress = (
+        db.query(GameProgress)
+        .filter(GameProgress.user_id == user.id)
+        .order_by(GameProgress.id.desc())
+        .first()
+    )
     if progress is None:
-        progress = GameProgress()
+        progress = GameProgress(user_id=user.id)
 
     setattr(progress, "player_name", str(player_name) or "Player")
     setattr(progress, "stage", str(stage))
