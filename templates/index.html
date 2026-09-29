@@ -1863,7 +1863,7 @@
           <p>Don't you think reading someone else's diary is kind of rude?</p>
           <form class="notebook-unlock-form" id="notebookUnlockForm">
             <label for="notebookUnlockCode">Code</label>
-            <input id="notebookUnlockCode" type="text" inputmode="numeric" autocomplete="off" maxlength="7" required />
+            <input id="notebookUnlockCode" type="text" autocomplete="off" maxlength="20" required />
             <button type="submit">confirm</button>
             <div class="notebook-unlock-status" id="notebookUnlockStatus" aria-live="polite"></div>
           </form>
@@ -2291,7 +2291,7 @@
     const firstVisitStorageKey = 'arg-disclaimer-complete-v2';
     const notebookStorageKey = 'arg-developer-notebook';
     const notebookUnlockStorageKey = 'arg-notebook-unlocked-v1';
-    const NOTEBOOK_UNLOCK_CODE = 'NoIdont';
+    const NOTEBOOK_UNLOCK_CODE = "No I don't";
     const notebookGate = document.getElementById('notebookGate');
     const notebookContents = document.getElementById('notebookContents');
     const notebookUnlockForm = document.getElementById('notebookUnlockForm');
@@ -3170,7 +3170,8 @@
 
     notebookUnlockForm.addEventListener('submit', event => {
       event.preventDefault();
-      if (notebookUnlockCode.value.trim() !== NOTEBOOK_UNLOCK_CODE) {
+      const normalizeCode = code => code.toLowerCase().replace(/['’\s]/g, '');
+      if (normalizeCode(notebookUnlockCode.value) !== normalizeCode(NOTEBOOK_UNLOCK_CODE)) {
         notebookUnlockStatus.textContent = 'Incorrect code.';
         notebookUnlockCode.select();
         return;
