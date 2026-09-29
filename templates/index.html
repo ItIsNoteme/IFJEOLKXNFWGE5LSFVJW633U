@@ -154,7 +154,7 @@
       top: 12px;
       right: 14px;
       z-index: 4;
-      display: grid;
+      display: none;
       gap: 3px;
       min-width: 160px;
       padding: 7px 9px;
@@ -166,6 +166,7 @@
       pointer-events: none;
     }
 
+    body.developer-mode .timeline-hud { display: grid; }
     .timeline-hud strong { font-size: 12px; }
 
     body.locked .desktop,
@@ -797,10 +798,29 @@
       background: #fff;
     }
 
-    .messenger-contacts {
-      padding: 6px;
+    /* Chirp contact list with the "Find a user" search. */
+    .messenger-sidebar {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
       background: #e6edf6;
       border-right: 1px solid #aab7c8;
+    }
+
+    .messenger-search {
+      padding: 6px 6px 0;
+    }
+
+    .messenger-search input {
+      width: 100%;
+      padding: 5px 6px;
+      border: 1px solid #aab7c8;
+      font: inherit;
+      font-size: 12px;
+    }
+
+    .messenger-contacts {
+      padding: 6px;
     }
 
     .messenger-contact {
@@ -884,6 +904,43 @@
       color: #7b8794;
       background: #e2e2e2;
       cursor: not-allowed;
+    }
+
+    /* Blue screen of death. */
+    .blue-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 40px;
+      color: #fff;
+      background: #0000aa;
+      font: 16px "Lucida Console", Consolas, monospace;
+      cursor: none;
+    }
+
+    .blue-screen[hidden] { display: none; }
+
+    .blue-screen-title {
+      padding: 0 8px;
+      color: #0000aa;
+      background: #aaa;
+    }
+
+    .blue-screen-timer { font-size: 32px; }
+    .blue-screen-timer:empty { display: none; }
+    .blue-screen.glitching { animation: hyperficationGlitch 0.4s steps(1, end) infinite; }
+    .blue-screen.rebooting { background: #000; }
+
+    .blue-screen pre {
+      max-width: 760px;
+      margin: 0;
+      font: inherit;
+      white-space: pre-wrap;
     }
 
     .window.error-page {
@@ -974,66 +1031,161 @@
       font-weight: 700;
     }
 
-    .email-layout {
-      display: grid;
-      grid-template-columns: 190px minmax(0, 1fr);
-      min-height: 320px;
-      border: 1px solid #8c9caf;
-      background: #fff;
+    /* E-Mail list and reader. */
+    .email-toolbar {
+      display: flex;
+      padding-bottom: 8px;
     }
 
     .email-list {
-      padding: 6px;
+      min-height: 280px;
       overflow-y: auto;
-      background: #e6edf6;
-      border-right: 1px solid #aab7c8;
+      border: 1px solid #8c9caf;
+      background: #fff;
     }
 
     .email-item {
       width: 100%;
       display: grid;
-      gap: 3px;
-      padding: 8px;
-      border: 1px solid transparent;
+      grid-template-columns: 170px minmax(0, 1fr) 60px;
+      gap: 10px;
+      padding: 7px 10px;
+      border: 0;
+      border-bottom: 1px solid #dde4ee;
       background: transparent;
       text-align: left;
       cursor: pointer;
       font: inherit;
-      font-size: 11px;
+      font-size: 12px;
+      color: #52677e;
     }
 
-    .email-item.unread { background: #fff; border-color: #9bbce0; }
-    .email-item strong { font-size: 12px; }
-    .email-item span { color: #52677e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    .email-item.active,
-    .email-item:hover {
-      color: #fff;
-      background: #347dcc;
-      border-color: #1d4d93;
-    }
-
-    .email-item.active span,
-    .email-item:hover span { color: #eaf4ff; }
+    .email-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .email-item span:last-child { text-align: right; }
+    .email-item.unread { color: #0f0f0f; font-weight: 700; }
+    .email-item:hover { background: #eaf4ff; }
 
     .email-reader {
-      min-width: 0;
+      max-height: 320px;
+      overflow-y: auto;
+      border: 1px solid #8c9caf;
       background: #fff;
     }
 
-    .email-header {
-      padding: 10px;
-      border-bottom: 1px solid #b8c8dd;
-      background: #eaf4ff;
-    }
-
-    .email-subject { margin: 0 0 6px; font-size: 15px; color: #163d7d; }
-    .email-meta { color: #52677e; font-size: 11px; }
+    .email-reader[hidden] { display: none; }
 
     .email-body {
       padding: 12px;
       white-space: pre-wrap;
       line-height: 1.5;
+      font-size: 12px;
+    }
+
+    .email-actions {
+      display: flex;
+      justify-content: center;
+      padding-bottom: 14px;
+    }
+
+    /* Player diary pages with arrows. */
+    .diary-nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 8px;
+      background: #3c4ed0;
+    }
+
+    .diary-arrow {
+      width: 26px;
+      height: 22px;
+      border: 1px solid #1c6b1c;
+      color: #fff;
+      background: linear-gradient(180deg, #5fd35f, #2c9a3a);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .diary-arrow:disabled { opacity: 0.35; cursor: default; }
+
+    .diary-page {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 12px;
+      min-height: 360px;
+      margin: 0 8px 8px;
+      padding: 18px;
+      border: 4px solid #8a8a8a;
+      background: #bdbdbd;
+      text-align: center;
+    }
+
+    .diary-page h4 { margin: 0; font-size: 15px; }
+    .diary-page img { max-width: 100%; max-height: 420px; object-fit: contain; }
+
+    .diary-page input {
+      width: min(260px, 100%);
+      padding: 6px 8px;
+      border: 1px solid #777;
+      font: inherit;
+    }
+
+    .diary-page button {
+      min-width: 110px;
+      padding: 5px 12px;
+      border: 2px solid #1d3fc4;
+      color: #fff;
+      background: #1e90ff;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    /* Classic XP error dialog. */
+    .window.error-dialog {
+      width: 330px;
+      min-height: 0;
+    }
+
+    .error-dialog .window-content {
+      min-height: 0;
+      padding: 14px 12px 12px;
+      background: #ece9d8;
+    }
+
+    .error-dialog-body {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 12px;
+    }
+
+    .error-dialog-icon {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: radial-gradient(circle at 35% 30%, #ff8a7a, #d8261a 60%, #9e1409);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .error-dialog-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .error-dialog-actions button {
+      min-width: 76px;
+      padding: 3px 10px;
+      border: 1px solid #003c74;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #fff, #ece9d8);
+      cursor: pointer;
+      font: inherit;
       font-size: 12px;
     }
 
@@ -1258,15 +1410,6 @@
     body.developer-mode .notebook-player-view { display: none; }
     body.developer-mode .notebook-dev-view { display: block; }
 
-    .notebook-player-list {
-      display: grid;
-      gap: 8px;
-      max-height: 420px;
-      overflow-y: auto;
-    }
-
-    .notebook-player-list[hidden] { display: none; }
-
     .notebook-gate[hidden],
     .notebook-contents[hidden] { display: none; }
 
@@ -1319,23 +1462,6 @@
       min-height: 16px;
       color: #7d2020;
       font-size: 12px;
-    }
-
-    .notebook-player-entry {
-      padding: 10px;
-      border: 1px solid #b9c8de;
-      background: rgba(255,255,255,0.42);
-    }
-
-    .notebook-player-entry h4 { margin: 0 0 4px; font-size: 14px; }
-    .notebook-player-entry p { margin: 6px 0 0; white-space: pre-wrap; }
-
-    .notebook-player-entry img {
-      display: block;
-      max-width: 100%;
-      max-height: 220px;
-      margin-top: 8px;
-      object-fit: contain;
     }
 
     .notebook-locked {
@@ -1473,7 +1599,7 @@
       .script-layout { grid-template-columns: 1fr; }
       .content-grid { grid-template-columns: 1fr; }
       .messenger-layout { grid-template-columns: 110px minmax(0, 1fr); }
-      .email-layout { grid-template-columns: 125px minmax(0, 1fr); }
+      .email-item { grid-template-columns: 110px minmax(0, 1fr) 44px; }
       .taskbar-btn { min-width: 110px; }
     }
   </style>
@@ -1481,7 +1607,7 @@
 <body class="locked" data-authenticated="{{ 'true' if logged_in_user else 'false' }}" data-developer="{{ 'true' if developer_access else 'false' }}" data-timeline-stage="{{ progress.stage }}">
   <div class="login-screen waiting" id="loginScreen">
     <section class="login-window" aria-labelledby="loginTitle">
-      <h1 class="login-title" id="loginTitle">Windows XP Login</h1>
+      <h1 class="login-title" id="loginTitle">Log On to Trapdoors</h1>
       <div class="login-error" id="loginError" role="alert" aria-live="polite"></div>
       <form class="login-form" id="loginForm">
         <label>
@@ -1583,7 +1709,7 @@
             <h3>Settings</h3>
             <div class="stats">
               <div class="stat"><span>Profile</span><strong>Section B</strong></div>
-              <div class="stat"><span>Current date</span><strong>February 8</strong></div>
+              <div class="stat"><span>Current date</span><strong id="explorerDate">February 8</strong></div>
               <div class="stat"><span>Network</span><strong>Connected</strong></div>
             </div>
           </div>
@@ -1744,11 +1870,11 @@
         </div>
         <div class="notebook-contents" id="notebookContents" hidden>
         <div class="notebook-player-view">
-          <div class="panel">
-            <h3>Notepad</h3>
-            <div class="notebook-locked" id="notepadLocked" hidden>Notepad is locked.</div>
-            <div class="notebook-player-list" id="playerNotebookList" hidden></div>
+          <div class="diary-nav">
+            <button type="button" class="diary-arrow" id="diaryPrev">&larr;</button>
+            <button type="button" class="diary-arrow" id="diaryNext">&rarr;</button>
           </div>
+          <div class="diary-page" id="playerNotebookList"></div>
         </div>
         <div class="notebook-dev-view">
         <div class="notebook-layout">
@@ -1797,7 +1923,12 @@
       </div>
       <div class="window-content">
         <div class="messenger-layout">
-          <div class="messenger-contacts" id="messengerContacts"></div>
+          <div class="messenger-sidebar">
+            <form class="messenger-search" id="messengerSearch">
+              <input id="messengerSearchInput" type="text" placeholder="Find a user" autocomplete="off" />
+            </form>
+            <div class="messenger-contacts" id="messengerContacts"></div>
+          </div>
           <div class="messenger-chat">
             <div class="messenger-chat-header" id="messengerChatHeader">Kai · Today</div>
             <div class="messenger-messages" id="messengerMessages"></div>
@@ -1824,15 +1955,13 @@
         </div>
       </div>
       <div class="window-content">
-        <div class="email-layout">
-          <div class="email-list" id="emailList"></div>
-          <article class="email-reader" id="emailReader">
-            <header class="email-header">
-              <h3 class="email-subject" id="emailSubject"></h3>
-              <div class="email-meta" id="emailMeta"></div>
-            </header>
-            <div class="email-body" id="emailBody"></div>
-          </article>
+        <div class="email-toolbar">
+          <button type="button" class="btn" id="emailWrite">Write a message</button>
+        </div>
+        <div class="email-list" id="emailList"></div>
+        <div class="email-reader" id="emailReader" hidden>
+          <div class="email-body" id="emailBody"></div>
+          <div class="email-actions"><button type="button" class="btn primary" id="emailAcknowledge">Acknowledged</button></div>
         </div>
       </div>
     </div>
@@ -1926,6 +2055,12 @@
     <div class="tray" id="clock">00:00</div>
   </div>
 
+  <div class="blue-screen" id="blueScreen" hidden>
+    <span class="blue-screen-title">Trapdoors</span>
+    <pre id="blueScreenText"></pre>
+    <div class="blue-screen-timer" id="blueScreenTimer"></div>
+  </div>
+
   <script>
     //
     // JavaScript handles all desktop behavior, including window actions, taskbar updates,
@@ -1972,15 +2107,22 @@
         trashFull: false, journalBroken: false, positiveJournalOnly: false, messengerEmpty: false, bandagedHearts: true
       }
     };
+    // Calendar date for every timeline stage: month, days in month, current day.
+    const TIMELINE_DATES = {
+      'part-b-narru-misha': ['February', 28, 8],
+      'part-b-original': ['May', 31, 3],
+      'part-a-beginning': ['September', 30, 3]
+    };
     const timelineParams = new URLSearchParams(window.location.search);
     const requestedTimelineStage = developerAccess ? timelineParams.get('timeline') : null;
-    const rawTimelineStage = String(requestedTimelineStage || document.body.dataset.timelineStage || 'intro')
+    const timelineStorageKey = 'arg-timeline-stage';
+    const rawTimelineStage = String(requestedTimelineStage || localStorage.getItem(timelineStorageKey) || document.body.dataset.timelineStage || 'intro')
       .trim()
       .toLowerCase()
       .replace(/[_\s]+/g, '-');
     const timelineStageId = Object.hasOwn(TIMELINE_STAGES, rawTimelineStage)
       ? rawTimelineStage
-      : 'part-a-beginning';
+      : 'part-b-narru-misha';
     const timelineState = TIMELINE_STAGES[timelineStageId];
     const debugDisclaimerStorageKey = 'arg-debug-disclaimer-complete';
     const loginStorageKey = 'arg-login-complete';
@@ -2017,6 +2159,31 @@
     }
 
     renderRecycleBin();
+
+    // Moves the player to another timeline stage and reloads the desktop without the login screen.
+    function goToTimelineStage(stageId) {
+      localStorage.setItem(timelineStorageKey, stageId);
+      sessionStorage.setItem(loginStorageKey, 'true');
+      const url = new URL(window.location.href);
+      url.searchParams.delete('timeline');
+      window.location.assign(url);
+    }
+
+    // Blue screen of death. Enter closes it only when onEnter is passed.
+    function showBlueScreen(text, onEnter) {
+      const screen = document.getElementById('blueScreen');
+      document.getElementById('blueScreenText').textContent = text;
+      document.getElementById('blueScreenTimer').textContent = '';
+      screen.hidden = false;
+      if (!onEnter) return;
+      const receiveEnter = event => {
+        if (event.key !== 'Enter') return;
+        document.removeEventListener('keydown', receiveEnter);
+        screen.hidden = true;
+        onEnter();
+      };
+      document.addEventListener('keydown', receiveEnter);
+    }
 
     function unlockDeveloperTools() {
       if (!developerAccess) return false;
@@ -2143,10 +2310,8 @@
     let notebookEntries = [];
     let selectedNotebookId = null;
     let notebookImageData = '';
-    let currentStoryMoment = '';
     let kaiReplyUnlocked = false;
     let kaiReplySent = false;
-    let kaiHistoryStarted = false;
     let kaiUnlockTimer = null;
     const scriptedKaiHistory = [
       `Good morning! :3`,
@@ -2179,6 +2344,7 @@
       {
         name: 'Kai',
         messages: [
+          { kind: 'loading', text: 'Loading...' },
           { kind: 'date', text: 'February 8' },
           { kind: 'date', text: 'TODAY' },
           ...scriptedKaiHistory
@@ -2189,6 +2355,7 @@
     const backgroundMusic = document.getElementById('backgroundMusic');
     const musicTrack = document.getElementById('musicTrack');
     const musicStatus = document.getElementById('musicStatus');
+    const KAI_CHIRP_USERNAME = 'kai';
     const messengerContactsElement = document.getElementById('messengerContacts');
     const messengerMessagesElement = document.getElementById('messengerMessages');
     const messengerChatHeader = document.getElementById('messengerChatHeader');
@@ -2200,18 +2367,17 @@
     const emailMessages = [
       {
         id: 'parents-meeting',
-        sender: 'Northside School Office <office@northside.local>',
+        sender: 'Northside School Office',
         subject: 'Parents’ meeting - February 8',
-        preview: 'Reminder: parents’ meeting today at 6:00 PM.',
-        body: 'Hello,\n\nThis is a reminder that the Section B parents’ meeting is scheduled for today, February 8, at 6:00 PM in the school library. Please make sure a parent or guardian attends.\n\nRegards,\nNorthside School Office',
+        date: '08.02',
         read: false
       }
     ];
-    let selectedEmailId = 'parents-meeting';
     const emailList = document.getElementById('emailList');
-    const emailSubject = document.getElementById('emailSubject');
-    const emailMeta = document.getElementById('emailMeta');
-    const emailBody = document.getElementById('emailBody');
+    const emailReader = document.getElementById('emailReader');
+    const DOCTOR_REPORT = 'Extract from the medical record\n\nPatient: Misha\n\nBlood test results';
+    let emailLocked = false;
+    let openedEmail = null;
 
     function renderMessenger() {
       messengerContactsElement.innerHTML = '';
@@ -2267,6 +2433,101 @@
       { text: "She asked me ten times, and I still don't know the answer.", code: '0x80070074' }
     ];
     let timelineErrorPagesCreated = false;
+    // Player diary pages per timeline stage. Pages with a password stay locked until it is entered.
+    const DIARY_COUNTDOWN_PASSWORD = 'mother';
+    const COUNTDOWN_DATE = ['October', 31, 27];
+    const DIARY_PAGES = {
+      'part-b-narru-misha': [
+        { id: 'mother', title: 'Entry', image: '' }
+      ],
+      'part-a-beginning': [
+        { id: 'entry-1', title: 'Entry 1', image: '' },
+        { id: 'countdown', title: 'Entry 2', image: '', prompt: 'Do you think everything will stay as it is?', password: DIARY_COUNTDOWN_PASSWORD }
+      ]
+    };
+    const diaryStorageKey = 'arg-diary-unlocked';
+    let diaryUnlockedPages = [];
+    try {
+      diaryUnlockedPages = JSON.parse(localStorage.getItem(diaryStorageKey) || '[]');
+    } catch (error) {
+      diaryUnlockedPages = [];
+    }
+    let diaryPageIndex = 0;
+    // End of act 1: error flood, countdown blue screen and reboot.
+    const actEndingErrors = [
+      'Я уже не чувствую предательство.',
+      'Я уже мёртв.',
+      'Эта страна мертва.',
+      'Она никогда не перестанет меня стесняться.',
+      'Она никогда не полюбит меня по-настоящему.',
+      'Я копия своего отца.',
+      'Я заперт здесь.',
+      'Мне нет места в этом доме.',
+      'Мне нет места в этом мире.',
+      'Мне тестно здесь.',
+      'Я чувстую себя чужим.',
+      'Я будто в дне сурка.',
+      "they're all the same.",
+      'Какой смысл в своей комнате, если она меня не защитит?',
+      'На тебя так и продолжат смотреть как на дьявольское отродье.',
+      'Нельзя выносить ссор из избы.',
+      'Тебе не плохо, ты всё себе выдумал.',
+      'Грёбаный театр одного актёра.',
+      'Shit puppet show.',
+      'Ещё немножко осталось...',
+      'СОБЕРИСЬ!!!',
+      'ЕСЛИ ТЫ УМРЁШЬ РАНЬШЕ ВРЕМЕНИ, ЭТО БУДЕТ ЗНАЧИТЬ, ЧТО ТЫ ТАК И НЕ ВЗЯЛ КОНТРОЛЬ НАД СВОЕЙ ЖИЗНЬЮ!'
+    ];
+    let actEndingStarted = false;
+
+    function startActEnding() {
+      if (actEndingStarted) return;
+      actEndingStarted = true;
+      const desktop = document.querySelector('.desktop');
+      let count = 0;
+      const spawnError = () => {
+        const win = showErrorDialog(actEndingErrors[count % actEndingErrors.length]);
+        win.style.left = `${Math.round(Math.random() * Math.max(0, desktop.clientWidth - win.offsetWidth))}px`;
+        win.style.top = `${Math.round(Math.random() * Math.max(0, desktop.clientHeight - win.offsetHeight))}px`;
+        count += 1;
+        if (count < 90) {
+          window.setTimeout(spawnError, Math.max(40, 500 - count * 12));
+        } else {
+          showCountdownBlueScreen();
+        }
+      };
+      spawnError();
+    }
+
+    function runBlueScreenTimer(from, onDone) {
+      const timer = document.getElementById('blueScreenTimer');
+      let seconds = from;
+      timer.textContent = String(seconds);
+      const tick = window.setInterval(() => {
+        seconds -= 1;
+        timer.textContent = String(seconds);
+        if (seconds > 0) return;
+        window.clearInterval(tick);
+        onDone();
+      }, 1000);
+    }
+
+    function showCountdownBlueScreen() {
+      const line = 'СОБЕРИСЬ!!! ЕСЛИ ТЫ УМРЁШЬ РАНЬШЕ ВРЕМЕНИ, ЭТО БУДЕТ ЗНАЧИТЬ, ЧТО ТЫ ТАК И НЕ ВЗЯЛ КОНТРОЛЬ НАД СВОЕЙ ЖИЗНЬЮ!';
+      showBlueScreen(`${Array(7).fill(line).join('\n')}\n\nDon’t let what you see before you be the end of it. Some things simply aren’t meant to be shown, but that doesn’t mean they don’t exist.`);
+      runBlueScreenTimer(29, () => runBlueScreenTimer(7, rebootAfterActEnding));
+    }
+
+    function rebootAfterActEnding() {
+      const screen = document.getElementById('blueScreen');
+      screen.classList.add('glitching');
+      window.setTimeout(() => {
+        screen.classList.remove('glitching');
+        screen.classList.add('rebooting');
+        screen.querySelectorAll('span, pre, div').forEach(element => { element.textContent = ''; });
+        window.setTimeout(() => window.location.reload(), 2500);
+      }, 2500);
+    }
 
     function bringWindowToFront(win) {
       const highest = wins.reduce((maximum, current) => {
@@ -2275,52 +2536,22 @@
       win.style.zIndex = String(highest + 1);
     }
 
-    function getErrorPageSlots(desktop, pageCount) {
-      const gap = 8;
-      const columnCount = Math.min(4, Math.max(1, Math.floor((desktop.clientWidth + gap) / 198)));
-      const rowCount = Math.ceil(pageCount / columnCount);
-      const cellWidth = desktop.clientWidth / columnCount;
-      const cellHeight = desktop.clientHeight / rowCount;
-      const pageWidth = Math.max(1, Math.min(320, cellWidth - gap));
-      const pageHeight = Math.max(1, Math.min(182, cellHeight - gap));
-      const slots = Array.from({ length: columnCount * rowCount }, (_, index) => {
-        const row = Math.floor(index / columnCount);
-        const column = index % columnCount;
-        return {
-          left: Math.round(column * cellWidth + (cellWidth - pageWidth) / 2),
-          top: Math.round(row * cellHeight + (cellHeight - pageHeight) / 2),
-          width: pageWidth,
-          height: pageHeight
-        };
-      });
-      for (let index = slots.length - 1; index > 0; index -= 1) {
-        const swapIndex = Math.floor(Math.random() * (index + 1));
-        [slots[index], slots[swapIndex]] = [slots[swapIndex], slots[index]];
-      }
-      return slots;
+    // Random place for an error window inside the desktop.
+    function getRandomErrorPageSlot(desktop) {
+      const width = Math.min(320, desktop.clientWidth);
+      const height = Math.min(182, desktop.clientHeight);
+      return {
+        left: Math.round(Math.random() * (desktop.clientWidth - width)),
+        top: Math.round(Math.random() * (desktop.clientHeight - height)),
+        width,
+        height
+      };
     }
 
     function relocateErrorPage(win) {
-      const desktop = document.querySelector('.desktop');
-      const currentLeft = Number.parseFloat(win.style.left) || 0;
-      const currentTop = Number.parseFloat(win.style.top) || 0;
-      const candidates = getErrorPageSlots(desktop, timelineErrorMessages.length)
-        .filter(slot => (slot.left !== currentLeft || slot.top !== currentTop) && !wins.some(other => {
-          if (!other.classList.contains('error-page') || other === win || !other.classList.contains('visible')) return false;
-          const otherLeft = Number.parseFloat(other.style.left) || 0;
-          const otherTop = Number.parseFloat(other.style.top) || 0;
-          return slot.left < otherLeft + other.offsetWidth
-            && slot.left + slot.width > otherLeft
-            && slot.top < otherTop + other.offsetHeight
-            && slot.top + slot.height > otherTop;
-        }));
-      const destination = candidates[Math.floor(Math.random() * candidates.length)];
-      if (destination) {
-        win.style.left = `${destination.left}px`;
-        win.style.top = `${destination.top}px`;
-        win.style.width = `${destination.width}px`;
-        win.style.height = `${destination.height}px`;
-      }
+      const slot = getRandomErrorPageSlot(document.querySelector('.desktop'));
+      win.style.left = `${slot.left}px`;
+      win.style.top = `${slot.top}px`;
       bringWindowToFront(win);
     }
 
@@ -2328,10 +2559,9 @@
       if (timelineErrorPagesCreated || timelineState.messengerEmpty) return;
       timelineErrorPagesCreated = true;
       const desktop = document.querySelector('.desktop');
-      const pageSlots = getErrorPageSlots(desktop, timelineErrorMessages.length);
 
       timelineErrorMessages.forEach((error, index) => {
-        const slot = pageSlots[index];
+        const slot = getRandomErrorPageSlot(desktop);
         const win = document.createElement('section');
         win.className = 'window error-page';
         win.id = `timelineError${index + 1}`;
@@ -2419,7 +2649,7 @@
       if (kaiReplyUnlocked || timelineState.messengerEmpty) return;
       kaiReplyUnlocked = true;
       const contact = messengerContacts.find(item => item.name === 'Kai');
-      contact.messages.push({ text: 'She still isn’t talking to you?', fromUser: false });
+      contact.messages.push({ text: 'She still not talking to you?', fromUser: false });
       messengerNotification.textContent = 'New message from Kai';
       messengerNotification.classList.add('visible');
       messengerInput.disabled = false;
@@ -2432,13 +2662,14 @@
 
     messengerInput.disabled = true;
     messengerSend.disabled = true;
+    // Kai writes 6 seconds after the player scrolls the chat to the very top.
+    let messengerScrolledByPlayer = false;
+    ['wheel', 'touchmove', 'pointerdown'].forEach(type => {
+      messengerMessagesElement.addEventListener(type, () => { messengerScrolledByPlayer = true; }, { passive: true });
+    });
     messengerMessagesElement.addEventListener('scroll', () => {
-      if (timelineState.messengerEmpty || kaiReplyUnlocked || kaiUnlockTimer) return;
-      const atTop = messengerMessagesElement.scrollTop <= 1;
-      const atBottom = messengerMessagesElement.scrollTop + messengerMessagesElement.clientHeight
-        >= messengerMessagesElement.scrollHeight - 2;
-      if (atTop) kaiHistoryStarted = true;
-      if (!kaiHistoryStarted || !atBottom) return;
+      if (timelineStageId !== 'part-b-narru-misha' || kaiReplyUnlocked || kaiUnlockTimer) return;
+      if (!messengerScrolledByPlayer || messengerMessagesElement.scrollTop > 1) return;
       messengerStatus.textContent = 'Waiting for Kai…';
       kaiUnlockTimer = window.setTimeout(unlockKaiReply, 6000);
     });
@@ -2460,58 +2691,175 @@
       messengerSend.disabled = true;
       messengerStatus.textContent = 'Message sent.';
       renderMessenger();
+      window.setTimeout(() => {
+        showBlueScreen(
+          "We don't know what this error is, so we have no idea how to fix it. Memories are a dangerous thing. Perhaps someone failed to take that into account.\n\nPress Enter to return to Trapdoors\n\nError: 0T : 0RI0 : GGER0000",
+          () => goToTimelineStage('part-b-original')
+        );
+      }, 2500);
+    });
+
+    // "Find a user" search. Kai's username moves the player from The Original to part A.
+    document.getElementById('messengerSearch').addEventListener('submit', event => {
+      event.preventDefault();
+      const input = document.getElementById('messengerSearchInput');
+      const query = input.value.trim().toLowerCase();
+      if (!query) return;
+      const contact = messengerContacts.find(item => item.name.toLowerCase() === query);
+      if (contact) {
+        selectedMessengerContact = contact.name;
+        input.value = '';
+        renderMessenger();
+        return;
+      }
+      if (timelineStageId === 'part-b-original' && query === KAI_CHIRP_USERNAME) {
+        goToTimelineStage('part-a-beginning');
+        return;
+      }
+      messengerStatus.textContent = 'User not found.';
+      input.select();
     });
 
     renderMessenger();
 
     const calendarGrid = document.getElementById('calendarGrid');
     const calendarSelection = document.getElementById('calendarSelection');
-    ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(day => {
-      const label = document.createElement('span');
-      label.textContent = day;
-      calendarGrid.appendChild(label);
-    });
-    for (let day = 1; day <= 28; day += 1) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = String(day);
-      button.classList.toggle('selected', day === 8);
-      button.setAttribute('aria-pressed', String(day === 8));
-      button.addEventListener('click', () => {
-        calendarGrid.querySelectorAll('button').forEach(date => {
-          date.classList.remove('selected');
-          date.setAttribute('aria-pressed', 'false');
-        });
-        button.classList.add('selected');
-        button.setAttribute('aria-pressed', 'true');
-        calendarSelection.textContent = `Selected: February ${day}`;
+    // Calendar follows the current timeline date.
+    function renderCalendar([month, dayCount, currentDay]) {
+      calendarGrid.innerHTML = '';
+      document.getElementById('calendarMonth').textContent = month;
+      document.getElementById('explorerDate').textContent = `${month} ${currentDay}`;
+      calendarSelection.textContent = `Selected: ${month} ${currentDay}`;
+      ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(day => {
+        const label = document.createElement('span');
+        label.textContent = day;
+        calendarGrid.appendChild(label);
       });
-      calendarGrid.appendChild(button);
+      for (let day = 1; day <= dayCount; day += 1) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = String(day);
+        button.classList.toggle('selected', day === currentDay);
+        button.setAttribute('aria-pressed', String(day === currentDay));
+        button.addEventListener('click', () => {
+          calendarGrid.querySelectorAll('button').forEach(date => {
+            date.classList.remove('selected');
+            date.setAttribute('aria-pressed', 'false');
+          });
+          button.classList.add('selected');
+          button.setAttribute('aria-pressed', 'true');
+          calendarSelection.textContent = `Selected: ${month} ${day}`;
+        });
+        calendarGrid.appendChild(button);
+      }
     }
 
+    renderCalendar(diaryUnlockedPages.includes('countdown') && timelineStageId === 'part-a-beginning'
+      ? COUNTDOWN_DATE
+      : TIMELINE_DATES[timelineStageId] || TIMELINE_DATES['part-b-narru-misha']);
+
+    // Classic XP error dialog, closed with OK or ×.
+    function showErrorDialog(text, titleText = 'Error') {
+      const desktop = document.querySelector('.desktop');
+      const win = document.createElement('section');
+      win.className = 'window error-dialog visible';
+      win.setAttribute('role', 'alertdialog');
+      win.innerHTML = `
+        <div class="titlebar">
+          <div class="left"><div class="title-text">Error</div></div>
+          <div class="window-controls"><button type="button" class="window-control">×</button></div>
+        </div>
+        <div class="window-content">
+          <div class="error-dialog-body">
+            <div class="error-dialog-icon">×</div>
+            <div class="error-dialog-text"></div>
+          </div>
+          <div class="error-dialog-actions"><button type="button">OK</button></div>
+        </div>`;
+      win.querySelector('.error-dialog-text').textContent = text;
+      win.querySelector('.title-text').textContent = titleText;
+      win.querySelectorAll('button').forEach(button => button.addEventListener('click', () => win.remove()));
+      desktop.appendChild(win);
+      win.style.left = `${Math.round((desktop.clientWidth - win.offsetWidth) / 2)}px`;
+      win.style.top = `${Math.round((desktop.clientHeight - win.offsetHeight) / 2)}px`;
+      bringWindowToFront(win);
+      win.querySelector('.error-dialog-actions button').focus();
+      return win;
+    }
+
+    // Letters can't be opened, except the ones with a body.
     function renderEmail() {
       emailList.innerHTML = '';
       emailMessages.forEach(message => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'email-item';
-        button.classList.toggle('active', message.id === selectedEmailId);
         button.classList.toggle('unread', !message.read);
-        button.innerHTML = `<strong>${message.subject}</strong><span>${message.sender}</span><span>${message.preview}</span>`;
+        [message.sender, message.subject, message.date].forEach(text => {
+          const cell = document.createElement('span');
+          cell.textContent = text;
+          button.appendChild(cell);
+        });
         button.addEventListener('click', () => {
-          selectedEmailId = message.id;
-          message.read = true;
-          renderEmail();
+          if (message.body) {
+            openEmailReader(message);
+            return;
+          }
+          showErrorDialog("I don't want to read another reason why they can't stand me.");
         });
         emailList.appendChild(button);
       });
-
-      const message = emailMessages.find(item => item.id === selectedEmailId);
-      if (!message) return;
-      emailSubject.textContent = message.subject;
-      emailMeta.textContent = `From: ${message.sender}`;
-      emailBody.textContent = message.body;
     }
+
+    function openEmailReader(message) {
+      openedEmail = message;
+      document.getElementById('emailBody').textContent = message.body;
+      emailList.hidden = true;
+      emailReader.hidden = false;
+      emailReader.scrollTop = 0;
+    }
+
+    document.getElementById('emailAcknowledge').addEventListener('click', () => {
+      openedEmail.read = true;
+      emailLocked = false;
+      emailReader.hidden = true;
+      emailList.hidden = false;
+      renderEmail();
+    });
+
+    function scrambleText(text) {
+      const symbols = '#%&@$*!?~^§¤░▒▓';
+      return [...text].map(char => (char === ' ' ? ' ' : symbols[Math.floor(Math.random() * symbols.length)])).join('');
+    }
+
+    // After 7:29 in part A all old letters break and the doctor's letter locks the mail until it is acknowledged.
+    function breakEmail() {
+      emailMessages.forEach(message => {
+        message.sender = scrambleText(message.sender);
+        message.subject = scrambleText(message.subject);
+      });
+      emailMessages.push({
+        id: 'doctor',
+        sender: 'City Clinic',
+        subject: 'Test results',
+        date: '03.09',
+        body: DOCTOR_REPORT,
+        read: false
+      });
+      emailLocked = true;
+      renderEmail();
+    }
+
+    if (timelineStageId === 'part-a-beginning') {
+      window.setTimeout(() => {
+        breakEmail();
+        showErrorDialog('Check. Mail. Now.', 'Maybe, after all…');
+      }, debugMode ? 5000 : 449000);
+    }
+
+    document.getElementById('emailWrite').addEventListener('click', () => {
+      showErrorDialog('Society is not the best way to socialize.');
+    });
 
     renderEmail();
 
@@ -2635,48 +2983,63 @@
       localStorage.setItem(notebookStorageKey, JSON.stringify(notebookEntries));
     }
 
-    function entryIsUnlocked(entry) {
-      return Boolean(entry.unlockMoment && currentStoryMoment === entry.unlockMoment);
-    }
-
     function renderPlayerNotebook() {
-      const list = document.getElementById('playerNotebookList');
-      list.innerHTML = '';
-      const stageEntries = timelineState.positiveJournalOnly
-        ? notebookEntries.filter(entry => entry.positive === true)
-        : notebookEntries;
-      const unlockedEntries = stageEntries
-        .filter(entryIsUnlocked)
-        .sort((left, right) => left.moment.localeCompare(right.moment));
-      if (!unlockedEntries.length) {
-        const locked = document.createElement('div');
-        locked.className = 'notebook-locked';
-        locked.textContent = 'No notebook entries have been discovered yet.';
-        list.appendChild(locked);
+      const page = document.getElementById('playerNotebookList');
+      const pages = (DIARY_PAGES[timelineStageId] || [])
+        .filter(entry => !timelineState.positiveJournalOnly || entry.positive);
+      diaryPageIndex = Math.min(diaryPageIndex, Math.max(0, pages.length - 1));
+      document.getElementById('diaryPrev').disabled = diaryPageIndex === 0;
+      document.getElementById('diaryNext').disabled = diaryPageIndex >= pages.length - 1;
+      page.innerHTML = '';
+      const entry = pages[diaryPageIndex];
+      if (!entry) {
+        page.textContent = 'No entries.';
         return;
       }
-      unlockedEntries.forEach(entry => {
-        const card = document.createElement('article');
-        card.className = 'notebook-player-entry';
-        const title = document.createElement('h4');
-        title.textContent = `${entry.moment}: ${entry.title}`;
-        const notes = document.createElement('p');
-        notes.textContent = entry.notes;
-        card.append(title, notes);
-        if (entry.imageData || entry.imageUrl) {
-          const image = document.createElement('img');
-          image.src = entry.imageData || entry.imageUrl;
-          image.alt = entry.title;
-          card.appendChild(image);
-        }
-        list.appendChild(card);
-      });
+      if (entry.password && !diaryUnlockedPages.includes(entry.id)) {
+        const prompt = document.createElement('p');
+        prompt.textContent = entry.prompt;
+        const input = document.createElement('input');
+        input.type = 'password';
+        input.autocomplete = 'off';
+        const confirm = document.createElement('button');
+        confirm.type = 'button';
+        confirm.textContent = 'Confirm';
+        const submit = () => {
+          if (input.value.trim().toLowerCase() !== entry.password.toLowerCase()) {
+            showErrorDialog('Incorrect data entered.');
+            return;
+          }
+          diaryUnlockedPages.push(entry.id);
+          localStorage.setItem(diaryStorageKey, JSON.stringify(diaryUnlockedPages));
+          if (entry.id === 'countdown') renderCalendar(COUNTDOWN_DATE);
+          renderPlayerNotebook();
+        };
+        confirm.addEventListener('click', submit);
+        input.addEventListener('keydown', event => { if (event.key === 'Enter') submit(); });
+        page.append(prompt, input, confirm);
+        return;
+      }
+      const title = document.createElement('h4');
+      title.textContent = entry.title;
+      page.appendChild(title);
+      if (entry.image) {
+        const image = document.createElement('img');
+        image.src = entry.image;
+        image.alt = entry.title;
+        page.appendChild(image);
+      }
     }
 
-    window.setStoryMoment = moment => {
-      currentStoryMoment = String(moment || '').trim();
+    document.getElementById('diaryPrev').addEventListener('click', () => {
+      diaryPageIndex = Math.max(0, diaryPageIndex - 1);
       renderPlayerNotebook();
-    };
+    });
+
+    document.getElementById('diaryNext').addEventListener('click', () => {
+      diaryPageIndex += 1;
+      renderPlayerNotebook();
+    });
 
     function updateNotebookPreview(source) {
       const preview = document.getElementById('notebookPreview');
@@ -2796,7 +3159,6 @@
       notebookContents.querySelectorAll('.notebook-player-view, .notebook-dev-view').forEach(view => {
         view.hidden = isBroken;
       });
-      document.getElementById('notepadLocked').hidden = true;
       document.getElementById('playerNotebookList').hidden = false;
       renderNotebookList();
       renderPlayerNotebook();
@@ -2998,6 +3360,10 @@
     function closeWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (id === 'email' && emailLocked) return;
+      if (id === 'notebook' && diaryUnlockedPages.includes('countdown') && timelineStageId === 'part-a-beginning') {
+        window.setTimeout(startActEnding, 300);
+      }
       win.classList.remove('visible');
       win.classList.add('minimized');
       renderTaskbar();
@@ -3007,6 +3373,7 @@
     function minimizeWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (id === 'email' && emailLocked) return;
       win.classList.add('minimized');
       win.classList.remove('visible');
       renderTaskbar();
