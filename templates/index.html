@@ -8,7 +8,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARG Desktop</title>
-  <link rel="stylesheet" href="/static/maze/maze.css?v=4" />
+  <link rel="stylesheet" href="/static/maze/maze.css?v=8" />
   <style>
     /*
       This CSS variable block creates the color palette for the entire interface.
@@ -37,6 +37,17 @@
       It prevents padding or borders from making elements wider than expected.
     */
     * { box-sizing: border-box; }
+
+    /* Fonts from static/fonts: Tahoma for the whole interface, Franklin Gothic italic for the Start button. */
+    @font-face {
+      font-family: "Tahoma";
+      src: url('/static/fonts/tahoma.ttf') format('truetype');
+    }
+
+    @font-face {
+      font-family: "Franklin Gothic XP";
+      src: url('/static/fonts/framdit.ttf') format('truetype');
+    }
 
     /*
       Animation keyframes define smooth motion for windows, menus, icons, and map elements.
@@ -180,10 +191,42 @@
       position: fixed;
       inset: 0;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: center;
+      gap: 40px;
+      padding: 20px;
+      overflow-y: auto;
       z-index: 1000;
-      background: var(--wp1);
+      background: #5b92d1 url('/static/login/background.jpg') center / cover no-repeat;
+    }
+
+    /* Trapdoors logo and the glowing divider, like the Windows XP welcome screen. */
+    .login-logo {
+      width: min(360px, 80vw);
+      filter: drop-shadow(0 0 14px rgba(255,255,255,0.75));
+      animation: loginLogoIn 0.9s ease-out both;
+    }
+
+    .login-divider {
+      width: 2px;
+      height: 280px;
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,0.9), transparent);
+    }
+
+    @keyframes loginLogoIn {
+      from { opacity: 0; transform: translateX(-24px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+        @keyframes loginPanelIn {
+      from { opacity: 0; transform: translateX(24px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (max-width: 840px) {
+      .login-divider { display: none; }
+      .login-logo { width: min(240px, 70vw); }
     }
 
     .login-screen.waiting { display: none; }
@@ -194,6 +237,7 @@
       background: var(--xp-panel);
       border: 2px solid #0b4fae;
       box-shadow: 4px 5px 0 rgba(0,0,0,0.32);
+            animation: loginPanelIn 0.9s ease-out both;
     }
 
     .login-title {
@@ -209,6 +253,17 @@
     .login-form {
       display: grid;
       gap: 10px;
+    }
+
+    .login-form[hidden] { display: none; }
+
+    .login-welcome {
+      margin: 18px 0 8px;
+      color: #0b4fae;
+      font-size: 30px;
+      font-style: italic;
+      font-weight: 700;
+      text-align: center;
     }
 
     .login-form label {
@@ -390,6 +445,21 @@
 
     .desktop-icon[hidden] { display: none; }
 
+    /* Program icons from static/icons, set by setProgramIcon. */
+    .icon-graphic.icon-image,
+    .titlebar .window-icon.icon-image,
+    .taskbar-btn .tiny-icon.icon-image,
+    .menu-item .menu-icon.icon-image,
+    .menu-item:hover .menu-icon.icon-image {
+      background: center / contain no-repeat;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .icon-graphic.icon-image::before,
+    .icon-graphic.icon-image::after { display: none; }
+
     .desktop-icon span {
       display: block;
       font-size: 12px;
@@ -422,33 +492,29 @@
       justify-content: center;
       width: 118px;
       height: calc(100% - 4px);
-      margin: 2px 4px 2px 2px;
-      background: linear-gradient(180deg, #45c64c 0%, #2c9a3a 100%);
-      border-top: 1px solid #a4f5a4;
-      border-left: 1px solid #b9f9bb;
-      border-right: 1px solid #195f2d;
-      border-bottom: 1px solid #195f2d;
+      margin: 2px 4px 2px 0;
+      padding: 0 10px 0 0;
+      background: url('/static/ui/start1.svg') center / 100% 100% no-repeat;
+      border: 0;
       color: #fff;
-      font-weight: 700;
-      font-size: 14px;
+      font-family: "Franklin Gothic XP", "Trebuchet MS", sans-serif;
+      font-style: italic;
+      font-size: 22px;
       cursor: pointer;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.42);
-      text-shadow: 1px 1px 0 rgba(0,0,0,0.45);
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
       user-select: none;
     }
 
     .start-button::before {
       content: "";
-      width: 18px; height: 18px;
-      margin-right: 8px;
-      background: linear-gradient(180deg, #fff, #d9d9d9);
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      border-radius: 2px 2px 0 0;
-      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4);
-      position: relative;
+      width: 26px; height: 22px;
+      margin-right: 6px;
+      background: url('/static/icons/trapdoors-start.png') center / contain no-repeat;
+      filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4));
     }
 
-    .start-button:hover { filter: brightness(1.05); }
+    .start-button:hover { background-image: url('/static/ui/start2.svg'); }
+    .start-button:active { background-image: url('/static/ui/start_act.svg'); }
 
     .taskbar-buttons {
       display: flex;
@@ -463,9 +529,13 @@
       height: 100%;
       min-width: 148px;
       max-width: 200px;
-      border: 1px solid #9b9b9b;
-      background: linear-gradient(180deg, #f5f5f5 0%, #d8d8d8 100%);
-      padding: 0 10px;
+      border-style: solid;
+      border-width: 0 8px;
+      border-image: url('/static/ui/window1_act.svg') 0 8 fill / 0 8px stretch;
+      background: none;
+      color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
+      padding: 0 4px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -485,9 +555,7 @@
     }
 
     .taskbar-btn.active {
-      background: linear-gradient(180deg, #fefefe 0%, #dfe9f7 100%);
-      border-color: #7ea2d7;
-      box-shadow: inset 0 0 0 1px rgba(125,158,219,0.7);
+      border-image-source: url('/static/ui/Window1.svg');
     }
 
     .taskbar-btn .tiny-icon {
@@ -499,16 +567,26 @@
     }
 
     .tray {
-      width: 120px;
+      width: 130px;
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 12px;
       border-left: 1px solid rgba(0,0,0,0.3);
       font-size: 12px;
       font-weight: 600;
       color: #2a2a2a;
       background: linear-gradient(180deg, #e4e4e4 0%, #d5d5d5 100%);
       box-shadow: inset 1px 0 0 rgba(255,255,255,0.8);
+    }
+
+    .tray-icon {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: 1px solid #555;
+      background: #fff;
+      cursor: pointer;
     }
 
     /*
@@ -615,7 +693,8 @@
       width: 460px;
       min-height: 180px;
       background: linear-gradient(180deg, #f5f5f5 0%, #ececec 100%);
-      border: 2px solid #1d4d93;
+      border: 4px solid #0a6fd6;
+      border-image: url('/static/ui/Frame1.svg') 5 stretch;
       box-shadow: 3px 3px 12px rgba(0,0,0,0.4);
       display: none;
       z-index: 20;
@@ -635,7 +714,7 @@
     }
 
     .titlebar {
-      background: linear-gradient(180deg, #2b6ed5 0%, #0d4ca8 100%);
+      background: url('/static/ui/window3.svg') center / 100% 100% no-repeat;
       height: 32px;
       display: flex;
       align-items: center;
@@ -678,19 +757,16 @@
     }
 
     .window-control {
-      width: 24px; height: 18px;
-      border: 1px solid rgba(255,255,255,0.75);
-      background: linear-gradient(180deg, #f0f0f0, #d6d6d6);
-      color: #111;
-      font-weight: 700;
-      font-size: 12px;
+      width: 21px;
+      height: 21px;
+      padding: 0;
+      border: 0;
+      background: url('/static/ui/Close_1.svg') center / 100% 100% no-repeat;
+      font-size: 0;
       cursor: pointer;
-      display: grid;
-      place-items: center;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
     }
 
-    .window-control:hover { filter: brightness(1.1); }
+    .window-control:active { background-image: url('/static/ui/Close_2.svg'); }
 
     .window-content {
       padding: 10px;
@@ -739,6 +815,12 @@
 
     .stats {
       display: grid; gap: 11px; margin-top: 10px;
+    }
+
+    .tech-support {
+      margin: 10px 2px 0;
+      color: #52677e;
+      font-size: 12px;
     }
 
     .stat {
@@ -991,7 +1073,30 @@
     }
 
     .calendar-grid button { cursor: pointer; }
+    .calendar-grid button.holiday { color: #7a0000; background: #f28b82; border-color: #d65b52; }
     .calendar-grid button.selected { color: #fff; background: #347dcc; border-color: #1d4d93; }
+
+    .calendar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .calendar-nav h3 { margin: 0; }
+
+    /* Holiday hint next to the hovered date. */
+    .calendar-tooltip {
+      position: fixed;
+      z-index: 1500;
+      padding: 2px 6px;
+      border: 1px solid #000;
+      background: #fff;
+      font-size: 11px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .calendar-tooltip[hidden] { display: none; }
 
     .messenger-message {
       max-width: 82%;
@@ -1099,14 +1204,18 @@
     }
 
     .diary-arrow {
-      width: 26px;
-      height: 22px;
-      border: 1px solid #1c6b1c;
-      color: #fff;
-      background: linear-gradient(180deg, #5fd35f, #2c9a3a);
+      width: 21px;
+      height: 21px;
+      padding: 0;
+      border: 0;
+      background: url('/static/ui/left_arrow_1.svg') center / 100% 100% no-repeat;
+      font-size: 0;
       cursor: pointer;
-      font-weight: 700;
     }
+
+    .diary-arrow:active { background-image: url('/static/ui/left_arrow_2.svg'); }
+    .diary-arrow.next { background-image: url('/static/ui/right_arrow_1.svg'); }
+    .diary-arrow.next:active { background-image: url('/static/ui/right_arrow_2.svg'); }
 
     .diary-arrow:disabled { opacity: 0.35; cursor: default; }
 
@@ -1163,16 +1272,9 @@
     }
 
     .error-dialog-icon {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       flex-shrink: 0;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      color: #fff;
-      background: radial-gradient(circle at 35% 30%, #ff8a7a, #d8261a 60%, #9e1409);
-      font-size: 20px;
-      font-weight: 700;
     }
 
     .error-dialog-actions {
@@ -1205,13 +1307,6 @@
       Game-specific styling: this section draws the map and quest cards used in the ARG game window.
       The map uses simple colored shapes to simulate terrain, and the character sits on top as a marker.
     */
-    .game-layout {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 12px;
-      align-items: start;
-    }
-
     .script-layout {
       display: grid;
       grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.4fr);
@@ -1534,17 +1629,6 @@
       line-height: 1.7;
     }
 
-    .game-card {
-      background: rgba(255,255,255,0.38);
-      border: 1px solid #b9c8de;
-      padding: 12px;
-      min-height: 140px;
-    }
-
-    .game-card h4 {
-      margin: 0 0 10px; font-size: 14px;
-    }
-
     .map {
       width: 100%; height: 160px; background: linear-gradient(180deg, #d8f0d8, #9ecb7b); border: 2px solid #3d7b39; position: relative; overflow: hidden;
     }
@@ -1578,27 +1662,12 @@
       animation: mapBob 4.2s ease-in-out infinite alternate;
     }
 
-    .quest-list {
-      list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
-    }
-
-    .quest-list li {
-      display: flex; align-items: baseline; gap: 8px; background: rgba(255,255,255,0.35); padding: 6px 8px; border: 1px solid rgba(0,0,0,0.08);
-    }
-
-    .quest-list li::before { content: "▣"; color: #2a6cbf; }
-
-    .textarea {
-      width: 100%; min-height: 110px; resize: vertical; border: 1px solid #9aa6b9; padding: 8px; font-size: 12px; background: rgba(255,255,255,0.7);
-    }
-
     /*
       Media query ensures the layout still looks good on smaller screens.
       It shrinks columns and keeps the windows readable on tablets or narrow browser widths.
     */
     @media (max-width: 840px) {
       .window { width: min(82vw, 420px); }
-      .game-layout { grid-template-columns: 1fr; }
       .script-layout { grid-template-columns: 1fr; }
       .content-grid { grid-template-columns: 1fr; }
       .messenger-layout { grid-template-columns: 110px minmax(0, 1fr); }
@@ -1609,6 +1678,8 @@
 </head>
 <body class="locked" data-authenticated="{{ 'true' if logged_in_user else 'false' }}" data-developer="{{ 'true' if developer_access else 'false' }}" data-timeline-stage="{{ progress.stage }}">
   <div class="login-screen waiting" id="loginScreen">
+    <img class="login-logo" src="/static/login/trapdoors-logo.png" alt="Trapdoors" />
+    <div class="login-divider"></div>
     <section class="login-window" aria-labelledby="loginTitle">
       <h1 class="login-title" id="loginTitle">Log On to Trapdoors</h1>
       <div class="login-error" id="loginError" role="alert" aria-live="polite"></div>
@@ -1623,11 +1694,12 @@
         </label>
         <button type="submit">Log in</button>
       </form>
+      <p class="login-welcome" id="loginWelcome" hidden>Welcome</p>
     </section>
   </div>
   <!--
     The desktop is the root area where icons and windows are placed.
-    Each .window is a floating app or panel that can be opened, minimized, or closed.
+    Each .window is a floating app or panel that can be opened or closed.
   -->
   <div class="desktop">
     <div class="timeline-hud" aria-live="polite">
@@ -1644,10 +1716,6 @@
         <div class="icon-graphic icon-computer"></div>
         <span>My Computer</span>
       </div>
-      <div class="desktop-icon" data-window="documents">
-        <div class="icon-graphic icon-folder"></div>
-        <span>Documents</span>
-      </div>
       <div class="desktop-icon" data-window="recycle">
         <div class="icon-graphic icon-bin"></div>
         <span>Recycle Bin</span>
@@ -1660,10 +1728,6 @@
         <div class="icon-graphic icon-folder"></div>
         <span>Notepad</span>
       </div>
-      <div class="desktop-icon" data-window="music">
-        <div class="icon-graphic icon-globe"></div>
-        <span>Background Music</span>
-      </div>
       <div class="desktop-icon" data-window="messenger">
         <div class="icon-graphic icon-computer"></div>
         <span>Messenger</span>
@@ -1671,14 +1735,6 @@
       <div class="desktop-icon" data-window="email">
         <div class="icon-graphic icon-doc"></div>
         <span>E-Mail</span>
-      </div>
-      <div class="desktop-icon" data-window="cart">
-        <div class="icon-graphic icon-folder"></div>
-        <span>Shopping Cart</span>
-      </div>
-      <div class="desktop-icon" data-window="calendar">
-        <div class="icon-graphic icon-doc"></div>
-        <span>Calendar</span>
       </div>
       <div class="desktop-icon" id="chatExportIcon" hidden>
         <div class="icon-graphic icon-doc"></div>
@@ -1690,27 +1746,30 @@
       My Computer window: this acts like a system explorer panel with file/folder categories.
       It presents a fake operating system environment and device details.
     -->
-    <div class="window" id="explorer" data-title="My Computer" style="left: 360px; top: 150px; width: 520px;">
+    <div class="window" id="explorer" data-title="My Computer" style="left: 330px; top: 150px; width: 600px;">
       <div class="titlebar">
         <div class="left">
           <div class="window-icon"></div>
           <div class="title-text">My Computer</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
       <div class="window-content">
         <div class="content-grid">
           <div class="panel">
-            <h3>Explorer</h3>
-            <ul class="explorer-list">
-              <li><span class="folder-badge"></span> Projects</li>
-              <li><span class="folder-badge"></span> Assets</li>
-              <li><span class="folder-badge"></span> Audio</li>
-              <li><span class="folder-badge"></span> Lore</li>
-            </ul>
+            <h3>Background Music</h3>
+            <div class="music-player">
+              <div class="music-controls">
+                <button type="button" id="playMusic">Play</button>
+                <button type="button" id="pauseMusic">Pause</button>
+                <label><input id="musicLoop" type="checkbox" checked /> Loop</label>
+                <label>Volume <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.5" /></label>
+              </div>
+              <div class="music-status" id="musicStatus" aria-live="polite">No track loaded.</div>
+              <audio id="backgroundMusic" preload="metadata"></audio>
+            </div>
           </div>
           <div class="panel">
             <h3>Settings</h3>
@@ -1721,45 +1780,7 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!--
-      Documents window: this is a lore/mission panel that looks like a note or briefing document.
-      It contains story tasks and a textarea used to display narrative context.
-    -->
-    <div class="window" id="documents" data-title="Documents" style="left: 440px; top: 110px; width: 510px;">
-      <div class="titlebar">
-        <div class="left">
-          <div class="window-icon"></div>
-          <div class="title-text">Documents</div>
-        </div>
-        <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
-          <button class="window-control" data-action="close">×</button>
-        </div>
-      </div>
-      <div class="window-content">
-        <div class="game-layout">
-          <div class="game-card">
-            <h4>Mission Notes</h4>
-            <ul class="quest-list">
-              <li>Locate the secret server cluster.</li>
-              <li>Recover the blue archive key.</li>
-              <li>Uncover the missing map fragments.</li>
-            </ul>
-          </div>
-          <div class="game-card">
-            <h4>Briefing</h4>
-            <textarea class="textarea">Project ARG is a browser-ready game prototype. Future expansions include dialogue states, inventory, map traversal, and faction events.</textarea>
-          </div>
-        </div>
-        <div class="status-area" id="savedProgress" aria-label="Saved player progression">
-          <span class="status-tag">Stage: {{ progress.stage }}</span>
-          <span class="status-tag">XP: {{ progress.xp }}</span>
-          <span class="status-tag">Coins: {{ progress.coins }}</span>
-        </div>
-        <p id="progressNotes">{{ progress.progress_notes }}</p>
+        <p class="tech-support">Actual tech support: <a href="mailto:traumainformedboy@gmail.com">traumainformedboy@gmail.com</a></p>
       </div>
     </div>
 
@@ -1774,7 +1795,6 @@
           <div class="title-text">Recycle Bin</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1794,7 +1814,6 @@
           <div class="title-text">Script Workshop</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1826,34 +1845,6 @@
       </div>
     </div>
 
-    <div class="window" id="music" data-title="Background Music" style="left: 330px; top: 180px; width: 480px;">
-      <div class="titlebar">
-        <div class="left">
-          <div class="window-icon"></div>
-          <div class="title-text">Background Music</div>
-        </div>
-        <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
-          <button class="window-control" data-action="close">×</button>
-        </div>
-      </div>
-      <div class="window-content">
-        <div class="music-player">
-          <strong>ARG ORIGINAL SOUNDTRACK</strong>
-          <select id="musicTrack" aria-label="Choose an OST track"></select>
-          <div class="music-controls">
-            <button type="button" id="loadMusicTrack">Load OST</button>
-            <button type="button" id="playMusic">Play</button>
-            <button type="button" id="pauseMusic">Pause</button>
-            <label><input id="musicLoop" type="checkbox" checked /> Loop</label>
-            <label>Volume <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.5" /></label>
-          </div>
-          <div class="music-status" id="musicStatus" aria-live="polite">No track loaded.</div>
-          <audio id="backgroundMusic" preload="metadata"></audio>
-        </div>
-      </div>
-    </div>
-
     <div class="window" id="notebook" data-title="Notepad" style="left: 190px; top: 80px; width: 720px;">
       <div class="titlebar">
         <div class="left">
@@ -1861,7 +1852,6 @@
           <div class="title-text">Notepad</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1879,7 +1869,7 @@
         <div class="notebook-player-view">
           <div class="diary-nav">
             <button type="button" class="diary-arrow" id="diaryPrev">&larr;</button>
-            <button type="button" class="diary-arrow" id="diaryNext">&rarr;</button>
+            <button type="button" class="diary-arrow next" id="diaryNext">&rarr;</button>
           </div>
           <div class="diary-page" id="playerNotebookList"></div>
         </div>
@@ -1924,7 +1914,6 @@
           <div class="title-text">Chirp</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1957,7 +1946,6 @@
           <div class="title-text">E-Mail</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1973,28 +1961,20 @@
       </div>
     </div>
 
-    <div class="window" id="cart" data-title="Shopping Cart" style="left: 390px; top: 250px; width: 360px;">
-      <div class="titlebar">
-        <div class="left"><div class="window-icon"></div><div class="title-text">Shopping Cart</div></div>
-        <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
-          <button class="window-control" data-action="close">×</button>
-        </div>
-      </div>
-      <div class="window-content"><div class="panel"><h3>Your cart is empty</h3><p>No items have been added.</p></div></div>
-    </div>
-
     <div class="window" id="calendar" data-title="Calendar" style="left: 620px; top: 200px; width: 340px;">
       <div class="titlebar">
         <div class="left"><div class="window-icon"></div><div class="title-text">Calendar</div></div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
       <div class="window-content">
         <div class="panel">
-          <h3 id="calendarMonth">February</h3>
+          <div class="calendar-nav">
+            <button type="button" class="diary-arrow" id="calendarPrev">&larr;</button>
+            <h3 id="calendarMonth">February</h3>
+            <button type="button" class="diary-arrow next" id="calendarNext">&rarr;</button>
+          </div>
           <div class="calendar-grid" id="calendarGrid" aria-label="February calendar"></div>
           <div class="music-status" id="calendarSelection" aria-live="polite">Selected: February 8</div>
         </div>
@@ -2012,7 +1992,6 @@
           <div class="title-text">Command Console</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -2036,15 +2015,12 @@
     <div class="start-menu-content">
       <div class="menu-group">
         <div class="menu-item" data-window="explorer"><span class="menu-icon"></span> My Computer</div>
-        <div class="menu-item" data-window="documents"><span class="menu-icon"></span> Documents</div>
         <div class="menu-item dev-only-nav" data-window="scripts"><span class="menu-icon"></span> Script Workshop</div>
         <div class="menu-item" data-window="notebook"><span class="menu-icon"></span> Notebook</div>
-        <div class="menu-item" data-window="music"><span class="menu-icon"></span> Background Music</div>
         <div class="menu-item" data-window="messenger"><span class="menu-icon"></span> Messenger</div>
         <div class="menu-item" data-window="email"><span class="menu-icon"></span> E-Mail</div>
-        <div class="menu-item" data-window="cart"><span class="menu-icon"></span> Shopping Cart</div>
         <div class="menu-item" data-window="calendar"><span class="menu-icon"></span> Calendar</div>
-        <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
+        <div class="menu-item dev-only-nav" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
       </div>
       <div class="menu-group" style="margin-top: 18px;">
         <div class="menu-item" data-window="recycle"><span class="menu-icon"></span> Recycle Bin</div>
@@ -2059,10 +2035,15 @@
   <div class="taskbar">
     <button class="start-button" id="startButton">start</button>
     <div class="taskbar-buttons" id="taskbarButtons"></div>
-    <div class="tray" id="clock">00:00</div>
+    <div class="tray">
+      <button type="button" class="tray-icon" id="trayCalendar" title="Calendar" aria-label="Calendar"></button>
+      <span id="clock">00:00</span>
+    </div>
   </div>
 
-  <script src="/static/maze/maze.js?v=4"></script>
+  <script src="/static/maze/maze.js?v=8"></script>
+
+  <div class="calendar-tooltip" id="calendarTooltip" hidden></div>
 
   <div class="blue-screen" id="blueScreen" hidden>
     <span class="blue-screen-title">Trapdoors</span>
@@ -2137,6 +2118,22 @@
     const loginStorageKey = 'arg-login-complete';
     let developerScriptsUnlocked = debugMode;
 
+    // Windows XP system sounds from static/sounds.
+    const SYSTEM_SOUNDS = {
+      error: '/static/sounds/xp-error.mp3',
+      criticalStop: '/static/sounds/xp-critical-stop.mp3',
+      logon: '/static/sounds/xp-logon.mp3',
+      notify: '/static/sounds/xp-notify.mp3',
+      start: '/static/sounds/xp-start.mp3',
+      startup: '/static/sounds/xp-startup.mp3'
+    };
+
+    function playSound(name) {
+      const sound = new Audio(SYSTEM_SOUNDS[name]);
+      sound.volume = 0.5;
+      sound.play().catch(() => {});
+    }
+
     if (debugMode) {
       document.body.classList.add('developer-mode');
     }
@@ -2168,6 +2165,32 @@
       localStorage.setItem(mazeFinishedStorageKey, 'true');
       chatExportIcon.hidden = false;
       renderRecycleBin();
+      applyProgramIcons();
+    }
+
+    // Program icons from static/icons. Programs without a picture keep the CSS-drawn icon.
+    function programIconFor(id) {
+      if (id === 'notebook') return timelineState.journalBroken ? 'notepad-broken' : 'notepad';
+      if (id === 'recycle') return 'recycle-full';
+      return { explorer: 'computer', messenger: 'chirp', email: 'email', scripts: 'folder' }[id] || null;
+    }
+
+    function setProgramIcon(element, name) {
+      element.classList.toggle('icon-image', Boolean(name));
+      element.style.backgroundImage = name ? `url('/static/icons/${name}.png')` : '';
+    }
+
+    function applyProgramIcons() {
+      document.querySelectorAll('.desktop-icon[data-window]').forEach(icon => {
+        setProgramIcon(icon.querySelector('.icon-graphic'), programIconFor(icon.dataset.window));
+      });
+      document.querySelectorAll('.menu-item[data-window]').forEach(item => {
+        setProgramIcon(item.querySelector('.menu-icon'), programIconFor(item.dataset.window));
+      });
+      document.querySelectorAll('.window[id]').forEach(win => {
+        const icon = win.querySelector('.window-icon');
+        if (icon && !win.classList.contains('error-page')) setProgramIcon(icon, programIconFor(win.id));
+      });
     }
 
     function renderRecycleBin() {
@@ -2204,6 +2227,7 @@
       document.getElementById('blueScreenText').textContent = text;
       document.getElementById('blueScreenTimer').textContent = '';
       screen.hidden = false;
+      playSound('criticalStop');
       if (!onEnter) return;
       const receiveEnter = event => {
         if (event.key !== 'Enter') return;
@@ -2382,7 +2406,6 @@
     ];
     let selectedMessengerContact = 'Kai';
     const backgroundMusic = document.getElementById('backgroundMusic');
-    const musicTrack = document.getElementById('musicTrack');
     const musicStatus = document.getElementById('musicStatus');
     const KAI_CHIRP_USERNAME = 'kai';
     const messengerContactsElement = document.getElementById('messengerContacts');
@@ -2609,6 +2632,7 @@
         left.className = 'left';
         const icon = document.createElement('div');
         icon.className = 'window-icon';
+        setProgramIcon(icon, 'error');
         const title = document.createElement('div');
         title.className = 'title-text';
         title.textContent = `System Error ${index + 1}`;
@@ -2638,6 +2662,7 @@
         window.setTimeout(() => {
           win.classList.add('visible');
           bringWindowToFront(win);
+          playSound('error');
         }, index * 300);
 
         close.addEventListener('mousedown', event => event.stopPropagation());
@@ -2661,6 +2686,10 @@
         });
         document.addEventListener('mousemove', event => {
           if (!dragging) return;
+          if ((event.buttons & 1) === 0) {
+            dragging = false;
+            return;
+          }
           const bounds = desktop.getBoundingClientRect();
           const maxX = Math.max(0, desktop.clientWidth - win.offsetWidth);
           const maxY = Math.max(0, desktop.clientHeight - win.offsetHeight);
@@ -2681,6 +2710,7 @@
       contact.messages.push({ text: 'She still not talking to you?', fromUser: false });
       messengerNotification.textContent = 'New message from Kai';
       messengerNotification.classList.add('visible');
+      playSound('notify');
       messengerInput.disabled = false;
       messengerSend.disabled = false;
       messengerStatus.textContent = 'New message received.';
@@ -2753,12 +2783,39 @@
 
     const calendarGrid = document.getElementById('calendarGrid');
     const calendarSelection = document.getElementById('calendarSelection');
-    // Calendar follows the current timeline date.
-    function renderCalendar([month, dayCount, currentDay]) {
-      calendarGrid.innerHTML = '';
-      document.getElementById('calendarMonth').textContent = month;
+    const CALENDAR_MONTHS = [
+      ['January', 31], ['February', 28], ['March', 31], ['April', 30], ['May', 31], ['June', 30],
+      ['July', 31], ['August', 31], ['September', 30], ['October', 31], ['November', 30], ['December', 31]
+    ];
+    const CALENDAR_HOLIDAYS = {
+      'January 1': 'Happy New Year!',
+      'January 7': 'Christmas',
+      'February 14': "Valentine's Day, Kai's bday",
+      'March 8': 'Ihavetosaysomegoodwordstomyfamily...',
+      'May 1': "Workers' Day",
+      'June 1': "Children's Day(lol)",
+      'September 1': 'FUCK THIS DAY'
+    };
+    const calendarTooltip = document.getElementById('calendarTooltip');
+    let calendarToday = null;
+    let calendarMonthIndex = 0;
+
+    // Calendar follows the current timeline date. The arrows switch months, holidays show a hint on hover.
+    function renderCalendar(today) {
+      const [month, , currentDay] = today;
+      calendarToday = today;
+      calendarMonthIndex = CALENDAR_MONTHS.findIndex(([name]) => name === month);
       document.getElementById('explorerDate').textContent = `${month} ${currentDay}`;
       calendarSelection.textContent = `Selected: ${month} ${currentDay}`;
+      drawCalendarMonth();
+    }
+
+    function drawCalendarMonth() {
+      const [month, dayCount] = CALENDAR_MONTHS[calendarMonthIndex];
+      const [todayMonth, , todayDay] = calendarToday;
+      calendarGrid.innerHTML = '';
+      calendarTooltip.hidden = true;
+      document.getElementById('calendarMonth').textContent = month;
       ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(day => {
         const label = document.createElement('span');
         label.textContent = day;
@@ -2766,10 +2823,25 @@
       });
       for (let day = 1; day <= dayCount; day += 1) {
         const button = document.createElement('button');
+        const isToday = month === todayMonth && day === todayDay;
+        const holiday = CALENDAR_HOLIDAYS[`${month} ${day}`];
         button.type = 'button';
         button.textContent = String(day);
-        button.classList.toggle('selected', day === currentDay);
-        button.setAttribute('aria-pressed', String(day === currentDay));
+        button.classList.toggle('selected', isToday);
+        button.setAttribute('aria-pressed', String(isToday));
+        if (holiday) {
+          button.classList.add('holiday');
+          button.setAttribute('aria-label', `${day} — ${holiday}`);
+          button.addEventListener('mouseenter', () => {
+            const rect = button.getBoundingClientRect();
+            calendarTooltip.textContent = holiday;
+            calendarTooltip.hidden = false;
+            const fitsRight = rect.right + 4 + calendarTooltip.offsetWidth <= window.innerWidth;
+            calendarTooltip.style.left = `${fitsRight ? rect.right + 4 : rect.left - 4 - calendarTooltip.offsetWidth}px`;
+            calendarTooltip.style.top = `${rect.top + rect.height / 2 - calendarTooltip.offsetHeight / 2}px`;
+          });
+          button.addEventListener('mouseleave', () => { calendarTooltip.hidden = true; });
+        }
         button.addEventListener('click', () => {
           calendarGrid.querySelectorAll('button').forEach(date => {
             date.classList.remove('selected');
@@ -2783,12 +2855,22 @@
       }
     }
 
+    document.getElementById('calendarPrev').addEventListener('click', () => {
+      calendarMonthIndex = (calendarMonthIndex + 11) % 12;
+      drawCalendarMonth();
+    });
+
+    document.getElementById('calendarNext').addEventListener('click', () => {
+      calendarMonthIndex = (calendarMonthIndex + 1) % 12;
+      drawCalendarMonth();
+    });
+
     renderCalendar(diaryUnlockedPages.includes('countdown') && timelineStageId === 'part-a-beginning'
       ? COUNTDOWN_DATE
       : TIMELINE_DATES[timelineStageId] || TIMELINE_DATES['part-b-narru-misha']);
 
     // Classic XP error dialog, closed with OK or ×.
-    function showErrorDialog(text, titleText = 'Error') {
+    function showErrorDialog(text, titleText = 'Error', sound = 'error') {
       const desktop = document.querySelector('.desktop');
       const win = document.createElement('section');
       win.className = 'window error-dialog visible';
@@ -2800,7 +2882,7 @@
         </div>
         <div class="window-content">
           <div class="error-dialog-body">
-            <div class="error-dialog-icon">×</div>
+            <img class="error-dialog-icon" src="/static/icons/${sound === 'notify' ? 'warning' : 'error'}.png" alt="" />
             <div class="error-dialog-text"></div>
           </div>
           <div class="error-dialog-actions"><button type="button">OK</button></div>
@@ -2813,6 +2895,7 @@
       win.style.top = `${Math.round((desktop.clientHeight - win.offsetHeight) / 2)}px`;
       bringWindowToFront(win);
       win.querySelector('.error-dialog-actions button').focus();
+      playSound(sound);
       return win;
     }
 
@@ -2882,7 +2965,7 @@
     if (timelineStageId === 'part-a-beginning') {
       window.setTimeout(() => {
         breakEmail();
-        showErrorDialog('Check. Mail. Now.', 'Maybe, after all…');
+        showErrorDialog('Check. Mail. Now.', 'Maybe, after all…', 'notify');
       }, debugMode ? 5000 : 449000);
     }
 
@@ -2891,13 +2974,6 @@
     });
 
     renderEmail();
-
-    PROJECT_OST.forEach((track, index) => {
-      const option = document.createElement('option');
-      option.value = String(index);
-      option.textContent = track.title;
-      musicTrack.appendChild(option);
-    });
 
     if (!PROJECT_OST.length) {
       musicStatus.textContent = 'No approved ARG OST tracks configured.';
@@ -2913,15 +2989,6 @@
       backgroundMusic.load();
       setMusicStatus(`Loaded: ${label}. Press Play.`);
     }
-
-    document.getElementById('loadMusicTrack').addEventListener('click', () => {
-      const track = PROJECT_OST[Number(musicTrack.value)];
-      if (!track) {
-        setMusicStatus('No approved ARG OST track is configured.');
-        return;
-      }
-      loadMusicSource(track.source, track.title);
-    });
 
     document.getElementById('playMusic').addEventListener('click', () => {
       if (!backgroundMusic.src) {
@@ -2954,9 +3021,10 @@
       setMusicStatus('Unable to decode this audio format or load this URL.');
     });
 
-    if (PROJECT_OST.length) {
+    // The login screen stays silent, the music starts only on the desktop.
+    const desktopUnlocked = authenticated && sessionStorage.getItem(loginStorageKey) === 'true';
+    if (PROJECT_OST.length && desktopUnlocked) {
       const firstTrack = PROJECT_OST[0];
-      musicTrack.value = '0';
       loadMusicSource(firstTrack.source, firstTrack.title);
       backgroundMusic.play()
         .then(() => setMusicStatus('Background music started. Click or press a key to enable sound.'))
@@ -3315,7 +3383,6 @@
       document.body.classList.remove('locked');
       if (debugMode) {
         openWindow('explorer');
-        openWindow('documents');
         openWindow('notebook');
         openWindow('messenger');
       }
@@ -3340,8 +3407,16 @@
             body: new FormData(loginForm)
           });
           if (response.ok) {
+            // "Welcome" and the startup sound play here, from the Log in click, so the browser does not block the sound.
             sessionStorage.setItem(loginStorageKey, 'true');
-            window.location.reload();
+            loginForm.hidden = true;
+            document.getElementById('loginWelcome').hidden = false;
+            const startupSound = new Audio(SYSTEM_SOUNDS.startup);
+            const openDesktop = () => window.location.reload();
+            startupSound.volume = 0.5;
+            startupSound.addEventListener('ended', openDesktop);
+            startupSound.play().catch(openDesktop);
+            window.setTimeout(openDesktop, 7000);
             return;
           }
           const result = await response.json().catch(() => ({}));
@@ -3353,6 +3428,14 @@
         document.getElementById('password').focus();
       });
     }
+
+    applyProgramIcons();
+
+    // The calendar lives in the tray next to the clock.
+    document.getElementById('trayCalendar').addEventListener('click', () => {
+      if (document.getElementById('calendar').classList.contains('visible')) closeWindow('calendar');
+      else openWindow('calendar');
+    });
 
     // Updates the clock displayed in the bottom-right tray.
     // It uses the user's local time and refreshes once every second.
@@ -3368,6 +3451,7 @@
     function openWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (!win.classList.contains('visible')) playSound('start');
       if (id === 'recycle' && timelineStageId === 'part-b-original' && !mazeFinished) {
         MazeGame.open(document.querySelector('.desktop'), { onFinish: finishMaze });
         return;
@@ -3394,6 +3478,10 @@
     function closeWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (win.classList.contains('error-page')) {
+        relocateErrorPage(win);
+        return;
+      }
       if (id === 'email' && emailLocked) return;
       if (id === 'notebook' && diaryUnlockedPages.includes('countdown') && timelineStageId === 'part-a-beginning') {
         window.setTimeout(startActEnding, 300);
@@ -3403,35 +3491,21 @@
       renderTaskbar();
     }
 
-    // Minimizes a window by hiding it while keeping it in the taskbar.
-    function minimizeWindow(id) {
-      const win = document.getElementById(id);
-      if (!win) return;
-      if (id === 'email' && emailLocked) return;
-      win.classList.add('minimized');
-      win.classList.remove('visible');
-      renderTaskbar();
-    }
-
     // Renders the taskbar buttons for all windows.
-    // Each button shows the window title and toggles the window open or minimized when clicked.
+    // Each button shows the window title and brings the window to the front when clicked.
     function renderTaskbar() {
       taskbarButtons.innerHTML = '';
       wins.forEach(win => {
         const id = win.id;
         const isVisible = win.classList.contains('visible');
+        if (win.classList.contains('error-page')) return;
         if (!isVisible && !win.classList.contains('minimized')) return;
         if (!win.classList.contains('visible') && win.classList.contains('minimized')) return;
         const btn = document.createElement('button');
         btn.className = 'taskbar-btn' + (isVisible ? ' active' : '');
         btn.innerHTML = '<span class="tiny-icon"></span><span>' + (win.dataset.title || id) + '</span>';
-        btn.addEventListener('click', () => {
-          if (win.classList.contains('visible')) {
-            minimizeWindow(id);
-          } else {
-            openWindow(id);
-          }
-        });
+        setProgramIcon(btn.querySelector('.tiny-icon'), programIconFor(id));
+        btn.addEventListener('click', () => openWindow(id));
         taskbarButtons.appendChild(btn);
       });
     }
@@ -3464,7 +3538,7 @@
       }
     });
 
-    // Window control buttons handle minimize and close actions.
+    // Window control buttons close their windows.
     document.querySelectorAll('.window-control').forEach(btn => {
       btn.addEventListener('click', () => {
         const win = btn.closest('.window');
@@ -3472,7 +3546,6 @@
         if (!win) return;
         const id = win.id;
         if (action === 'close') closeWindow(id);
-        if (action === 'minimize') minimizeWindow(id);
       });
     });
 
@@ -3493,6 +3566,7 @@
 
       titlebar.addEventListener('mousedown', e => {
         dragging = true;
+        e.preventDefault();
         const rect = win.getBoundingClientRect();
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
@@ -3504,6 +3578,10 @@
 
       document.addEventListener('mousemove', e => {
         if (!dragging) return;
+        if ((e.buttons & 1) === 0) {
+          dragging = false;
+          return;
+        }
         win.style.left = Math.max(0, Math.min(window.innerWidth - win.offsetWidth, e.clientX - offsetX)) + 'px';
         win.style.top = Math.max(0, Math.min(window.innerHeight - win.offsetHeight - 52, e.clientY - offsetY)) + 'px';
       });

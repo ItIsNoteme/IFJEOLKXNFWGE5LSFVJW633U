@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 49 5" width="49" height="5">
+	<defs>
+		<image  width="49" height="5" id="img1" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADEAAAAFAQMAAADWuZbkAAAAAXNSR0IB2cksfwAAAANQTFRF////p8QbyAAAAA5JREFUeJxjZIAARgI0AACgAAZWkKFqAAAAAElFTkSuQmCC"/>
+		<image  width="49" height="5" id="img2" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADEAAAAFCAMAAADbqfSVAAAAAXNSR0IB2cksfwAAAGZQTFRFAGjgBXjmDI7uDp30BY/pBYzxAIf2AIDoAHXVAGvBAGW0CIbnCo/qB4jmA4LmAIHpAIHoAIDpAHzgAHXTAGzDAGfXA3LTA3nWA3vXAnnWAHbVAHLOAGvCAGbKAGzBAGzCAGq+AGW9T4ueIgAAAHNJREFUeJyNj7EOhDAMQ21YemVDgo3h/v/LDqSyRV0g1AHdjJs08kvUqARDeKV7lFmlAh8asntFqqlmNGOBRGnZGhpI46T5fYwnStwjiiKOrNwDh8TCpW1xKDdM27zOfnbEge7s4cLqQgzwtmTl9/fuC39dVcstOObofZsAAAAASUVORK5CYII="/>
+	</defs>
+	<style>
+	</style>
+	<use id="Background" href="#img1" x="0" y="0"/>
+	<use id="Слой 1" href="#img2" x="0" y="0"/>
+</svg>
