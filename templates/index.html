@@ -2427,6 +2427,14 @@
     const messengerStatus = document.getElementById('messengerStatus');
     const emailMessages = [
       {
+        id: 'tech-support',
+        sender: 'Trapdoors Tech Support',
+        subject: 'The tech support email address has been changed',
+        date: '',
+        body: 'The tech support email address has been changed due to technical issues. (How ironic.) Here’s the current one:\n\ntraumainformedboy@gmail.com',
+        read: false
+      },
+      {
         id: 'parents-meeting',
         sender: 'Northside School Office',
         subject: 'Parents’ meeting - February 8',
@@ -2957,7 +2965,7 @@
 
     // After 7:29 in part A all old letters break and the doctor's letter locks the mail until it is acknowledged.
     function breakEmail() {
-      emailMessages.forEach(message => {
+      emailMessages.filter(message => message.id !== 'tech-support').forEach(message => {
         message.sender = scrambleText(message.sender);
         message.subject = scrambleText(message.subject);
       });
