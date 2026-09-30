@@ -1228,13 +1228,6 @@
       Game-specific styling: this section draws the map and quest cards used in the ARG game window.
       The map uses simple colored shapes to simulate terrain, and the character sits on top as a marker.
     */
-    .game-layout {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 12px;
-      align-items: start;
-    }
-
     .script-layout {
       display: grid;
       grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.4fr);
@@ -1557,17 +1550,6 @@
       line-height: 1.7;
     }
 
-    .game-card {
-      background: rgba(255,255,255,0.38);
-      border: 1px solid #b9c8de;
-      padding: 12px;
-      min-height: 140px;
-    }
-
-    .game-card h4 {
-      margin: 0 0 10px; font-size: 14px;
-    }
-
     .map {
       width: 100%; height: 160px; background: linear-gradient(180deg, #d8f0d8, #9ecb7b); border: 2px solid #3d7b39; position: relative; overflow: hidden;
     }
@@ -1601,27 +1583,12 @@
       animation: mapBob 4.2s ease-in-out infinite alternate;
     }
 
-    .quest-list {
-      list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
-    }
-
-    .quest-list li {
-      display: flex; align-items: baseline; gap: 8px; background: rgba(255,255,255,0.35); padding: 6px 8px; border: 1px solid rgba(0,0,0,0.08);
-    }
-
-    .quest-list li::before { content: "▣"; color: #2a6cbf; }
-
-    .textarea {
-      width: 100%; min-height: 110px; resize: vertical; border: 1px solid #9aa6b9; padding: 8px; font-size: 12px; background: rgba(255,255,255,0.7);
-    }
-
     /*
       Media query ensures the layout still looks good on smaller screens.
       It shrinks columns and keeps the windows readable on tablets or narrow browser widths.
     */
     @media (max-width: 840px) {
       .window { width: min(82vw, 420px); }
-      .game-layout { grid-template-columns: 1fr; }
       .script-layout { grid-template-columns: 1fr; }
       .content-grid { grid-template-columns: 1fr; }
       .messenger-layout { grid-template-columns: 110px minmax(0, 1fr); }
@@ -1667,10 +1634,6 @@
         <div class="icon-graphic icon-computer"></div>
         <span>My Computer</span>
       </div>
-      <div class="desktop-icon" data-window="documents">
-        <div class="icon-graphic icon-folder"></div>
-        <span>Documents</span>
-      </div>
       <div class="desktop-icon" data-window="recycle">
         <div class="icon-graphic icon-bin"></div>
         <span>Recycle Bin</span>
@@ -1683,10 +1646,6 @@
         <div class="icon-graphic icon-folder"></div>
         <span>Notepad</span>
       </div>
-      <div class="desktop-icon" data-window="music">
-        <div class="icon-graphic icon-globe"></div>
-        <span>Background Music</span>
-      </div>
       <div class="desktop-icon" data-window="messenger">
         <div class="icon-graphic icon-computer"></div>
         <span>Messenger</span>
@@ -1694,10 +1653,6 @@
       <div class="desktop-icon" data-window="email">
         <div class="icon-graphic icon-doc"></div>
         <span>E-Mail</span>
-      </div>
-      <div class="desktop-icon" data-window="cart">
-        <div class="icon-graphic icon-folder"></div>
-        <span>Shopping Cart</span>
       </div>
       <div class="desktop-icon" data-window="calendar">
         <div class="icon-graphic icon-doc"></div>
@@ -1713,7 +1668,7 @@
       My Computer window: this acts like a system explorer panel with file/folder categories.
       It presents a fake operating system environment and device details.
     -->
-    <div class="window" id="explorer" data-title="My Computer" style="left: 360px; top: 150px; width: 520px;">
+    <div class="window" id="explorer" data-title="My Computer" style="left: 330px; top: 150px; width: 600px;">
       <div class="titlebar">
         <div class="left">
           <div class="window-icon"></div>
@@ -1727,13 +1682,17 @@
       <div class="window-content">
         <div class="content-grid">
           <div class="panel">
-            <h3>Explorer</h3>
-            <ul class="explorer-list">
-              <li><span class="folder-badge"></span> Projects</li>
-              <li><span class="folder-badge"></span> Assets</li>
-              <li><span class="folder-badge"></span> Audio</li>
-              <li><span class="folder-badge"></span> Lore</li>
-            </ul>
+            <h3>Background Music</h3>
+            <div class="music-player">
+              <div class="music-controls">
+                <button type="button" id="playMusic">Play</button>
+                <button type="button" id="pauseMusic">Pause</button>
+                <label><input id="musicLoop" type="checkbox" checked /> Loop</label>
+                <label>Volume <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.5" /></label>
+              </div>
+              <div class="music-status" id="musicStatus" aria-live="polite">No track loaded.</div>
+              <audio id="backgroundMusic" preload="metadata"></audio>
+            </div>
           </div>
           <div class="panel">
             <h3>Settings</h3>
@@ -1744,45 +1703,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!--
-      Documents window: this is a lore/mission panel that looks like a note or briefing document.
-      It contains story tasks and a textarea used to display narrative context.
-    -->
-    <div class="window" id="documents" data-title="Documents" style="left: 440px; top: 110px; width: 510px;">
-      <div class="titlebar">
-        <div class="left">
-          <div class="window-icon"></div>
-          <div class="title-text">Documents</div>
-        </div>
-        <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
-          <button class="window-control" data-action="close">×</button>
-        </div>
-      </div>
-      <div class="window-content">
-        <div class="game-layout">
-          <div class="game-card">
-            <h4>Mission Notes</h4>
-            <ul class="quest-list">
-              <li>Locate the secret server cluster.</li>
-              <li>Recover the blue archive key.</li>
-              <li>Uncover the missing map fragments.</li>
-            </ul>
-          </div>
-          <div class="game-card">
-            <h4>Briefing</h4>
-            <textarea class="textarea">Project ARG is a browser-ready game prototype. Future expansions include dialogue states, inventory, map traversal, and faction events.</textarea>
-          </div>
-        </div>
-        <div class="status-area" id="savedProgress" aria-label="Saved player progression">
-          <span class="status-tag">Stage: {{ progress.stage }}</span>
-          <span class="status-tag">XP: {{ progress.xp }}</span>
-          <span class="status-tag">Coins: {{ progress.coins }}</span>
-        </div>
-        <p id="progressNotes">{{ progress.progress_notes }}</p>
       </div>
     </div>
 
@@ -1845,34 +1765,6 @@
               <div class="script-status" id="scriptStatus" aria-live="polite"></div>
             </form>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="window" id="music" data-title="Background Music" style="left: 330px; top: 180px; width: 480px;">
-      <div class="titlebar">
-        <div class="left">
-          <div class="window-icon"></div>
-          <div class="title-text">Background Music</div>
-        </div>
-        <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
-          <button class="window-control" data-action="close">×</button>
-        </div>
-      </div>
-      <div class="window-content">
-        <div class="music-player">
-          <strong>ARG ORIGINAL SOUNDTRACK</strong>
-          <select id="musicTrack" aria-label="Choose an OST track"></select>
-          <div class="music-controls">
-            <button type="button" id="loadMusicTrack">Load OST</button>
-            <button type="button" id="playMusic">Play</button>
-            <button type="button" id="pauseMusic">Pause</button>
-            <label><input id="musicLoop" type="checkbox" checked /> Loop</label>
-            <label>Volume <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.5" /></label>
-          </div>
-          <div class="music-status" id="musicStatus" aria-live="polite">No track loaded.</div>
-          <audio id="backgroundMusic" preload="metadata"></audio>
         </div>
       </div>
     </div>
@@ -1996,17 +1888,6 @@
       </div>
     </div>
 
-    <div class="window" id="cart" data-title="Shopping Cart" style="left: 390px; top: 250px; width: 360px;">
-      <div class="titlebar">
-        <div class="left"><div class="window-icon"></div><div class="title-text">Shopping Cart</div></div>
-        <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
-          <button class="window-control" data-action="close">×</button>
-        </div>
-      </div>
-      <div class="window-content"><div class="panel"><h3>Your cart is empty</h3><p>No items have been added.</p></div></div>
-    </div>
-
     <div class="window" id="calendar" data-title="Calendar" style="left: 620px; top: 200px; width: 340px;">
       <div class="titlebar">
         <div class="left"><div class="window-icon"></div><div class="title-text">Calendar</div></div>
@@ -2063,13 +1944,10 @@
     <div class="start-menu-content">
       <div class="menu-group">
         <div class="menu-item" data-window="explorer"><span class="menu-icon"></span> My Computer</div>
-        <div class="menu-item" data-window="documents"><span class="menu-icon"></span> Documents</div>
         <div class="menu-item dev-only-nav" data-window="scripts"><span class="menu-icon"></span> Script Workshop</div>
         <div class="menu-item" data-window="notebook"><span class="menu-icon"></span> Notebook</div>
-        <div class="menu-item" data-window="music"><span class="menu-icon"></span> Background Music</div>
         <div class="menu-item" data-window="messenger"><span class="menu-icon"></span> Messenger</div>
         <div class="menu-item" data-window="email"><span class="menu-icon"></span> E-Mail</div>
-        <div class="menu-item" data-window="cart"><span class="menu-icon"></span> Shopping Cart</div>
         <div class="menu-item" data-window="calendar"><span class="menu-icon"></span> Calendar</div>
         <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
       </div>
@@ -2430,7 +2308,6 @@
     ];
     let selectedMessengerContact = 'Kai';
     const backgroundMusic = document.getElementById('backgroundMusic');
-    const musicTrack = document.getElementById('musicTrack');
     const musicStatus = document.getElementById('musicStatus');
     const KAI_CHIRP_USERNAME = 'kai';
     const messengerContactsElement = document.getElementById('messengerContacts');
@@ -2995,13 +2872,6 @@
 
     renderEmail();
 
-    PROJECT_OST.forEach((track, index) => {
-      const option = document.createElement('option');
-      option.value = String(index);
-      option.textContent = track.title;
-      musicTrack.appendChild(option);
-    });
-
     if (!PROJECT_OST.length) {
       musicStatus.textContent = 'No approved ARG OST tracks configured.';
     }
@@ -3016,15 +2886,6 @@
       backgroundMusic.load();
       setMusicStatus(`Loaded: ${label}. Press Play.`);
     }
-
-    document.getElementById('loadMusicTrack').addEventListener('click', () => {
-      const track = PROJECT_OST[Number(musicTrack.value)];
-      if (!track) {
-        setMusicStatus('No approved ARG OST track is configured.');
-        return;
-      }
-      loadMusicSource(track.source, track.title);
-    });
 
     document.getElementById('playMusic').addEventListener('click', () => {
       if (!backgroundMusic.src) {
@@ -3059,7 +2920,6 @@
 
     if (PROJECT_OST.length) {
       const firstTrack = PROJECT_OST[0];
-      musicTrack.value = '0';
       loadMusicSource(firstTrack.source, firstTrack.title);
       backgroundMusic.play()
         .then(() => setMusicStatus('Background music started. Click or press a key to enable sound.'))
@@ -3422,7 +3282,6 @@
       document.body.classList.remove('locked');
       if (debugMode) {
         openWindow('explorer');
-        openWindow('documents');
         openWindow('notebook');
         openWindow('messenger');
       }
