@@ -42,3 +42,5 @@ The `/main` route is server-gated and cannot open the desktop before release.
 ## Database
 
 The app stores progress in `data/progress.db`.
+
+:) :)
