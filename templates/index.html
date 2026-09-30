@@ -991,7 +991,30 @@
     }
 
     .calendar-grid button { cursor: pointer; }
+    .calendar-grid button.holiday { color: #7a0000; background: #f28b82; border-color: #d65b52; }
     .calendar-grid button.selected { color: #fff; background: #347dcc; border-color: #1d4d93; }
+
+    .calendar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .calendar-nav h3 { margin: 0; }
+
+    /* Holiday hint next to the hovered date. */
+    .calendar-tooltip {
+      position: fixed;
+      z-index: 1500;
+      padding: 2px 6px;
+      border: 1px solid #000;
+      background: #fff;
+      font-size: 11px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .calendar-tooltip[hidden] { display: none; }
 
     .messenger-message {
       max-width: 82%;
@@ -1994,7 +2017,11 @@
       </div>
       <div class="window-content">
         <div class="panel">
-          <h3 id="calendarMonth">February</h3>
+          <div class="calendar-nav">
+            <button type="button" class="diary-arrow" id="calendarPrev">&larr;</button>
+            <h3 id="calendarMonth">February</h3>
+            <button type="button" class="diary-arrow" id="calendarNext">&rarr;</button>
+          </div>
           <div class="calendar-grid" id="calendarGrid" aria-label="February calendar"></div>
           <div class="music-status" id="calendarSelection" aria-live="polite">Selected: February 8</div>
         </div>
@@ -2063,6 +2090,8 @@
   </div>
 
   <script src="/static/maze/maze.js?v=4"></script>
+
+  <div class="calendar-tooltip" id="calendarTooltip" hidden></div>
 
   <div class="blue-screen" id="blueScreen" hidden>
     <span class="blue-screen-title">Trapdoors</span>
@@ -2753,12 +2782,39 @@
 
     const calendarGrid = document.getElementById('calendarGrid');
     const calendarSelection = document.getElementById('calendarSelection');
-    // Calendar follows the current timeline date.
-    function renderCalendar([month, dayCount, currentDay]) {
-      calendarGrid.innerHTML = '';
-      document.getElementById('calendarMonth').textContent = month;
+    const CALENDAR_MONTHS = [
+      ['January', 31], ['February', 28], ['March', 31], ['April', 30], ['May', 31], ['June', 30],
+      ['July', 31], ['August', 31], ['September', 30], ['October', 31], ['November', 30], ['December', 31]
+    ];
+    const CALENDAR_HOLIDAYS = {
+      'January 1': 'Happy New Year!',
+      'January 7': 'Christmas',
+      'February 14': "Valentine's Day, Kai's bday",
+      'March 8': 'Ihavetosaysomegoodwordstomyfamily...',
+      'May 1': "Workers' Day",
+      'June 1': "Children's Day(lol)",
+      'September 1': 'FUCK THIS DAY'
+    };
+    const calendarTooltip = document.getElementById('calendarTooltip');
+    let calendarToday = null;
+    let calendarMonthIndex = 0;
+
+    // Calendar follows the current timeline date. The arrows switch months, holidays show a hint on hover.
+    function renderCalendar(today) {
+      const [month, , currentDay] = today;
+      calendarToday = today;
+      calendarMonthIndex = CALENDAR_MONTHS.findIndex(([name]) => name === month);
       document.getElementById('explorerDate').textContent = `${month} ${currentDay}`;
       calendarSelection.textContent = `Selected: ${month} ${currentDay}`;
+      drawCalendarMonth();
+    }
+
+    function drawCalendarMonth() {
+      const [month, dayCount] = CALENDAR_MONTHS[calendarMonthIndex];
+      const [todayMonth, , todayDay] = calendarToday;
+      calendarGrid.innerHTML = '';
+      calendarTooltip.hidden = true;
+      document.getElementById('calendarMonth').textContent = month;
       ['S', 'M', 'T', 'W', 'T', 'F', 'S'].forEach(day => {
         const label = document.createElement('span');
         label.textContent = day;
@@ -2766,10 +2822,25 @@
       });
       for (let day = 1; day <= dayCount; day += 1) {
         const button = document.createElement('button');
+        const isToday = month === todayMonth && day === todayDay;
+        const holiday = CALENDAR_HOLIDAYS[`${month} ${day}`];
         button.type = 'button';
         button.textContent = String(day);
-        button.classList.toggle('selected', day === currentDay);
-        button.setAttribute('aria-pressed', String(day === currentDay));
+        button.classList.toggle('selected', isToday);
+        button.setAttribute('aria-pressed', String(isToday));
+        if (holiday) {
+          button.classList.add('holiday');
+          button.setAttribute('aria-label', `${day} — ${holiday}`);
+          button.addEventListener('mouseenter', () => {
+            const rect = button.getBoundingClientRect();
+            calendarTooltip.textContent = holiday;
+            calendarTooltip.hidden = false;
+            const fitsRight = rect.right + 4 + calendarTooltip.offsetWidth <= window.innerWidth;
+            calendarTooltip.style.left = `${fitsRight ? rect.right + 4 : rect.left - 4 - calendarTooltip.offsetWidth}px`;
+            calendarTooltip.style.top = `${rect.top + rect.height / 2 - calendarTooltip.offsetHeight / 2}px`;
+          });
+          button.addEventListener('mouseleave', () => { calendarTooltip.hidden = true; });
+        }
         button.addEventListener('click', () => {
           calendarGrid.querySelectorAll('button').forEach(date => {
             date.classList.remove('selected');
@@ -2782,6 +2853,16 @@
         calendarGrid.appendChild(button);
       }
     }
+
+    document.getElementById('calendarPrev').addEventListener('click', () => {
+      calendarMonthIndex = (calendarMonthIndex + 11) % 12;
+      drawCalendarMonth();
+    });
+
+    document.getElementById('calendarNext').addEventListener('click', () => {
+      calendarMonthIndex = (calendarMonthIndex + 1) % 12;
+      drawCalendarMonth();
+    });
 
     renderCalendar(diaryUnlockedPages.includes('countdown') && timelineStageId === 'part-a-beginning'
       ? COUNTDOWN_DATE
