@@ -8,7 +8,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARG Desktop</title>
-  <link rel="stylesheet" href="/static/maze/maze.css?v=6" />
+  <link rel="stylesheet" href="/static/maze/maze.css?v=8" />
   <style>
     /*
       This CSS variable block creates the color palette for the entire interface.
@@ -444,6 +444,19 @@
     }
 
     .desktop-icon[hidden] { display: none; }
+
+    /* Program icons from static/icons, set by setProgramIcon. */
+    .icon-graphic.icon-image,
+    .titlebar .window-icon.icon-image,
+    .taskbar-btn .tiny-icon.icon-image {
+      background: center / contain no-repeat;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    .icon-graphic.icon-image::before,
+    .icon-graphic.icon-image::after { display: none; }
 
     .desktop-icon span {
       display: block;
@@ -1260,16 +1273,9 @@
     }
 
     .error-dialog-icon {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       flex-shrink: 0;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      color: #fff;
-      background: radial-gradient(circle at 35% 30%, #ff8a7a, #d8261a 60%, #9e1409);
-      font-size: 20px;
-      font-weight: 700;
     }
 
     .error-dialog-actions {
@@ -2036,7 +2042,7 @@
     </div>
   </div>
 
-  <script src="/static/maze/maze.js?v=6"></script>
+  <script src="/static/maze/maze.js?v=8"></script>
 
   <div class="calendar-tooltip" id="calendarTooltip" hidden></div>
 
@@ -2160,6 +2166,29 @@
       localStorage.setItem(mazeFinishedStorageKey, 'true');
       chatExportIcon.hidden = false;
       renderRecycleBin();
+      applyProgramIcons();
+    }
+
+    // Program icons from static/icons. Programs without a picture keep the CSS-drawn icon.
+    function programIconFor(id) {
+      if (id === 'notebook') return timelineState.journalBroken ? 'notepad-broken' : 'notepad';
+      if (id === 'recycle') return 'recycle-full';
+      return { explorer: 'computer', messenger: 'chirp', email: 'email', scripts: 'folder' }[id] || null;
+    }
+
+    function setProgramIcon(element, name) {
+      element.classList.toggle('icon-image', Boolean(name));
+      element.style.backgroundImage = name ? `url('/static/icons/${name}.png')` : '';
+    }
+
+    function applyProgramIcons() {
+      document.querySelectorAll('.desktop-icon[data-window]').forEach(icon => {
+        setProgramIcon(icon.querySelector('.icon-graphic'), programIconFor(icon.dataset.window));
+      });
+      document.querySelectorAll('.window[id]').forEach(win => {
+        const icon = win.querySelector('.window-icon');
+        if (icon && !win.classList.contains('error-page')) setProgramIcon(icon, programIconFor(win.id));
+      });
     }
 
     function renderRecycleBin() {
@@ -2601,6 +2630,7 @@
         left.className = 'left';
         const icon = document.createElement('div');
         icon.className = 'window-icon';
+        setProgramIcon(icon, 'error');
         const title = document.createElement('div');
         title.className = 'title-text';
         title.textContent = `System Error ${index + 1}`;
@@ -2654,6 +2684,10 @@
         });
         document.addEventListener('mousemove', event => {
           if (!dragging) return;
+          if ((event.buttons & 1) === 0) {
+            dragging = false;
+            return;
+          }
           const bounds = desktop.getBoundingClientRect();
           const maxX = Math.max(0, desktop.clientWidth - win.offsetWidth);
           const maxY = Math.max(0, desktop.clientHeight - win.offsetHeight);
@@ -2846,7 +2880,7 @@
         </div>
         <div class="window-content">
           <div class="error-dialog-body">
-            <div class="error-dialog-icon">×</div>
+            <img class="error-dialog-icon" src="/static/icons/${sound === 'notify' ? 'warning' : 'error'}.png" alt="" />
             <div class="error-dialog-text"></div>
           </div>
           <div class="error-dialog-actions"><button type="button">OK</button></div>
@@ -3393,6 +3427,8 @@
       });
     }
 
+    applyProgramIcons();
+
     // The calendar lives in the tray next to the clock.
     document.getElementById('trayCalendar').addEventListener('click', () => {
       if (document.getElementById('calendar').classList.contains('visible')) closeWindow('calendar');
@@ -3461,6 +3497,7 @@
         const btn = document.createElement('button');
         btn.className = 'taskbar-btn' + (isVisible ? ' active' : '');
         btn.innerHTML = '<span class="tiny-icon"></span><span>' + (win.dataset.title || id) + '</span>';
+        setProgramIcon(btn.querySelector('.tiny-icon'), programIconFor(id));
         btn.addEventListener('click', () => openWindow(id));
         taskbarButtons.appendChild(btn);
       });
@@ -3522,6 +3559,7 @@
 
       titlebar.addEventListener('mousedown', e => {
         dragging = true;
+        e.preventDefault();
         const rect = win.getBoundingClientRect();
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
@@ -3533,6 +3571,10 @@
 
       document.addEventListener('mousemove', e => {
         if (!dragging) return;
+        if ((e.buttons & 1) === 0) {
+          dragging = false;
+          return;
+        }
         win.style.left = Math.max(0, Math.min(window.innerWidth - win.offsetWidth, e.clientX - offsetX)) + 'px';
         win.style.top = Math.max(0, Math.min(window.innerHeight - win.offsetHeight - 52, e.clientY - offsetY)) + 'px';
       });

@@ -261,6 +261,10 @@
       const offsetX = event.clientX - win.offsetLeft;
       const offsetY = event.clientY - win.offsetTop;
       const drag = moveEvent => {
+        if ((moveEvent.buttons & 1) === 0) {
+          stop();
+          return;
+        }
         const maxLeft = container.clientWidth - win.offsetWidth;
         const maxTop = container.clientHeight - win.offsetHeight;
         win.style.left = `${Math.max(0, Math.min(maxLeft, moveEvent.clientX - offsetX))}px`;
@@ -287,7 +291,7 @@
     corruptedError = win;
     win.classList.add('maze-error');
     win.querySelector('.maze-content').innerHTML = `
-      <div class="maze-error-icon">×</div>
+      <div class="maze-error-icon"></div>
       <div>The file is corrupted</div>`;
     win.style.left = `${Math.round((container.clientWidth - win.offsetWidth) / 2)}px`;
     win.style.top = `${Math.round((container.clientHeight - win.offsetHeight) / 2)}px`;
