@@ -1,0 +1,109 @@
+/* Maze minigame windows. */
+.maze-window {
+  position: absolute;
+  z-index: 500;
+  background: #f1f1f1;
+  border: 2px solid #1d4d93;
+  box-shadow: 5px 8px 18px rgba(0, 0, 0, 0.42);
+  font-family: Tahoma, "Segoe UI", sans-serif;
+}
+
+.maze-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 32px;
+  padding: 0 6px 0 10px;
+  color: #fff;
+  background: linear-gradient(180deg, #2b6ed5 0%, #0d4ca8 100%);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: move;
+  user-select: none;
+}
+
+.maze-close {
+  width: 24px;
+  height: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  color: #fff;
+  background: linear-gradient(180deg, #e8735c, #c3361b);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.maze-content {
+  padding: 10px;
+}
+
+/* Trash bin with the four direction folders. */
+.maze-bin .maze-content {
+  display: flex;
+  gap: 14px;
+  min-height: 150px;
+  padding: 18px;
+  background: #fff;
+}
+
+.maze-folder {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 6px;
+  width: 84px;
+  padding: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.maze-folder:hover {
+  background: #eaf4ff;
+  border-color: #9bbce0;
+}
+
+.maze-folder-icon {
+  width: 46px;
+  height: 36px;
+  border: 4px solid #f0c419;
+  background: #fff;
+}
+
+/* Maze board: maze.png with Misha on top. */
+.maze-board {
+  position: relative;
+  overflow: hidden;
+  background: #fff no-repeat;
+  background-size: 100% 100%;
+}
+
+.maze-player {
+  position: absolute;
+  transition: opacity 0.5s linear;
+}
+
+/* "The file is corrupted" error. */
+.maze-error .maze-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 300px;
+  padding: 20px;
+  background: #fff;
+  font-size: 14px;
+}
+
+.maze-error-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #e52525;
+  font-size: 28px;
+  font-weight: 700;
+}

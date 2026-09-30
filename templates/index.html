@@ -8,6 +8,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARG Desktop</title>
+  <link rel="stylesheet" href="/static/maze/maze.css?v=4" />
   <style>
     /*
       This CSS variable block creates the color palette for the entire interface.
@@ -386,6 +387,8 @@
       transform: rotate(90deg);
       box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
     }
+
+    .desktop-icon[hidden] { display: none; }
 
     .desktop-icon span {
       display: block;
@@ -1677,6 +1680,10 @@
         <div class="icon-graphic icon-doc"></div>
         <span>Calendar</span>
       </div>
+      <div class="desktop-icon" id="chatExportIcon" hidden>
+        <div class="icon-graphic icon-doc"></div>
+        <span>ChatExport_1</span>
+      </div>
     </div>
 
     <!--
@@ -2055,6 +2062,8 @@
     <div class="tray" id="clock">00:00</div>
   </div>
 
+  <script src="/static/maze/maze.js?v=4"></script>
+
   <div class="blue-screen" id="blueScreen" hidden>
     <span class="blue-screen-title">Trapdoors</span>
     <pre id="blueScreenText"></pre>
@@ -2141,8 +2150,28 @@
       ? 'Hearts: -- / 3'
       : `${timelineState.hearts}${timelineState.bandagedHearts ? ' bandaged' : ''} ${heartUnit} / 3`;
 
+    // Maze minigame in the Recycle Bin of The Original. It is played once, then the bin is empty.
+    const mazeFinishedStorageKey = 'arg-maze-finished';
+    const CHAT_EXPORT_URL = '/static/maze/ChatExport_1.pdf';
+    let mazeFinished = localStorage.getItem(mazeFinishedStorageKey) === 'true';
+    const chatExportIcon = document.getElementById('chatExportIcon');
+    chatExportIcon.hidden = !(mazeFinished && timelineStageId === 'part-b-original');
+    chatExportIcon.addEventListener('dblclick', () => {
+      const link = document.createElement('a');
+      link.href = CHAT_EXPORT_URL;
+      link.download = 'ChatExport_1.pdf';
+      link.click();
+    });
+
+    function finishMaze() {
+      mazeFinished = true;
+      localStorage.setItem(mazeFinishedStorageKey, 'true');
+      chatExportIcon.hidden = false;
+      renderRecycleBin();
+    }
+
     function renderRecycleBin() {
-      const items = timelineState.trashFull
+      const items = timelineState.trashFull && !mazeFinished
         ? ['old_wireframe.map', 'debug_ui_backup', 'idle_quest_notes', 'chirp_cache.tmp']
         : [];
       const list = document.getElementById('recycleItems');
@@ -3339,6 +3368,10 @@
     function openWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (id === 'recycle' && timelineStageId === 'part-b-original' && !mazeFinished) {
+        MazeGame.open(document.querySelector('.desktop'), { onFinish: finishMaze });
+        return;
+      }
       if (id === 'scripts' && !developerScriptsUnlocked) {
         if (!unlockDeveloperTools()) return;
       }

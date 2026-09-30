@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Maze test</title>
+  <link rel="stylesheet" href="maze.css?v=4" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Tahoma, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #5b92d1 0%, #87b3d7 100%);
+    }
+
+    .desktop {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .test-panel {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      max-width: 420px;
+      padding: 10px 12px;
+      color: #fff;
+      background: rgba(16, 31, 45, 0.62);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .test-panel button { margin-top: 6px; padding: 6px 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="desktop" id="desktop">
+    <div class="test-panel">
+      <strong>Maze test</strong><br />
+      Folders in the Trash bin: left, up, down, right.<br />
+      Solution (36 clicks):<br />
+      → → ↑ ← ↓ ← ↑ ← ↓ ← ↑ → ↑ ↑ → ↑ → ↓ → ↑ ← ↑ → ↑ → ↓ → ↑ ← ↓ ← ↓ ← ↑ ← ↑<br />
+      <button type="button" id="openBin">Open Recycle Bin</button>
+      <div id="status"></div>
+    </div>
+  </div>
+  <script src="maze.js?v=4"></script>
+  <script>
+    const desktop = document.getElementById('desktop');
+    const status = document.getElementById('status');
+    if (location.protocol === 'file:') {
+      status.textContent = 'Opened as a file: Misha will stand too close to the walls. Open http://127.0.0.1:8000/static/maze/test.html instead.';
+    }
+    document.getElementById('openBin').addEventListener('click', () => {
+      status.textContent = '';
+      MazeGame.open(desktop, {
+        onFinish: () => { status.textContent = 'Finished! ChatExport_1 icon appears on the desktop.'; }
+      });
+    });
+  </script>
+</body>
+</html>
