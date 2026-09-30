@@ -448,7 +448,9 @@
     /* Program icons from static/icons, set by setProgramIcon. */
     .icon-graphic.icon-image,
     .titlebar .window-icon.icon-image,
-    .taskbar-btn .tiny-icon.icon-image {
+    .taskbar-btn .tiny-icon.icon-image,
+    .menu-item .menu-icon.icon-image,
+    .menu-item:hover .menu-icon.icon-image {
       background: center / contain no-repeat;
       border: 0;
       border-radius: 0;
@@ -505,13 +507,10 @@
 
     .start-button::before {
       content: "";
-      width: 18px; height: 18px;
-      margin-right: 8px;
-      background: linear-gradient(180deg, #fff, #d9d9d9);
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      border-radius: 2px 2px 0 0;
-      box-shadow: inset 0 0 0 2px rgba(0,0,0,0.4);
-      position: relative;
+      width: 26px; height: 22px;
+      margin-right: 6px;
+      background: url('/static/icons/trapdoors-start.png') center / contain no-repeat;
+      filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4));
     }
 
     .start-button:hover { background-image: url('/static/ui/start2.svg'); }
@@ -2021,7 +2020,7 @@
         <div class="menu-item" data-window="messenger"><span class="menu-icon"></span> Messenger</div>
         <div class="menu-item" data-window="email"><span class="menu-icon"></span> E-Mail</div>
         <div class="menu-item" data-window="calendar"><span class="menu-icon"></span> Calendar</div>
-        <div class="menu-item" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
+        <div class="menu-item dev-only-nav" data-window="consoleWin"><span class="menu-icon"></span> Console</div>
       </div>
       <div class="menu-group" style="margin-top: 18px;">
         <div class="menu-item" data-window="recycle"><span class="menu-icon"></span> Recycle Bin</div>
@@ -2184,6 +2183,9 @@
     function applyProgramIcons() {
       document.querySelectorAll('.desktop-icon[data-window]').forEach(icon => {
         setProgramIcon(icon.querySelector('.icon-graphic'), programIconFor(icon.dataset.window));
+      });
+      document.querySelectorAll('.menu-item[data-window]').forEach(item => {
+        setProgramIcon(item.querySelector('.menu-icon'), programIconFor(item.dataset.window));
       });
       document.querySelectorAll('.window[id]').forEach(win => {
         const icon = win.querySelector('.window-icon');
@@ -3476,6 +3478,10 @@
     function closeWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (win.classList.contains('error-page')) {
+        relocateErrorPage(win);
+        return;
+      }
       if (id === 'email' && emailLocked) return;
       if (id === 'notebook' && diaryUnlockedPages.includes('countdown') && timelineStageId === 'part-a-beginning') {
         window.setTimeout(startActEnding, 300);
@@ -3492,6 +3498,7 @@
       wins.forEach(win => {
         const id = win.id;
         const isVisible = win.classList.contains('visible');
+        if (win.classList.contains('error-page')) return;
         if (!isVisible && !win.classList.contains('minimized')) return;
         if (!win.classList.contains('visible') && win.classList.contains('minimized')) return;
         const btn = document.createElement('button');
