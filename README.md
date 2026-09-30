@@ -35,7 +35,7 @@ cd "C:\Users\poopa\Documents\COde\ARG"
 Use the config in `nginx/default.conf` and point it to the Gunicorn upstream at `127.0.0.1:8000`.
 The nginx directory must be available at `/var/www/arg/nginx` because nginx serves
 the DOS-style startup screen and its `index.css` and `index.js` files from there.
-Opening `/` starts the server-time countdown to `2026-09-30T00:00:00Z`.
+Opening `/` starts the server-time countdown to `2026-10-01T02:00:00Z` (04:00 Berlin, 05:00 Moscow).
 The release timestamp can be changed with the `ARG_RELEASE_AT` environment variable.
 The `/main` route is server-gated and cannot open the desktop before release.
 
