@@ -280,6 +280,9 @@
   }
 
   function showCorruptedError(container) {
+    const sound = new Audio(`${assetsUrl}../sounds/xp-error.mp3`);
+    sound.volume = 0.5;
+    sound.play().catch(() => {});
     const win = createWindow(container, 'Error', () => win.remove());
     corruptedError = win;
     win.classList.add('maze-error');

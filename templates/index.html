@@ -8,7 +8,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARG Desktop</title>
-  <link rel="stylesheet" href="/static/maze/maze.css?v=4" />
+  <link rel="stylesheet" href="/static/maze/maze.css?v=5" />
   <style>
     /*
       This CSS variable block creates the color palette for the entire interface.
@@ -2089,7 +2089,7 @@
     <div class="tray" id="clock">00:00</div>
   </div>
 
-  <script src="/static/maze/maze.js?v=4"></script>
+  <script src="/static/maze/maze.js?v=5"></script>
 
   <div class="calendar-tooltip" id="calendarTooltip" hidden></div>
 
@@ -2164,7 +2164,24 @@
     const timelineState = TIMELINE_STAGES[timelineStageId];
     const debugDisclaimerStorageKey = 'arg-debug-disclaimer-complete';
     const loginStorageKey = 'arg-login-complete';
+    const logonSoundStorageKey = 'arg-logon-sound';
     let developerScriptsUnlocked = debugMode;
+
+    // Windows XP system sounds from static/sounds.
+    const SYSTEM_SOUNDS = {
+      error: '/static/sounds/xp-error.mp3',
+      criticalStop: '/static/sounds/xp-critical-stop.mp3',
+      logon: '/static/sounds/xp-logon.mp3',
+      notify: '/static/sounds/xp-notify.mp3',
+      start: '/static/sounds/xp-start.mp3',
+      startup: '/static/sounds/xp-startup.mp3'
+    };
+
+    function playSound(name) {
+      const sound = new Audio(SYSTEM_SOUNDS[name]);
+      sound.volume = 0.5;
+      sound.play().catch(() => {});
+    }
 
     if (debugMode) {
       document.body.classList.add('developer-mode');
@@ -2233,6 +2250,7 @@
       document.getElementById('blueScreenText').textContent = text;
       document.getElementById('blueScreenTimer').textContent = '';
       screen.hidden = false;
+      playSound('criticalStop');
       if (!onEnter) return;
       const receiveEnter = event => {
         if (event.key !== 'Enter') return;
@@ -2334,6 +2352,7 @@
             document.body.classList.remove('disclaimer-lock');
             closeWindow('consoleWin');
             document.getElementById('loginScreen')?.classList.remove('waiting');
+            playSound('startup');
             renderTaskbar();
           });
         },
@@ -2667,6 +2686,7 @@
         window.setTimeout(() => {
           win.classList.add('visible');
           bringWindowToFront(win);
+          playSound('error');
         }, index * 300);
 
         close.addEventListener('mousedown', event => event.stopPropagation());
@@ -2710,6 +2730,7 @@
       contact.messages.push({ text: 'She still not talking to you?', fromUser: false });
       messengerNotification.textContent = 'New message from Kai';
       messengerNotification.classList.add('visible');
+      playSound('notify');
       messengerInput.disabled = false;
       messengerSend.disabled = false;
       messengerStatus.textContent = 'New message received.';
@@ -2869,7 +2890,7 @@
       : TIMELINE_DATES[timelineStageId] || TIMELINE_DATES['part-b-narru-misha']);
 
     // Classic XP error dialog, closed with OK or ×.
-    function showErrorDialog(text, titleText = 'Error') {
+    function showErrorDialog(text, titleText = 'Error', sound = 'error') {
       const desktop = document.querySelector('.desktop');
       const win = document.createElement('section');
       win.className = 'window error-dialog visible';
@@ -2894,6 +2915,7 @@
       win.style.top = `${Math.round((desktop.clientHeight - win.offsetHeight) / 2)}px`;
       bringWindowToFront(win);
       win.querySelector('.error-dialog-actions button').focus();
+      playSound(sound);
       return win;
     }
 
@@ -2963,7 +2985,7 @@
     if (timelineStageId === 'part-a-beginning') {
       window.setTimeout(() => {
         breakEmail();
-        showErrorDialog('Check. Mail. Now.', 'Maybe, after all…');
+        showErrorDialog('Check. Mail. Now.', 'Maybe, after all…', 'notify');
       }, debugMode ? 5000 : 449000);
     }
 
@@ -3392,6 +3414,10 @@
     const loginCompleteThisTab = sessionStorage.getItem(loginStorageKey) === 'true';
     if (authenticated && loginCompleteThisTab) {
       sessionStorage.removeItem(loginStorageKey);
+      if (sessionStorage.getItem(logonSoundStorageKey) === 'true') {
+        sessionStorage.removeItem(logonSoundStorageKey);
+        playSound('logon');
+      }
       document.getElementById('loginScreen')?.remove();
       document.body.classList.remove('locked');
       if (debugMode) {
@@ -3408,6 +3434,7 @@
         : localStorage.getItem(firstVisitStorageKey) === 'true';
       if (disclaimerComplete) {
         loginScreen.classList.remove('waiting');
+        playSound('startup');
       } else {
         startFirstVisitConsole();
       }
@@ -3422,6 +3449,7 @@
           });
           if (response.ok) {
             sessionStorage.setItem(loginStorageKey, 'true');
+            sessionStorage.setItem(logonSoundStorageKey, 'true');
             window.location.reload();
             return;
           }
@@ -3449,6 +3477,7 @@
     function openWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (!win.classList.contains('visible')) playSound('start');
       if (id === 'recycle' && timelineStageId === 'part-b-original' && !mazeFinished) {
         MazeGame.open(document.querySelector('.desktop'), { onFinish: finishMaze });
         return;
