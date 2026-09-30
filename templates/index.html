@@ -95,6 +95,48 @@
       100% { width: 78%; }
     }
 
+    /* Screen glitches after Kai's message: strong while the errors pop up, soft afterwards. */
+    @keyframes screenGlitchShake {
+      0%, 100% { transform: translate(0); filter: none; }
+      20% { transform: translate(-3px, 1px); filter: drop-shadow(-3px 0 #ef4770) drop-shadow(3px 0 #52e0d0); }
+      40% { transform: translate(3px, -2px) skewX(1deg); filter: drop-shadow(3px 0 #ef4770) drop-shadow(-3px 0 #52e0d0); }
+      60% { transform: translate(-1px, 2px); filter: hue-rotate(40deg) contrast(1.3); }
+      80% { transform: translate(2px, 0) skewX(-1deg); filter: drop-shadow(-2px 0 #ef4770); }
+    }
+
+    @keyframes screenGlitchPulse {
+      0%, 92%, 100% { transform: translate(0); filter: none; }
+      94% { transform: translate(-2px, 1px); filter: drop-shadow(-2px 0 #ef4770) drop-shadow(2px 0 #52e0d0); }
+      96% { transform: translate(2px, -1px); filter: hue-rotate(30deg); }
+    }
+
+    body.glitch-strong .desktop { animation: screenGlitchShake 0.18s steps(1, end) infinite; }
+    body.glitch-soft .desktop { animation: screenGlitchPulse 2.8s steps(1, end) infinite; }
+
+    .glitch-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1500;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .glitch-overlay[hidden] { display: none; }
+
+    .glitch-overlay div {
+      position: absolute;
+      left: 0;
+      right: 0;
+      opacity: 0;
+      backdrop-filter: invert(1) hue-rotate(90deg);
+      background: rgba(82, 224, 208, 0.12);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.glitch-strong .desktop,
+      body.glitch-soft .desktop { animation: none; }
+    }
+
     @keyframes hyperficationGlitch {
       0%, 88%, 100% { transform: translate(0); filter: none; }
       90% { transform: translate(2px, -1px); filter: drop-shadow(-2px 0 #ef4770); }
@@ -2053,6 +2095,7 @@
   <script src="/static/maze/maze.js?v=8"></script>
 
   <div class="calendar-tooltip" id="calendarTooltip" hidden></div>
+  <div class="glitch-overlay" id="glitchOverlay" hidden></div>
 
   <div class="blue-screen" id="blueScreen" hidden>
     <span class="blue-screen-title">Trapdoors</span>
@@ -2720,6 +2763,30 @@
       renderTaskbar();
     }
 
+    // Screen glitches: random torn stripes over the screen, frequent while strong, rare while soft.
+    function startScreenGlitch(strongDuration) {
+      const overlay = document.getElementById('glitchOverlay');
+      overlay.hidden = false;
+      document.body.classList.add('glitch-strong');
+      const stripes = Array.from({ length: 7 }, () => overlay.appendChild(document.createElement('div')));
+      const tick = () => {
+        const strong = document.body.classList.contains('glitch-strong');
+        stripes.forEach(stripe => {
+          const visible = Math.random() < (strong ? 0.6 : 0.05);
+          stripe.style.opacity = visible ? String(0.4 + Math.random() * 0.6) : '0';
+          stripe.style.top = `${Math.random() * 100}%`;
+          stripe.style.height = `${2 + Math.random() * (strong ? 46 : 14)}px`;
+          stripe.style.transform = `translateX(${(Math.random() - 0.5) * (strong ? 80 : 24)}px)`;
+        });
+        window.setTimeout(tick, strong ? 70 : 220);
+      };
+      tick();
+      window.setTimeout(() => {
+        document.body.classList.remove('glitch-strong');
+        document.body.classList.add('glitch-soft');
+      }, strongDuration);
+    }
+
     function unlockKaiReply() {
       if (kaiReplyUnlocked || timelineState.messengerEmpty) return;
       kaiReplyUnlocked = true;
@@ -2734,6 +2801,7 @@
       renderMessenger();
       messengerMessagesElement.scrollTop = messengerMessagesElement.scrollHeight;
       openTimelineErrorPages();
+      startScreenGlitch(timelineErrorMessages.length * 300 + 400);
     }
 
     messengerInput.disabled = true;
