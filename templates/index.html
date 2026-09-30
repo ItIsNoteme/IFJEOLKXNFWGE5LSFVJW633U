@@ -180,10 +180,42 @@
       position: fixed;
       inset: 0;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: center;
+      gap: 40px;
+      padding: 20px;
+      overflow-y: auto;
       z-index: 1000;
-      background: var(--wp1);
+      background: #5b92d1 url('/static/login/background.jpg') center / cover no-repeat;
+    }
+
+    /* Trapdoors logo and the glowing divider, like the Windows XP welcome screen. */
+    .login-logo {
+      width: min(360px, 80vw);
+      filter: drop-shadow(0 0 14px rgba(255,255,255,0.75));
+      animation: loginLogoIn 0.9s ease-out both;
+    }
+
+    .login-divider {
+      width: 2px;
+      height: 280px;
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,0.9), transparent);
+    }
+
+    @keyframes loginLogoIn {
+      from { opacity: 0; transform: translateX(-24px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes loginPanelIn {
+      from { opacity: 0; transform: translateX(24px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @media (max-width: 840px) {
+      .login-divider { display: none; }
+      .login-logo { width: min(240px, 70vw); }
     }
 
     .login-screen.waiting { display: none; }
@@ -194,6 +226,7 @@
       background: var(--xp-panel);
       border: 2px solid #0b4fae;
       box-shadow: 4px 5px 0 rgba(0,0,0,0.32);
+      animation: loginPanelIn 0.9s ease-out both;
     }
 
     .login-title {
@@ -1599,6 +1632,8 @@
 </head>
 <body class="locked" data-authenticated="{{ 'true' if logged_in_user else 'false' }}" data-developer="{{ 'true' if developer_access else 'false' }}" data-timeline-stage="{{ progress.stage }}">
   <div class="login-screen waiting" id="loginScreen">
+    <img class="login-logo" src="/static/login/trapdoors-logo.png" alt="Trapdoors" />
+    <div class="login-divider"></div>
     <section class="login-window" aria-labelledby="loginTitle">
       <h1 class="login-title" id="loginTitle">Log On to Trapdoors</h1>
       <div class="login-error" id="loginError" role="alert" aria-live="polite"></div>
