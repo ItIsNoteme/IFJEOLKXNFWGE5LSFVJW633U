@@ -567,7 +567,7 @@
     }
 
     .tray {
-      width: 130px;
+      width: 150px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -581,12 +581,18 @@
     }
 
     .tray-icon {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       padding: 0;
-      border: 1px solid #555;
-      background: #fff;
+      border: 0;
+      background: url('/static/icons/calendar.png') center / contain no-repeat;
       cursor: pointer;
+    }
+
+    .tray-clock {
+      display: grid;
+      justify-items: center;
+      line-height: 1.3;
     }
 
     /*
@@ -2037,7 +2043,10 @@
     <div class="taskbar-buttons" id="taskbarButtons"></div>
     <div class="tray">
       <button type="button" class="tray-icon" id="trayCalendar" title="Calendar" aria-label="Calendar"></button>
-      <span id="clock">00:00</span>
+      <div class="tray-clock">
+        <span id="clock">00:00</span>
+        <span id="trayDate"></span>
+      </div>
     </div>
   </div>
 
@@ -2172,7 +2181,7 @@
     function programIconFor(id) {
       if (id === 'notebook') return timelineState.journalBroken ? 'notepad-broken' : 'notepad';
       if (id === 'recycle') return 'recycle-full';
-      return { explorer: 'computer', messenger: 'chirp', email: 'email', scripts: 'folder' }[id] || null;
+      return { explorer: 'computer', messenger: 'chirp', email: 'email', calendar: 'calendar', scripts: 'folder' }[id] || null;
     }
 
     function setProgramIcon(element, name) {
@@ -2417,6 +2426,14 @@
     const messengerNotification = document.getElementById('messengerNotification');
     const messengerStatus = document.getElementById('messengerStatus');
     const emailMessages = [
+      {
+        id: 'tech-support',
+        sender: 'Trapdoors Tech Support',
+        subject: 'The tech support email address has been changed',
+        date: '',
+        body: 'The tech support email address has been changed due to technical issues. (How ironic.) Here’s the current one:\n\ntraumainformedboy@gmail.com',
+        read: false
+      },
       {
         id: 'parents-meeting',
         sender: 'Northside School Office',
@@ -2806,6 +2823,8 @@
       calendarToday = today;
       calendarMonthIndex = CALENDAR_MONTHS.findIndex(([name]) => name === month);
       document.getElementById('explorerDate').textContent = `${month} ${currentDay}`;
+      const trayMonth = String(calendarMonthIndex + 1).padStart(2, '0');
+      document.getElementById('trayDate').textContent = `${String(currentDay).padStart(2, '0')}.${trayMonth}.${new Date().getFullYear()}`;
       calendarSelection.textContent = `Selected: ${month} ${currentDay}`;
       drawCalendarMonth();
     }
@@ -2946,7 +2965,7 @@
 
     // After 7:29 in part A all old letters break and the doctor's letter locks the mail until it is acknowledged.
     function breakEmail() {
-      emailMessages.forEach(message => {
+      emailMessages.filter(message => message.id !== 'tech-support').forEach(message => {
         message.sender = scrambleText(message.sender);
         message.subject = scrambleText(message.subject);
       });
@@ -3441,7 +3460,7 @@
     // It uses the user's local time and refreshes once every second.
     function updateClock() {
       const now = new Date();
-      clock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      clock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     }
     setInterval(updateClock, 1000);
     updateClock();
