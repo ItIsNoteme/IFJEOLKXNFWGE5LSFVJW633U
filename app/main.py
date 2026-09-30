@@ -24,7 +24,7 @@ STATIC_DIR = BASE_DIR / "static"
 # Change this value when the developer wants to change the local login password.
 DEVELOPER_PASSWORD = "D.(;m4tsns5Hs1#^"
 DEBUG = os.getenv("ARG_DEBUG", "false").casefold() in {"1", "true", "yes", "on"}
-RELEASE_AT = os.getenv("ARG_RELEASE_AT", "2026-10-01T00:00:00+00:00")
+RELEASE_AT = os.getenv("ARG_RELEASE_AT", "2026-10-01T02:00:00+00:00")
 STATIC_DIR.mkdir(exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
