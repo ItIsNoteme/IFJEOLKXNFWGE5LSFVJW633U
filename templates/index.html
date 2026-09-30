@@ -755,8 +755,6 @@
     }
 
     .window-control:active { background-image: url('/static/ui/Close_2.svg'); }
-    .window-control[data-action="minimize"] { background-image: url('/static/ui/Sverni_1.svg'); }
-    .window-control[data-action="minimize"]:active { background-image: url('/static/ui/Sverni_2.svg'); }
 
     .window-content {
       padding: 10px;
@@ -1696,7 +1694,7 @@
   </div>
   <!--
     The desktop is the root area where icons and windows are placed.
-    Each .window is a floating app or panel that can be opened, minimized, or closed.
+    Each .window is a floating app or panel that can be opened or closed.
   -->
   <div class="desktop">
     <div class="timeline-hud" aria-live="polite">
@@ -1750,7 +1748,6 @@
           <div class="title-text">My Computer</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1793,7 +1790,6 @@
           <div class="title-text">Recycle Bin</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1813,7 +1809,6 @@
           <div class="title-text">Script Workshop</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1852,7 +1847,6 @@
           <div class="title-text">Notepad</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1915,7 +1909,6 @@
           <div class="title-text">Chirp</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1948,7 +1941,6 @@
           <div class="title-text">E-Mail</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1968,7 +1960,6 @@
       <div class="titlebar">
         <div class="left"><div class="window-icon"></div><div class="title-text">Calendar</div></div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -1996,7 +1987,6 @@
           <div class="title-text">Command Console</div>
         </div>
         <div class="window-controls">
-          <button class="window-control" data-action="minimize">_</button>
           <button class="window-control" data-action="close">×</button>
         </div>
       </div>
@@ -3459,18 +3449,8 @@
       renderTaskbar();
     }
 
-    // Minimizes a window by hiding it while keeping it in the taskbar.
-    function minimizeWindow(id) {
-      const win = document.getElementById(id);
-      if (!win) return;
-      if (id === 'email' && emailLocked) return;
-      win.classList.add('minimized');
-      win.classList.remove('visible');
-      renderTaskbar();
-    }
-
     // Renders the taskbar buttons for all windows.
-    // Each button shows the window title and toggles the window open or minimized when clicked.
+    // Each button shows the window title and brings the window to the front when clicked.
     function renderTaskbar() {
       taskbarButtons.innerHTML = '';
       wins.forEach(win => {
@@ -3481,13 +3461,7 @@
         const btn = document.createElement('button');
         btn.className = 'taskbar-btn' + (isVisible ? ' active' : '');
         btn.innerHTML = '<span class="tiny-icon"></span><span>' + (win.dataset.title || id) + '</span>';
-        btn.addEventListener('click', () => {
-          if (win.classList.contains('visible')) {
-            minimizeWindow(id);
-          } else {
-            openWindow(id);
-          }
-        });
+        btn.addEventListener('click', () => openWindow(id));
         taskbarButtons.appendChild(btn);
       });
     }
@@ -3520,7 +3494,7 @@
       }
     });
 
-    // Window control buttons handle minimize and close actions.
+    // Window control buttons close their windows.
     document.querySelectorAll('.window-control').forEach(btn => {
       btn.addEventListener('click', () => {
         const win = btn.closest('.window');
@@ -3528,7 +3502,6 @@
         if (!win) return;
         const id = win.id;
         if (action === 'close') closeWindow(id);
-        if (action === 'minimize') minimizeWindow(id);
       });
     });
 
