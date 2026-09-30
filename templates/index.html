@@ -8,7 +8,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ARG Desktop</title>
-  <link rel="stylesheet" href="/static/maze/maze.css?v=5" />
+  <link rel="stylesheet" href="/static/maze/maze.css?v=6" />
   <style>
     /*
       This CSS variable block creates the color palette for the entire interface.
@@ -37,6 +37,17 @@
       It prevents padding or borders from making elements wider than expected.
     */
     * { box-sizing: border-box; }
+
+    /* Fonts from static/fonts: Tahoma for the whole interface, Franklin Gothic italic for the Start button. */
+    @font-face {
+      font-family: "Tahoma";
+      src: url('/static/fonts/tahoma.ttf') format('truetype');
+    }
+
+    @font-face {
+      font-family: "Franklin Gothic XP";
+      src: url('/static/fonts/framdit.ttf') format('truetype');
+    }
 
     /*
       Animation keyframes define smooth motion for windows, menus, icons, and map elements.
@@ -466,18 +477,16 @@
       justify-content: center;
       width: 118px;
       height: calc(100% - 4px);
-      margin: 2px 4px 2px 2px;
-      background: linear-gradient(180deg, #45c64c 0%, #2c9a3a 100%);
-      border-top: 1px solid #a4f5a4;
-      border-left: 1px solid #b9f9bb;
-      border-right: 1px solid #195f2d;
-      border-bottom: 1px solid #195f2d;
+      margin: 2px 4px 2px 0;
+      padding: 0 10px 0 0;
+      background: url('/static/ui/start1.svg') center / 100% 100% no-repeat;
+      border: 0;
       color: #fff;
-      font-weight: 700;
-      font-size: 14px;
+      font-family: "Franklin Gothic XP", "Trebuchet MS", sans-serif;
+      font-style: italic;
+      font-size: 22px;
       cursor: pointer;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.42);
-      text-shadow: 1px 1px 0 rgba(0,0,0,0.45);
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
       user-select: none;
     }
 
@@ -492,7 +501,8 @@
       position: relative;
     }
 
-    .start-button:hover { filter: brightness(1.05); }
+    .start-button:hover { background-image: url('/static/ui/start2.svg'); }
+    .start-button:active { background-image: url('/static/ui/start_act.svg'); }
 
     .taskbar-buttons {
       display: flex;
@@ -507,9 +517,13 @@
       height: 100%;
       min-width: 148px;
       max-width: 200px;
-      border: 1px solid #9b9b9b;
-      background: linear-gradient(180deg, #f5f5f5 0%, #d8d8d8 100%);
-      padding: 0 10px;
+      border-style: solid;
+      border-width: 0 8px;
+      border-image: url('/static/ui/window1_act.svg') 0 8 fill / 0 8px stretch;
+      background: none;
+      color: #fff;
+      text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
+      padding: 0 4px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -529,9 +543,7 @@
     }
 
     .taskbar-btn.active {
-      background: linear-gradient(180deg, #fefefe 0%, #dfe9f7 100%);
-      border-color: #7ea2d7;
-      box-shadow: inset 0 0 0 1px rgba(125,158,219,0.7);
+      border-image-source: url('/static/ui/Window1.svg');
     }
 
     .taskbar-btn .tiny-icon {
@@ -543,16 +555,26 @@
     }
 
     .tray {
-      width: 120px;
+      width: 130px;
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 12px;
       border-left: 1px solid rgba(0,0,0,0.3);
       font-size: 12px;
       font-weight: 600;
       color: #2a2a2a;
       background: linear-gradient(180deg, #e4e4e4 0%, #d5d5d5 100%);
       box-shadow: inset 1px 0 0 rgba(255,255,255,0.8);
+    }
+
+    .tray-icon {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: 1px solid #555;
+      background: #fff;
+      cursor: pointer;
     }
 
     /*
@@ -659,7 +681,8 @@
       width: 460px;
       min-height: 180px;
       background: linear-gradient(180deg, #f5f5f5 0%, #ececec 100%);
-      border: 2px solid #1d4d93;
+      border: 4px solid #0a6fd6;
+      border-image: url('/static/ui/Frame1.svg') 5 stretch;
       box-shadow: 3px 3px 12px rgba(0,0,0,0.4);
       display: none;
       z-index: 20;
@@ -679,7 +702,7 @@
     }
 
     .titlebar {
-      background: linear-gradient(180deg, #2b6ed5 0%, #0d4ca8 100%);
+      background: url('/static/ui/window3.svg') center / 100% 100% no-repeat;
       height: 32px;
       display: flex;
       align-items: center;
@@ -722,19 +745,18 @@
     }
 
     .window-control {
-      width: 24px; height: 18px;
-      border: 1px solid rgba(255,255,255,0.75);
-      background: linear-gradient(180deg, #f0f0f0, #d6d6d6);
-      color: #111;
-      font-weight: 700;
-      font-size: 12px;
+      width: 21px;
+      height: 21px;
+      padding: 0;
+      border: 0;
+      background: url('/static/ui/Close_1.svg') center / 100% 100% no-repeat;
+      font-size: 0;
       cursor: pointer;
-      display: grid;
-      place-items: center;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
     }
 
-    .window-control:hover { filter: brightness(1.1); }
+    .window-control:active { background-image: url('/static/ui/Close_2.svg'); }
+    .window-control[data-action="minimize"] { background-image: url('/static/ui/Sverni_1.svg'); }
+    .window-control[data-action="minimize"]:active { background-image: url('/static/ui/Sverni_2.svg'); }
 
     .window-content {
       padding: 10px;
@@ -1172,14 +1194,18 @@
     }
 
     .diary-arrow {
-      width: 26px;
-      height: 22px;
-      border: 1px solid #1c6b1c;
-      color: #fff;
-      background: linear-gradient(180deg, #5fd35f, #2c9a3a);
+      width: 21px;
+      height: 21px;
+      padding: 0;
+      border: 0;
+      background: url('/static/ui/left_arrow_1.svg') center / 100% 100% no-repeat;
+      font-size: 0;
       cursor: pointer;
-      font-weight: 700;
     }
+
+    .diary-arrow:active { background-image: url('/static/ui/left_arrow_2.svg'); }
+    .diary-arrow.next { background-image: url('/static/ui/right_arrow_1.svg'); }
+    .diary-arrow.next:active { background-image: url('/static/ui/right_arrow_2.svg'); }
 
     .diary-arrow:disabled { opacity: 0.35; cursor: default; }
 
@@ -1707,10 +1733,6 @@
         <div class="icon-graphic icon-doc"></div>
         <span>E-Mail</span>
       </div>
-      <div class="desktop-icon" data-window="calendar">
-        <div class="icon-graphic icon-doc"></div>
-        <span>Calendar</span>
-      </div>
       <div class="desktop-icon" id="chatExportIcon" hidden>
         <div class="icon-graphic icon-doc"></div>
         <span>ChatExport_1</span>
@@ -1848,7 +1870,7 @@
         <div class="notebook-player-view">
           <div class="diary-nav">
             <button type="button" class="diary-arrow" id="diaryPrev">&larr;</button>
-            <button type="button" class="diary-arrow" id="diaryNext">&rarr;</button>
+            <button type="button" class="diary-arrow next" id="diaryNext">&rarr;</button>
           </div>
           <div class="diary-page" id="playerNotebookList"></div>
         </div>
@@ -1955,7 +1977,7 @@
           <div class="calendar-nav">
             <button type="button" class="diary-arrow" id="calendarPrev">&larr;</button>
             <h3 id="calendarMonth">February</h3>
-            <button type="button" class="diary-arrow" id="calendarNext">&rarr;</button>
+            <button type="button" class="diary-arrow next" id="calendarNext">&rarr;</button>
           </div>
           <div class="calendar-grid" id="calendarGrid" aria-label="February calendar"></div>
           <div class="music-status" id="calendarSelection" aria-live="polite">Selected: February 8</div>
@@ -2018,10 +2040,13 @@
   <div class="taskbar">
     <button class="start-button" id="startButton">start</button>
     <div class="taskbar-buttons" id="taskbarButtons"></div>
-    <div class="tray" id="clock">00:00</div>
+    <div class="tray">
+      <button type="button" class="tray-icon" id="trayCalendar" title="Calendar" aria-label="Calendar"></button>
+      <span id="clock">00:00</span>
+    </div>
   </div>
 
-  <script src="/static/maze/maze.js?v=5"></script>
+  <script src="/static/maze/maze.js?v=6"></script>
 
   <div class="calendar-tooltip" id="calendarTooltip" hidden></div>
 
@@ -3377,6 +3402,12 @@
         document.getElementById('password').focus();
       });
     }
+
+    // The calendar lives in the tray next to the clock.
+    document.getElementById('trayCalendar').addEventListener('click', () => {
+      if (document.getElementById('calendar').classList.contains('visible')) closeWindow('calendar');
+      else openWindow('calendar');
+    });
 
     // Updates the clock displayed in the bottom-right tray.
     // It uses the user's local time and refreshes once every second.

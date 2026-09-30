@@ -1,0 +1,8 @@
+<svg preserveAspectRatio="none" version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5 31" width="5" height="31">
+	<defs>
+		<image  width="5" height="31" id="img1" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAfBAMAAADdDBorAAAAAXNSR0IB2cksfwAAABhQTFRFPnTHR4XOUJbVV6XYUJjSUZjWRoPNR4TNoLayVwAAABxJREFUeJxjZFSSZWQMesvI5osbs/ug0pRgJDMA1gQl4IdCn84AAAAASUVORK5CYII="/>
+	</defs>
+	<style>
+	</style>
+	<use id="Слой 1" href="#img1" x="0" y="0"/>
+</svg>
