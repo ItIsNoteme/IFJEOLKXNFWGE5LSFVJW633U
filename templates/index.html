@@ -2122,7 +2122,8 @@
     const developerAccess = document.body.dataset.developer === 'true';
     // Change this value to control developer-only access to the Script Workshop.
     const DEVELOPER_SCRIPT_PASSWORD = 'ARG-DEV-2026';
-    const debugMode = developerAccess && new URLSearchParams(window.location.search).get('debug') !== '0';
+    // Developer mode is opt-in: add ?debug=1 to the address. Players log in as Misha too, so they never get it by accident.
+    const debugMode = developerAccess && new URLSearchParams(window.location.search).get('debug') === '1';
     const TIMELINE_STAGES = {
       'part-a-beginning': {
         label: 'Part A · The Beginning', wallpaper: 'The_Beggining', hearts: '2.5',
@@ -2156,7 +2157,7 @@
       'part-a-beginning': ['September', 30, 3]
     };
     const timelineParams = new URLSearchParams(window.location.search);
-    const requestedTimelineStage = developerAccess ? timelineParams.get('timeline') : null;
+    const requestedTimelineStage = debugMode ? timelineParams.get('timeline') : null;
     const timelineStorageKey = 'arg-timeline-stage';
     const rawTimelineStage = String(requestedTimelineStage || localStorage.getItem(timelineStorageKey) || document.body.dataset.timelineStage || 'intro')
       .trim()
@@ -2291,7 +2292,7 @@
     }
 
     function unlockDeveloperTools() {
-      if (!developerAccess) return false;
+      if (!debugMode) return false;
       if (developerScriptsUnlocked) return true;
       const password = window.prompt('Developer password:');
       if (password !== DEVELOPER_SCRIPT_PASSWORD) return false;
