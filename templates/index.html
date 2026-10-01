@@ -2242,7 +2242,7 @@
     // Program icons from static/icons. Programs without a picture keep the CSS-drawn icon.
     function programIconFor(id) {
       if (id === 'notebook') return timelineState.journalBroken ? 'notepad-broken' : 'notepad';
-      if (id === 'recycle') return 'recycle-full';
+      if (id === 'recycle') return timelineStageId === 'part-b-original' && !mazeFinished ? 'recycle-full' : 'recycle-empty';
       return { explorer: 'computer', messenger: 'chirp', email: 'email', calendar: 'calendar', scripts: 'folder' }[id] || null;
     }
 
@@ -2876,15 +2876,9 @@
       event.preventDefault();
       const input = document.getElementById('messengerSearchInput');
       const query = input.value.trim().toLowerCase();
-      if (!query) return;
-      const contact = messengerContacts.find(item => item.name.toLowerCase() === query);
-      if (contact) {
-        selectedMessengerContact = contact.name;
-        input.value = '';
-        renderMessenger();
-        return;
-      }
-      if (timelineStageId === 'part-b-original' && query === KAI_CHIRP_USERNAME.toLowerCase()) {
+      // The search does nothing until the maze is finished and the player has Kai's username from ChatExport_1.
+      if (!query || timelineStageId !== 'part-b-original' || !mazeFinished) return;
+      if (query === KAI_CHIRP_USERNAME.toLowerCase()) {
         input.disabled = true;
         startScreenGlitch(7000);
         window.setTimeout(() => goToTimelineStage('part-a-beginning'), 6500);
