@@ -16,6 +16,7 @@
       Each variable stores a reusable color so the design stays consistent across the page.
     */
     :root {
+      --xp-window: #ece9d8;
       --xp-blue: #0a5ad3;
       --xp-blue-dark: #0c3c8d;
       --xp-teal: #3f7ec2;
@@ -180,15 +181,15 @@
       overflow: hidden;
     }
 
-    body.timeline-part-a-beginning { background: var(--wp1); }
+    body.timeline-part-a-beginning { background: #5b92d1 url('/static/wallpapers/the-beggining.jpg') center / cover no-repeat; }
     body.timeline-part-b-hyperfication {
       background:
         repeating-linear-gradient(0deg, rgba(22, 18, 38, 0.06) 0 1px, transparent 1px 4px),
         linear-gradient(140deg, #9c89b6 0%, #88adae 45%, #d0a4a5 100%);
     }
-    body.timeline-part-b-original { background: linear-gradient(180deg, #5998d2 0%, #72a1d0 46%, #83b4d1 100%); }
+    body.timeline-part-b-original { background: #5b92d1 url('/static/wallpapers/the-original.jpg') center / cover no-repeat; }
     body.timeline-part-a-depression { background: var(--wp1); }
-    body.timeline-part-b-narru-misha { background: linear-gradient(145deg, #87bdd0 0%, #8ebac0 48%, #7eaa9a 100%); }
+    body.timeline-part-b-narru-misha { background: #5b92d1 url('/static/wallpapers/happy-misha.jpg') center / cover no-repeat; }
     body.timeline-part-b-orange { background: linear-gradient(150deg, #a86c36 0%, #d09a57 45%, #8d6948 100%); }
 
     body.timeline-part-b-hyperfication .window.visible {
@@ -1319,6 +1320,8 @@
       font-size: 12px;
     }
 
+    .error-dialog-text { white-space: pre-line; }
+
     .error-dialog-icon {
       width: 36px;
       height: 36px;
@@ -1722,6 +1725,21 @@
       .email-item { grid-template-columns: 110px minmax(0, 1fr) 44px; }
       .taskbar-btn { min-width: 110px; }
     }
+
+    /* Every window has the same inner background as the Error window. */
+    .window-content,
+    .panel,
+    .messenger-layout,
+    .messenger-sidebar,
+    .messenger-messages,
+    .messenger-chat-header,
+    .messenger-composer,
+    .email-list,
+    .email-reader,
+    .diary-page,
+    .notebook-gate,
+    .error-page .window-content,
+    .error-dialog .window-content { background: var(--xp-window); }
   </style>
 </head>
 <body class="locked" data-authenticated="{{ 'true' if logged_in_user else 'false' }}" data-developer="{{ 'true' if developer_access else 'false' }}" data-timeline-stage="{{ progress.stage }}">
@@ -2407,6 +2425,12 @@
     const PROJECT_OST = [
       { title: 'Main Theme', source: './static/ost/main-theme.wav' }
     ];
+    // Background music of each part of the story. Other parts play the Main Theme.
+    const STAGE_OST = {
+      'part-b-narru-misha': { title: 'Calming Blue', source: './static/ost/calming-blue.mp3' },
+      'part-b-original': { title: 'Just Nothing Happened', source: './static/ost/just-nothing-happened.mp3' },
+      'part-a-beginning': PROJECT_OST[0]
+    };
     const disclaimerSceneId = 'developer-disclaimer';
     const defaultDisclaimerText = 'This web game is an experimental interactive story. It may contain fictional danger, mystery, and unsettling themes. Everything in the game is part of the story and should be treated as fiction. Take breaks whenever you need one.';
     let disclaimerText = defaultDisclaimerText;
@@ -2460,7 +2484,7 @@
     let selectedMessengerContact = 'Kai';
     const backgroundMusic = document.getElementById('backgroundMusic');
     const musicStatus = document.getElementById('musicStatus');
-    const KAI_CHIRP_USERNAME = 'kai';
+    const KAI_CHIRP_USERNAME = 'Kai_ii1402';
     const messengerContactsElement = document.getElementById('messengerContacts');
     const messengerMessagesElement = document.getElementById('messengerMessages');
     const messengerChatHeader = document.getElementById('messengerChatHeader');
@@ -2801,8 +2825,11 @@
       messengerStatus.textContent = 'New message received.';
       renderMessenger();
       messengerMessagesElement.scrollTop = messengerMessagesElement.scrollHeight;
-      openTimelineErrorPages();
-      startScreenGlitch(timelineErrorMessages.length * 300 + 400);
+      // Kai's message first, then 6 seconds later the glitch and the errors.
+      window.setTimeout(() => {
+        openTimelineErrorPages();
+        startScreenGlitch(timelineErrorMessages.length * 300 + 400);
+      }, 6000);
     }
 
     messengerInput.disabled = true;
@@ -2857,8 +2884,10 @@
         renderMessenger();
         return;
       }
-      if (timelineStageId === 'part-b-original' && query === KAI_CHIRP_USERNAME) {
-        goToTimelineStage('part-a-beginning');
+      if (timelineStageId === 'part-b-original' && query === KAI_CHIRP_USERNAME.toLowerCase()) {
+        input.disabled = true;
+        startScreenGlitch(7000);
+        window.setTimeout(() => goToTimelineStage('part-a-beginning'), 6500);
         return;
       }
       messengerStatus.textContent = 'User not found.';
@@ -2882,6 +2911,7 @@
       'June 1': "Children's Day(lol)",
       'September 1': 'FUCK THIS DAY'
     };
+    if (timelineStageId === 'part-a-beginning') CALENDAR_HOLIDAYS['February 14'] = "Valentine's Day";
     const calendarTooltip = document.getElementById('calendarTooltip');
     let calendarToday = null;
     let calendarMonthIndex = 0;
@@ -3102,35 +3132,38 @@
       backgroundMusic.muted = backgroundMusic.volume === 0;
     });
 
-    backgroundMusic.volume = 0.1;
-    musicVolume.value = '0.1';
-    backgroundMusic.muted = true;
+    // The tracks are quiet, so the default volume is 35%. The Loop checkbox is on by default.
+    const MUSIC_VOLUME = 0.35;
+    backgroundMusic.volume = MUSIC_VOLUME;
+    musicVolume.value = String(MUSIC_VOLUME);
+    backgroundMusic.loop = document.getElementById('musicLoop').checked;
     backgroundMusic.addEventListener('error', () => {
       setMusicStatus('Unable to decode this audio format or load this URL.');
     });
 
     // The login screen stays silent, the music starts only on the desktop.
-    const desktopUnlocked = authenticated && sessionStorage.getItem(loginStorageKey) === 'true';
-    if (PROJECT_OST.length && desktopUnlocked) {
-      const firstTrack = PROJECT_OST[0];
-      loadMusicSource(firstTrack.source, firstTrack.title);
+    // If the browser blocks the sound, it starts on the first click or key press.
+    function startBackgroundMusic() {
+      if (!PROJECT_OST.length) return;
+      const track = STAGE_OST[timelineStageId] || PROJECT_OST[0];
+      loadMusicSource(track.source, track.title);
       backgroundMusic.play()
-        .then(() => setMusicStatus('Background music started. Click or press a key to enable sound.'))
-        .catch(() => setMusicStatus('Click or press a key to start background music.'));
-
-      const enableBackgroundMusic = () => {
-        backgroundMusic.muted = false;
-        backgroundMusic.volume = 0.1;
-        backgroundMusic.play().catch(() => {});
-        setMusicStatus('Playing background music at 10% volume.');
-        document.removeEventListener('pointerdown', enableBackgroundMusic, true);
-        document.removeEventListener('keydown', enableBackgroundMusic, true);
-        document.removeEventListener('touchstart', enableBackgroundMusic, true);
-      };
-      document.addEventListener('pointerdown', enableBackgroundMusic, true);
-      document.addEventListener('keydown', enableBackgroundMusic, true);
-      document.addEventListener('touchstart', enableBackgroundMusic, true);
+        .then(() => setMusicStatus('Playing background music.'))
+        .catch(() => {
+          setMusicStatus('Click or press a key to start background music.');
+          const enableBackgroundMusic = () => {
+            backgroundMusic.play().then(() => setMusicStatus('Playing background music.')).catch(() => {});
+            document.removeEventListener('pointerdown', enableBackgroundMusic, true);
+            document.removeEventListener('keydown', enableBackgroundMusic, true);
+            document.removeEventListener('touchstart', enableBackgroundMusic, true);
+          };
+          document.addEventListener('pointerdown', enableBackgroundMusic, true);
+          document.addEventListener('keydown', enableBackgroundMusic, true);
+          document.addEventListener('touchstart', enableBackgroundMusic, true);
+        });
     }
+
+    if (authenticated && sessionStorage.getItem(loginStorageKey) === 'true') startBackgroundMusic();
 
     try {
       scriptScenes = JSON.parse(localStorage.getItem(scriptStorageKey) || '[]');
@@ -3464,9 +3497,7 @@
     });
     renderScriptList();
 
-    const loginCompleteThisTab = sessionStorage.getItem(loginStorageKey) === 'true';
-    if (authenticated && loginCompleteThisTab) {
-      sessionStorage.removeItem(loginStorageKey);
+    function unlockDesktop() {
       document.getElementById('loginScreen')?.remove();
       document.body.classList.remove('locked');
       if (debugMode) {
@@ -3475,6 +3506,12 @@
         openWindow('messenger');
       }
       renderTaskbar();
+    }
+
+    const loginCompleteThisTab = sessionStorage.getItem(loginStorageKey) === 'true';
+    if (authenticated && loginCompleteThisTab) {
+      sessionStorage.removeItem(loginStorageKey);
+      unlockDesktop();
     } else {
       const loginScreen = document.getElementById('loginScreen');
       const disclaimerComplete = debugMode
@@ -3496,11 +3533,22 @@
           });
           if (response.ok) {
             // "Welcome" and the startup sound play here, from the Log in click, so the browser does not block the sound.
-            sessionStorage.setItem(loginStorageKey, 'true');
+            // The desktop opens on the same page, so the music can start right away. Developer mode needs a reload.
             loginForm.hidden = true;
             document.getElementById('loginWelcome').hidden = false;
             const startupSound = new Audio(SYSTEM_SOUNDS.startup);
-            const openDesktop = () => window.location.reload();
+            let desktopOpened = false;
+            const openDesktop = () => {
+              if (desktopOpened) return;
+              desktopOpened = true;
+              if (new URLSearchParams(window.location.search).get('debug') === '1') {
+                sessionStorage.setItem(loginStorageKey, 'true');
+                window.location.reload();
+                return;
+              }
+              unlockDesktop();
+              startBackgroundMusic();
+            };
             startupSound.volume = 0.5;
             startupSound.addEventListener('ended', openDesktop);
             startupSound.play().catch(openDesktop);
@@ -3539,6 +3587,10 @@
     function openWindow(id) {
       const win = document.getElementById(id);
       if (!win) return;
+      if (id === 'notebook' && timelineState.journalBroken) {
+        showErrorDialog('FILE NOT FOUND.\nThe specified file could not be found.\nIt may have been moved, renamed, or deleted.');
+        return;
+      }
       if (!win.classList.contains('visible')) playSound('start');
       if (id === 'recycle' && timelineStageId === 'part-b-original' && !mazeFinished) {
         MazeGame.open(document.querySelector('.desktop'), { onFinish: finishMaze });
