@@ -24,7 +24,8 @@ STATIC_DIR = BASE_DIR / "static"
 # Change this value when the developer wants to change the local login password.
 DEVELOPER_PASSWORD = "D.(;m4tsns5Hs1#^"
 DEBUG = os.getenv("ARG_DEBUG", "false").casefold() in {"1", "true", "yes", "on"}
-RELEASE_AT = os.getenv("ARG_RELEASE_AT", "2026-10-01T18:00:00+00:00")
+# The release is opened by hand: create the RELEASED file in the project folder (touch RELEASED).
+RELEASE_FLAG = BASE_DIR / "RELEASED"
 STATIC_DIR.mkdir(exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
@@ -160,11 +161,8 @@ def serialize_progress(progress: GameProgress | None):
     }
 
 
-def get_release_time() -> datetime:
-    release_time = datetime.fromisoformat(RELEASE_AT)
-    if release_time.tzinfo is None:
-        release_time = release_time.replace(tzinfo=timezone.utc)
-    return release_time.astimezone(timezone.utc)
+def is_released() -> bool:
+    return RELEASE_FLAG.exists()
 
 
 def desktop_response(request: Request, db: Session) -> HTMLResponse:
@@ -198,9 +196,8 @@ async def index(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/main", response_class=HTMLResponse)
 async def gated_main(request: Request, db: Session = Depends(get_db)):
-    """Keep the main desktop unavailable until the server release time."""
-    now = datetime.now(timezone.utc)
-    if now < get_release_time():
+    """Keep the main desktop unavailable until the release is opened on the server."""
+    if not is_released():
         return HTMLResponse(
             "<h1>ARG desktop is not available yet.</h1>",
             status_code=403,
@@ -210,12 +207,9 @@ async def gated_main(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/api/release-status")
 async def release_status():
-    now = datetime.now(timezone.utc)
-    release_time = get_release_time()
     return {
-        "server_time": now.isoformat(),
-        "release_time": release_time.isoformat(),
-        "released": now >= release_time,
+        "server_time": datetime.now(timezone.utc).isoformat(),
+        "released": is_released(),
     }
 
 
